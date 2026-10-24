@@ -6,7 +6,8 @@ import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import debug, health
+from app.api.errors import install_error_handlers
 from app.core.config import Settings
 from app.core.logging import configure_logging
 from app.core.pricing import load_pricing, missing_prices
@@ -49,4 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_headers=["Content-Type"],
     )
     app.include_router(health.router)
+    if settings.enable_debug_endpoints:
+        app.include_router(debug.router)
+    install_error_handlers(app)
     return app

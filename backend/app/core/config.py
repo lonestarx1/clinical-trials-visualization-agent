@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     ctgov_base_url: str = "https://clinicaltrials.gov/api/v2"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     cors_origins: list[str] = ["http://localhost:3000"]
+    enable_debug_endpoints: bool = True
 
     guard: StageSettings = StageSettings(
         model="gpt-5.4-nano", max_output_tokens=1000, timeout_seconds=5

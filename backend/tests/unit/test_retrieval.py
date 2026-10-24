@@ -23,7 +23,7 @@ def _plan(**overrides: Any) -> QueryPlan:
 
 
 def test_fields_for_a_phase_distribution() -> None:
-    assert fields_for(_plan()) == ["NCTId", "BriefTitle", "Phase", "StudyType"]
+    assert fields_for(_plan()) == ["NCTId", "BriefTitle", "StartDate", "Phase", "StudyType"]
 
 
 def test_fields_are_unique_and_include_the_measure_and_second_dimension() -> None:
@@ -37,6 +37,7 @@ def test_fields_are_unique_and_include_the_measure_and_second_dimension() -> Non
     assert fields_for(plan) == [
         "NCTId",
         "BriefTitle",
+        "StartDate",
         "LeadSponsorName",
         "LeadSponsorClass",
         "InterventionName",
