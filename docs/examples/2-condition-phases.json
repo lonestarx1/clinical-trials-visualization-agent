@@ -6,13 +6,12 @@
   "http_status": 200,
   "seconds": 34.0,
   "response": {
-    "schema_version": "1.0",
+    "schema_version": "2.0",
     "result_id": "d70db059-8f32-49a2-9fdc-231f5e3fd056",
     "status": "ok",
     "visualization": {
       "type": "bar_chart",
       "title": "ClinicalTrials.gov breast cancer trials by phase",
-      "summary": "Bar chart shows 16,765 breast cancer trials by phase; Not Applicable has 4,921 trials, while Phase 2/Phase 3 has 146 and No phase (observational / expanded access), Phase 2, Phase 1 are next highest.",
       "encoding": {
         "x": {
           "field": "phase",

@@ -6,13 +6,12 @@
   "http_status": 200,
   "seconds": 11.7,
   "response": {
-    "schema_version": "1.0",
+    "schema_version": "2.0",
     "result_id": "d351b949-6832-4d8b-a127-c2e16573f0cf",
     "status": "ok",
     "visualization": {
       "type": "network_graph",
       "title": "ClinicalTrials.gov network of melanoma trials by drug, showing trial counts",
-      "summary": "Across 38 drug nodes and 130 connections (total 1,446 trials), pembrolizumab is highest (250), and the strongest link is Ipilimumab–Nivolumab (122).",
       "encoding": {
         "node_id": {
           "field": "id",
