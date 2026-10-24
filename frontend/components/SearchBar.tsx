@@ -4,13 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import type { Options } from "@/lib/api";
 import { activeFilters, type Ask, EMPTY_ASK } from "@/lib/request";
 
-export function SearchBar({ value, onChange, onSubmit, busy, options, size = "large" }: {
+export function SearchBar({ value, onChange, onSubmit, busy, options, size = "large", autoFocus, onCancel }: {
   value: Ask;
   onChange: (a: Ask) => void;
   onSubmit: (a: Ask) => void;
   busy: boolean;
   options: Options | null;
   size?: "large" | "compact";
+  autoFocus?: boolean;
+  onCancel?: () => void;
 }) {
   const [refining, setRefining] = useState(false);
   const input = useRef<HTMLTextAreaElement>(null);
@@ -19,6 +21,13 @@ export function SearchBar({ value, onChange, onSubmit, busy, options, size = "la
     set(key, value[key].includes(v) ? value[key].filter((x) => x !== v) : [...value[key], v]);
   const filters = activeFilters(value);
   const submit = () => { if (value.query.trim() && !busy) { setRefining(false); onSubmit(value); } };
+
+  useEffect(() => {
+    if (!autoFocus || !input.current) return;
+    const el = input.current;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, [autoFocus]);
 
   useEffect(() => {  // grow with the question, up to a few lines
     const el = input.current;
@@ -35,12 +44,16 @@ export function SearchBar({ value, onChange, onSubmit, busy, options, size = "la
           id="question" ref={input} rows={1} maxLength={1000} value={value.query}
           placeholder="Ask about trials, e.g. Which countries run the most recruiting lung cancer trials?"
           onChange={(e) => set("query", e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+            if (e.key === "Escape" && onCancel) { e.preventDefault(); onCancel(); }
+          }}
         />
         <button type="button" className={`ghost refine ${refining ? "on" : ""}`} aria-expanded={refining}
           onClick={() => setRefining(!refining)}>
           Filters{filters.length ? ` (${filters.length})` : ""}
         </button>
+        {onCancel && <button type="button" className="ghost" onClick={onCancel}>Cancel</button>}
         <button type="submit" className="primary" disabled={busy || !value.query.trim()}>
           {busy ? "Working" : "Ask"}
         </button>
