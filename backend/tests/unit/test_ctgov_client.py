@@ -65,6 +65,23 @@ async def test_limiter_caps_concurrency() -> None:
     assert peak == 2
 
 
+async def test_a_request_cancelled_while_waiting_its_turn_gives_its_slot_back() -> None:
+    """Cancelling a job cancels requests queued in the shared limiter; none may keep a slot."""
+    limiter = RateLimiter(per_minute=60, concurrency=1)  # one start per second
+
+    async def request() -> None:
+        async with limiter:
+            pass
+
+    await request()  # the next start is now a second away
+    waiting = asyncio.create_task(request())
+    await asyncio.sleep(0.05)  # holds the only slot, sleeping until its start time
+    waiting.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await waiting
+    await asyncio.wait_for(request(), timeout=2)  # would hang if the slot had leaked
+
+
 # ---------- count ----------
 
 

@@ -1,12 +1,11 @@
 // Same-origin proxy to the backend (design Q15): the browser only talks to this app, and the
 // API address is a runtime setting (API_BASE_URL), not baked into the build.
 import type { NextRequest } from "next/server";
-
-const ALLOWED = /^(v1\/|health$)/;
+import { proxyAllows } from "@/lib/proxy";
 
 async function forward(request: NextRequest, path: string[]): Promise<Response> {
   const target = path.join("/");
-  if (!ALLOWED.test(target)) return new Response("Not found", { status: 404 });
+  if (!proxyAllows(request.method, target)) return new Response("Not found", { status: 404 });
   const base = process.env.API_BASE_URL ?? "http://localhost:8000";
   const url = `${base}/${target}${request.nextUrl.search}`;
   const headers = new Headers({ accept: "application/json" });
@@ -38,5 +37,10 @@ export async function GET(request: NextRequest, context: Context) {
 }
 
 export async function POST(request: NextRequest, context: Context) {
+  return forward(request, (await context.params).path);
+}
+
+// Cancel a background job (the Stop button); the allow-list admits v1/jobs/{id} only.
+export async function DELETE(request: NextRequest, context: Context) {
   return forward(request, (await context.params).path);
 }

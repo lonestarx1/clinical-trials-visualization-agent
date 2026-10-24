@@ -138,7 +138,10 @@ kbd { font: 500 0.75rem var(--mono); color: var(--muted); border: 1px solid var(
 
 /* Working */
 .progress { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.25rem; display: grid; gap: 0.4rem; }
-.progress-head { display: flex; justify-content: space-between; gap: 1rem; }
+.progress-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.progress-side { display: inline-flex; align-items: center; gap: 0.75rem; flex: none; }
+.progress-stop { font-size: 0.88rem; padding: 0.25rem 0.7rem; display: inline-flex; align-items: center; gap: 0.45rem; margin: -0.2rem 0; }
+@media (hover: none) { .progress-stop kbd { display: none; } }
 .progress p { margin: 0; font-size: 0.94rem; color: var(--ink-2); }
 .bar { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 0.4rem; }
 .bar span { display: block; height: 100%; background: var(--action); border-radius: inherit; transition: width 0.6s ease; }
@@ -262,6 +265,7 @@ a.brand { text-decoration: none; }
 .method { font: 600 0.72rem var(--mono); letter-spacing: 0.04em; border-radius: 5px; padding: 0.2rem 0.45rem; }
 .method-post { background: var(--action); color: var(--action-ink); }
 .method-get { background: var(--action-soft); color: var(--action); }
+.method-delete { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line-strong); }
 .code { margin: 0 0 1.1rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); min-width: 0; overflow: hidden; }
 .code-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.3rem 0.4rem 0.3rem 0.85rem;
   border-bottom: 1px solid var(--line); font-size: 0.8rem; font-weight: 600; color: var(--muted); background: var(--surface); }

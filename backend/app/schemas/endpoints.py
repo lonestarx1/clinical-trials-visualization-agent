@@ -23,6 +23,7 @@ ErrorCode = Literal[
     "safety_check_unavailable",
     "budget_exceeded",
     "internal_error",
+    "cancelled",  # only in a cancelled job's `error`, never an HTTP error
 ]
 
 
@@ -83,7 +84,8 @@ class JobStatus(BaseModel):
     job_id: str = Field(description="Job id.", examples=["8c1f6c52-4a8e-4d3b-9a51-0f2e7b6d9c11"])
     status: Literal["pending", "running", "succeeded", "failed", "cancelled"] = Field(
         description="`pending` (queued, or waiting for a retry), `running`, `succeeded` "
-        "(see `result`) or `failed` (see `error`). `cancelled` is reserved."
+        "(see `result`), `failed` (see `error`) or `cancelled` (by `DELETE`; `error.code` "
+        "is `cancelled`)."
     )
     progress: JobProgress = Field(description="Retrieval progress.")
     estimated_seconds: int = Field(description="Estimate given when accepted.", examples=[240])
@@ -91,7 +93,8 @@ class JobStatus(BaseModel):
         description="The normal `POST /v1/query` response once `succeeded`; otherwise null."
     )
     error: ErrorBody | None = Field(
-        description="The error once `failed` (same body as a synchronous error); otherwise null."
+        description="The error once `failed` (same body as a synchronous error) or "
+        "`cancelled` (code `cancelled`); otherwise null."
     )
 
 

@@ -12,6 +12,7 @@ from app.store.results import Expired, NotFound
 
 ACTIVE = ("pending", "running")
 RETENTION = timedelta(hours=24)
+CANCELLED_MESSAGE = "This job was cancelled."
 
 
 class JobExpired(Expired):
@@ -93,12 +94,40 @@ async def get_live(session: AsyncSession, job_id: uuid.UUID) -> tuple[Job, Resul
     return job, result
 
 
-async def progress(session: AsyncSession, job_id: uuid.UUID, value: dict[str, Any]) -> None:
-    await session.execute(
+async def progress(session: AsyncSession, job_id: uuid.UUID, value: dict[str, Any]) -> bool:
+    """Record page progress. False when the job is no longer active: it was cancelled."""
+    updated = await session.scalar(
         update(Job)
-        .where(Job.job_id == job_id)
+        .where(Job.job_id == job_id, Job.status.in_(ACTIVE))
         .values(progress=value, heartbeat_at=datetime.now(UTC))
+        .returning(Job.job_id)
     )
+    return updated is not None
+
+
+async def status(session: AsyncSession, job_id: uuid.UUID) -> str | None:
+    return await session.scalar(select(Job.status).where(Job.job_id == job_id))
+
+
+async def cancel(session: AsyncSession, job_id: uuid.UUID) -> bool:
+    """Cancel a pending or running job. False if it doesn't exist or has already finished.
+
+    The row lock makes it safe against a worker claiming or finishing the job at the same
+    moment; the worker notices the status and stops (design Q6).
+    """
+    job = await session.scalar(select(Job).where(Job.job_id == job_id).with_for_update())
+    if job is None or job.status not in ACTIVE:
+        return False
+    now = datetime.now(UTC)
+    job.status, job.finished_at, job.expires_at = "cancelled", now, now + RETENTION
+    job.error = {
+        "code": "cancelled",
+        "message": CANCELLED_MESSAGE,
+        "details": None,
+        "trace_id": str(job.trace_id),
+    }
+    await session.flush()
+    return True
 
 
 async def heartbeat(session: AsyncSession, job_id: uuid.UUID) -> None:
@@ -107,15 +136,18 @@ async def heartbeat(session: AsyncSession, job_id: uuid.UUID) -> None:
     )
 
 
-async def succeed(session: AsyncSession, job_id: uuid.UUID, *, result_id: uuid.UUID | None) -> None:
+async def succeed(session: AsyncSession, job_id: uuid.UUID, *, result_id: uuid.UUID | None) -> bool:
+    """False when the job was cancelled meanwhile: a finished job is never overwritten."""
     now = datetime.now(UTC)
-    await session.execute(
+    updated = await session.scalar(
         update(Job)
-        .where(Job.job_id == job_id)
+        .where(Job.job_id == job_id, Job.status.in_(ACTIVE))
         .values(
             status="succeeded", result_id=result_id, finished_at=now, expires_at=now + RETENTION
         )
+        .returning(Job.job_id)
     )
+    return updated is not None
 
 
 async def fail(
@@ -127,11 +159,17 @@ async def fail(
         if retry
         else {"status": "failed", "error": error, "finished_at": now, "expires_at": now + RETENTION}
     )
-    await session.execute(update(Job).where(Job.job_id == job_id).values(**values))
+    # A cancelled job stays cancelled: neither failed nor queued for a retry.
+    await session.execute(
+        update(Job).where(Job.job_id == job_id, Job.status.in_(ACTIVE)).values(**values)
+    )
 
 
 async def requeue_stale(session: AsyncSession, *, older_than: timedelta) -> int:
-    """Jobs whose worker stopped sending heartbeats (e.g. a restart) go back to pending."""
+    """Jobs whose worker stopped sending heartbeats (e.g. a restart) go back to pending.
+
+    Only `running` jobs: a cancelled job is finished and never comes back.
+    """
     stale = (
         await session.scalars(
             update(Job)

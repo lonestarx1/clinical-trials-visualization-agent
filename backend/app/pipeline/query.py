@@ -8,7 +8,7 @@ questions become background jobs, LLM usage is recorded and capped per day.
 import asyncio
 import logging
 import uuid
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable, Coroutine
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
@@ -26,7 +26,7 @@ from app.ctgov.compiler import Search
 from app.ctgov.essie import Area, Range
 from app.llm.client import LLM, UsageLog
 from app.pipeline.keys import planner_version, request_key, result_key
-from app.pipeline.run import Executed, execute, prepare
+from app.pipeline.run import Executed, Prepared, execute, prepare
 from app.schemas.plan import QueryPlan
 from app.schemas.request import QueryRequest
 from app.schemas.response import Meta, QueryResponse
@@ -46,6 +46,41 @@ class BudgetExceeded(Exception):
 
 class TooManyJobs(Exception):
     """This client already has the maximum number of active background jobs (429)."""
+
+
+class JobCancelled(Exception):
+    """The job's row says `cancelled` (DELETE /v1/jobs/{id}): stop, and write nothing more."""
+
+
+CANCEL_CHECK_SECONDS = 1.0  # how often a running job checks its row, besides each page
+
+
+async def stop_when_cancelled[T](
+    work: Coroutine[Any, Any, T], cancelled: Callable[[], Awaitable[bool]], *, every: float
+) -> T:
+    """Run `work`, checking `cancelled()` every `every` seconds; cancel it and raise
+    JobCancelled once it says so.
+
+    This covers the stages that report no page progress (per-year counts, aggregation,
+    narration). A failed check (e.g. the database briefly down) is not a cancel.
+    """
+    task = asyncio.ensure_future(work)
+    try:
+        while True:
+            done, _ = await asyncio.wait({task}, timeout=every)
+            if done:
+                return task.result()
+            try:
+                stop = await cancelled()
+            except Exception:
+                log.warning("could not check whether the job was cancelled", exc_info=True)
+                continue
+            if stop:
+                task.cancel()
+                await asyncio.gather(task, return_exceptions=True)
+                raise JobCancelled
+    finally:
+        task.cancel()  # a no-op once done; stops the work if the worker itself is stopping
 
 
 @dataclass
@@ -400,28 +435,48 @@ async def run_job(
         plan = QueryPlan.model_validate(job.plan)
         ctx = Context(**job.context)
 
-    async def progress(done: int, total: int) -> None:
+    async def cancelled() -> bool:
         async with sessions() as s:
-            await jobs.progress(
+            return await jobs.status(s, job_id) == "cancelled"
+
+    async def progress(done: int, total: int) -> None:
+        """After each page: record progress, and stop here if the job was cancelled."""
+        async with sessions() as s:
+            active = await jobs.progress(
                 s, job_id, {"stage": "retrieve", "pages_done": done, "pages_total": total}
             )
             await s.commit()
+        if not active:
+            raise JobCancelled
 
-    prepared = await prepare(
-        plan,
-        ctgov,
-        citations_per_datum=request.citations_per_datum,
-        citations=request.citations,
-    )
-    executed = await execute(
-        prepared,
-        ctgov,
-        base_url=settings.ctgov_base_url,
-        citations_per_datum=request.citations_per_datum,
-        citations_full_max=settings.citations_full_max,
-        narrator=partial(narrate, llms.narrator),
-        progress=progress,
-    )
+    async def work() -> tuple[Prepared, Executed]:
+        prepared = await prepare(
+            plan,
+            ctgov,
+            citations_per_datum=request.citations_per_datum,
+            citations=request.citations,
+        )
+        executed = await execute(
+            prepared,
+            ctgov,
+            base_url=settings.ctgov_base_url,
+            citations_per_datum=request.citations_per_datum,
+            citations_full_max=settings.citations_full_max,
+            narrator=partial(narrate, llms.narrator),
+            progress=progress,
+        )
+        return prepared, executed
+
+    if await cancelled():  # cancelled between the claim and now
+        raise JobCancelled
+    try:
+        prepared, executed = await stop_when_cancelled(
+            work(), cancelled, every=CANCEL_CHECK_SECONDS
+        )
+    except JobCancelled:
+        # A narrator call made before the stop was still paid for.
+        await _record_usage(sessions, llms, ctx.trace_id, job_id, price_version)
+        raise
     _finish(executed.response, ctx, llms)
     result_id = await store_answer(
         sessions,

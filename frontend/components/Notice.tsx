@@ -11,16 +11,22 @@ const COPY: Record<string, { title: string; body: string }> = {
   llm_unavailable: { title: "The AI service isn't responding", body: "Ask again in a minute." },
   safety_check_unavailable: { title: "The safety check isn't available", body: "Questions are only answered after the check. Ask again in a minute." },
   invalid_request: { title: "Some filters aren't valid", body: "Check the years and filter values." },
+  stopped: { title: "Stopped", body: "Edit the question or ask again." },
+  cancelled: { title: "Stopped", body: "This question was stopped before it finished. Edit the question or ask again." },
 };
 
-export function Notice({ response, error, onRetry, onAsk }: {
-  response?: QueryResponse | null; error?: ApiError["error"] | null; onRetry: () => void; onAsk?: (q: string) => void;
+// Stopping is the user's choice, not a failure: shown plainly, without error styling.
+const CHOSEN = new Set(["stopped", "cancelled"]);
+
+export function Notice({ response, error, code: given, onRetry, onAsk }: {
+  response?: QueryResponse | null; error?: ApiError["error"] | null; code?: string; onRetry: () => void; onAsk?: (q: string) => void;
 }) {
-  const code = error?.code ?? response?.status ?? "";
+  const code = given ?? error?.code ?? response?.status ?? "";
   const copy = COPY[code] ?? { title: error?.message ?? "Something went wrong", body: "Ask again, or try one of the examples." };
   const details = response?.meta?.details;
+  const failed = !!error && !CHOSEN.has(code);
   return (
-    <div className={`notice ${error ? "notice-error" : ""}`} role={error ? "alert" : "status"}>
+    <div className={`notice ${failed ? "notice-error" : ""}`} role={failed ? "alert" : "status"}>
       <h2>{copy.title}</h2>
       <p>{details?.reason ? `${details.reason[0].toUpperCase()}${details.reason.slice(1)}. ` : ""}{copy.body}</p>
       {details?.search_counts && (
@@ -30,7 +36,7 @@ export function Notice({ response, error, onRetry, onAsk }: {
         {details?.suggestion && onAsk
           ? <button className="primary" onClick={() => onAsk(details.suggestion)}>Ask instead: {details.suggestion}</button>
           : <button className="secondary" onClick={onRetry}>Ask again</button>}
-        {error?.trace_id && <span className="muted small">Reference: <code>{error.trace_id}</code></span>}
+        {failed && error?.trace_id && <span className="muted small">Reference: <code>{error.trace_id}</code></span>}
       </div>
     </div>
   );

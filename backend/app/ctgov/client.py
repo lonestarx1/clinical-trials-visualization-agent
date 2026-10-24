@@ -72,11 +72,15 @@ class RateLimiter:
 
     async def __aenter__(self) -> None:
         await self._slots.acquire()
-        async with self._lock:
-            wait = self._next_start - self._clock.monotonic()
-            if wait > 0:
-                await self._clock.sleep(wait)
-            self._next_start = max(self._next_start, self._clock.monotonic()) + self._interval
+        try:
+            async with self._lock:
+                wait = self._next_start - self._clock.monotonic()
+                if wait > 0:
+                    await self._clock.sleep(wait)
+                self._next_start = max(self._next_start, self._clock.monotonic()) + self._interval
+        except BaseException:  # cancelled while waiting its turn (a cancelled job): no __aexit__
+            self._slots.release()
+            raise
 
     async def __aexit__(
         self,

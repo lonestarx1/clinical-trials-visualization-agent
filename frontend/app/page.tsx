@@ -11,7 +11,8 @@ import { Progress } from "@/components/Progress";
 import { Question } from "@/components/Question";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemePicker } from "@/components/ThemePicker";
-import { getJob, getOptions, type Options, postQuery } from "@/lib/api";
+import { cancelJob, getJob, getOptions, type Options, postQuery } from "@/lib/api";
+import { isStopShortcut } from "@/lib/question";
 import { readRecent, rememberQuestion } from "@/lib/recent";
 import { type Ask, EMPTY_ASK, EXAMPLE_GROUPS, toRequestBody } from "@/lib/request";
 import type { ApiError, Datum, JobStatus, NetworkData, QueryResponse } from "@/lib/types";
@@ -21,7 +22,14 @@ type View =
   | { kind: "home" }
   | { kind: "working"; job: JobStatus | null }
   | { kind: "answer"; response: QueryResponse }
-  | { kind: "notice"; response?: QueryResponse; error?: ApiError["error"] };
+  | { kind: "notice"; response?: QueryResponse; error?: ApiError["error"] }
+  | { kind: "stopped" };
+
+/** Wait between polls; resolves early when the question is stopped. */
+const pause = (ms: number, signal: AbortSignal) => new Promise<void>((resolve) => {
+  const timer = setTimeout(resolve, ms);
+  signal.addEventListener("abort", () => { clearTimeout(timer); resolve(); }, { once: true });
+});
 
 export default function Home() {
   const [options, setOptions] = useState<Options | null>(null);
@@ -32,11 +40,18 @@ export default function Home() {
   const [recent, setRecent] = useState<string[]>([]);
   const { theme, selection, choose } = useTheme();
   const run = useRef(0);
+  const halt = useRef<(() => void) | null>(null); // stops the run in progress (Stop, Esc)
   const onHome = useRef(true);
   useEffect(() => { onHome.current = view.kind === "home"; }, [view.kind]);
 
   const submit = useCallback(async (a: Ask) => {
     const id = ++run.current;
+    // Stop aborts the polling at once. The POST is left to finish rather than aborted: the
+    // server keeps working either way, and if its answer is a background job (202), that
+    // job is cancelled as soon as its id arrives, instead of running on with nobody waiting.
+    const stopped = new AbortController();
+    let jobId: string | null = null;
+    halt.current = () => { stopped.abort(); if (jobId) void cancelJob(jobId); };
     const start = () => { setAsked(a); setSelected(null); setView({ kind: "working", job: null }); };
     // The search box glides into place as the question header (where the browser supports it).
     if (onHome.current && document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -48,15 +63,19 @@ export default function Home() {
     window.history.replaceState(null, "", `?q=${encodeURIComponent(a.query.trim())}${d ? `&d=${encodeURIComponent(d)}` : ""}`);
     try {
       const outcome = await postQuery(toRequestBody(a));
+      if (outcome.kind === "job") {
+        jobId = outcome.job.job_id;
+        if (stopped.signal.aborted) return void cancelJob(jobId); // stopped while it was being set up
+      }
       if (id !== run.current) return;
       if (outcome.kind === "error") return setView({ kind: "notice", error: outcome.error });
       let response: QueryResponse | null = outcome.kind === "result" ? outcome.response : null;
       if (outcome.kind === "job") {
-        let job = await getJob(outcome.job.job_id);
+        let job = await getJob(outcome.job.job_id, stopped.signal);
         while (id === run.current && (job.status === "pending" || job.status === "running")) {
           setView({ kind: "working", job });
-          await new Promise((r) => setTimeout(r, 1500));
-          job = await getJob(outcome.job.job_id);
+          await pause(1500, stopped.signal);
+          job = await getJob(outcome.job.job_id, stopped.signal);
         }
         if (id !== run.current) return;
         if (!job.result) {
@@ -100,6 +119,28 @@ export default function Home() {
     if (d) params.set("d", d.key); else params.delete("d");
     window.history.replaceState(null, "", `?${params}`);
   }, []);
+
+  // Stop: the question stays at the top, unchanged, ready to edit or ask again.
+  const stop = useCallback(() => {
+    run.current++; // late responses from the stopped run are discarded
+    halt.current?.();
+    halt.current = null;
+    setView({ kind: "stopped" });
+  }, []);
+
+  const working = view.kind === "working";
+  useEffect(() => {
+    if (!working) return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (isStopShortcut({ key: e.key, tag: el.tagName, editable: el.isContentEditable, modifier: e.metaKey || e.ctrlKey || e.altKey || e.shiftKey })) {
+        e.preventDefault();
+        stop();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [working, stop]);
 
   const goHome = () => { run.current++; setView({ kind: "home" }); setAsk(EMPTY_ASK); setSelected(null); window.history.replaceState(null, "", "/"); };
   const busy = view.kind === "working";
@@ -148,10 +189,11 @@ export default function Home() {
         <main className="page">
           <Question asked={asked} draft={ask} onDraft={setAsk} onSubmit={submit} busy={busy} options={options} />
           {view.kind === "working" && <>
-            <Progress key={asked.query} job={view.job} />
+            <Progress key={asked.query} job={view.job} onStop={stop} />
             <div className="skeleton" aria-hidden><span /><span /><span /></div>
           </>}
           {view.kind === "notice" && <Notice response={view.response} error={view.error} onRetry={() => submit(asked)} onAsk={pick} />}
+          {view.kind === "stopped" && <Notice code="stopped" onRetry={() => submit(asked)} />}
           {view.kind === "answer" && <>
             <Answer response={view.response} theme={theme} onSelect={select}
               onCopyLink={() => navigator.clipboard?.writeText(window.location.href)} />

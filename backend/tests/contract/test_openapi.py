@@ -69,7 +69,15 @@ def test_version_is_the_code_version(spec: dict[str, Any]) -> None:
 
 def test_info_describes_the_flow_limits_and_budget(spec: dict[str, Any]) -> None:
     description = spec["info"]["description"]
-    for phrase in ("/v1/query", "202", "/v1/jobs/", "/citations", "429", "budget_exceeded"):
+    for phrase in (
+        "/v1/query",
+        "202",
+        "/v1/jobs/",
+        "DELETE /v1/jobs/{job_id}",
+        "/citations",
+        "429",
+        "budget_exceeded",
+    ):
         assert phrase in description, phrase
 
 
@@ -171,6 +179,23 @@ def test_jobs_document_not_found_and_expired(spec: dict[str, Any]) -> None:
     responses = spec["paths"]["/v1/jobs/{job_id}"]["get"]["responses"]
     assert _codes(responses["404"]) == {"not_found"}
     assert _codes(responses["410"]) == {"expired"}
+
+
+def test_jobs_can_be_cancelled(spec: dict[str, Any]) -> None:
+    responses = spec["paths"]["/v1/jobs/{job_id}"]["delete"]["responses"]
+    assert _codes(responses["404"]) == {"not_found"}
+    assert _codes(responses["410"]) == {"expired"}
+    bodies = [JobStatus.model_validate(e["value"]) for e in examples(responses["200"]).values()]
+    cancelled = [b for b in bodies if b.status == "cancelled"]
+    assert cancelled and all(b.error and b.error.code == "cancelled" for b in cancelled)
+    assert any(b.status == "succeeded" for b in bodies)  # finished jobs come back unchanged
+
+
+def test_polling_documents_a_cancelled_job(spec: dict[str, Any]) -> None:
+    found = examples(spec["paths"]["/v1/jobs/{job_id}"]["get"]["responses"]["200"])
+    assert "cancelled" in {e["value"]["status"] for e in found.values()}
+    status = spec["components"]["schemas"]["JobStatus"]["properties"]["status"]
+    assert "reserved" not in status["description"]
 
 
 def test_usage_documents_unauthorized_with_the_shared_body(spec: dict[str, Any]) -> None:

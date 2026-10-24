@@ -53,6 +53,12 @@ describe("curl", () => {
     );
   });
 
+  it("builds a DELETE", () => {
+    expect(curl(base, "/v1/jobs/$JOB_ID", { method: "DELETE" })).toBe(
+      "curl -s -X DELETE https://api.example.org/v1/jobs/$JOB_ID",
+    );
+  });
+
   it("escapes single quotes in the body for the shell", () => {
     expect(curl(base, "/v1/query", { body: { query: "Merck's trials" } })).toContain(`"Merck'\\''s trials"`);
   });

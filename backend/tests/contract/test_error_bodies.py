@@ -53,3 +53,19 @@ def test_usage_without_the_admin_token_is_unauthorized(client: TestClient) -> No
     response = client.get("/v1/usage")
     assert response.status_code == 401
     assert _error(response)["code"] == "unauthorized"
+
+
+def test_cancelling_a_job_without_a_database_is_not_found(client: TestClient) -> None:
+    response = client.delete("/v1/jobs/8c1f6c52-4a8e-4d3b-9a51-0f2e7b6d9c11")
+    assert response.status_code == 404
+    assert _error(response)["code"] == "not_found"
+
+
+def test_browsers_may_send_delete_across_origins(client: TestClient) -> None:
+    """The CORS preflight for DELETE /v1/jobs/{id} (a client calling the API directly)."""
+    response = client.options(
+        "/v1/jobs/8c1f6c52-4a8e-4d3b-9a51-0f2e7b6d9c11",
+        headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "DELETE"},
+    )
+    assert response.status_code == 200
+    assert "DELETE" in response.headers["access-control-allow-methods"]

@@ -126,6 +126,7 @@ The [API guide](https://trials.cheiron.engineeradriel.com/docs) walks through re
 |---|---|---|
 | `POST` | `/v1/query` | Question -> chart spec (200), or a background job for broad questions (**202** + `poll_url`) |
 | `GET` | `/v1/jobs/{job_id}` | Job status, page progress, and the result when done (kept 24 h after finishing, then `410 expired`) |
+| `DELETE` | `/v1/jobs/{job_id}` | Cancel a pending or running job (`status: cancelled`; the worker stops within about a second). Idempotent; anyone with the `job_id` can cancel, as with polling |
 | `GET` | `/v1/results/{result_id}/citations?datum=<key>&cursor=&page_size=` | **Every** trial behind one data point (bar, bucket, node, edge...), keyset-paginated |
 | `GET` | `/v1/options` | Dimensions, measures, chart types and filter values with labels (for pickers) |
 | `GET` | `/v1/usage` | Today's LLM calls and cost (admin token) |
