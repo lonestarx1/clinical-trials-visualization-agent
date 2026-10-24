@@ -88,6 +88,10 @@ class Settings(BaseSettings):
     ctgov_rate_burst: PositiveInt = 9
     ctgov_max_concurrency: PositiveInt = 9
     ctgov_count_cache_seconds: NonNegativeInt = 600
+    # The mirror for fast mode (design Q22): its sync runs in this process, under the shared
+    # limiter, capped at half the budget so a long load can't starve questions.
+    mirror_sync_enabled: bool = False
+    mirror_sync_rate_per_min: PositiveInt = 27
     sync_max_seconds: PositiveInt = 60
     citations_full_max: PositiveInt = 2000
 
