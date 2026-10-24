@@ -81,6 +81,21 @@ async def test_the_first_sync_loads_every_slice_and_marks_the_mirror_current(
     ] * 2  # 3 trials, 2 pages
 
 
+async def test_a_restarted_load_skips_the_slices_already_complete(sessions: Sessions) -> None:
+    """A restart (a deploy, a crash) resumes the load instead of fetching all ~600 pages again,
+    and a mirror copied from another database counts too: complete slices are kept."""
+    fake = registry()
+    async with sessions() as s:  # the 2015 slice is already complete
+        await mirror.upsert_trials(s, [fake.studies[n] for n in ("NCT2", "NCT3", "NCT6")])
+        await s.commit()
+    client, transport = registry_client(fake)
+    result = await sync(client, sessions)
+    assert result is not None and (result.kind, result.upserted) == ("load", 3)
+    assert set(await mirrored(sessions)) == set(fake.studies)
+    y2015 = "AREA[StartDate]RANGE[2015-01-01,2015-12-31]"
+    assert [p for p in searched(transport) if p[0] == y2015] == [(y2015, "NCTId", "1")]  # a count
+
+
 async def test_a_current_mirror_makes_no_search_calls(sessions: Sessions) -> None:
     client, transport = registry_client(registry())
     await sync(client, sessions)
