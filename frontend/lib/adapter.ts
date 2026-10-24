@@ -54,6 +54,7 @@ function base(theme: Theme, palette: string[]): EChartsOption {
 const valueAxis = (theme: Theme, name: string) => ({
   type: "value" as const,
   name,
+  nameGap: 14,
   nameTextStyle: { color: theme.muted, align: "left" as const },
   axisLabel: { color: theme.muted, formatter: (v: number) => fmt(v) },
   splitLine: { lineStyle: { color: theme.grid } },
@@ -104,7 +105,7 @@ export function toChart(viz: Visualization, theme: Theme = LIGHT): Chart {
         option: {
           ...base(theme, palette),
           legend: legend(theme, Boolean(color)),
-          grid: { left: 8, right: 24, top: color ? 44 : 28, bottom: line && categories.length > 24 ? 56 : 8, containLabel: true },
+          grid: { left: 8, right: 24, top: color ? 72 : 32, bottom: line && categories.length > 24 ? 56 : 8, containLabel: true },
           tooltip: { ...(base(theme, palette).tooltip as object), trigger: "axis", axisPointer: { type: line ? "line" : "shadow" } },
           xAxis: horizontal ? values : cats,
           yAxis: horizontal ? cats : values,
