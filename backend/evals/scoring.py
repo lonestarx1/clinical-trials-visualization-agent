@@ -90,6 +90,18 @@ def _groups_match(expected: list[dict[str, Any]], got: list[dict[str, Any]]) -> 
     )
 
 
+def _no_effect(key: str, value: Any, plan: dict[str, Any]) -> bool:
+    """A filter that can't change the chart: a sponsor role with no sponsor, or base terms that
+    repeat the union of the groups' terms ((A or B) and A is A)."""
+    groups = [g.get("filters", {}) for g in plan.get("groups", [])]
+    if key == "sponsor_role":
+        return not any(f.get("sponsors") for f in [plan.get("filters", {}), *groups])
+    if key in TERM_FILTERS and groups:
+        union = [t for f in groups for t in f.get(key, [])]
+        return bool(union) and _same_terms(value, union)
+    return False
+
+
 def score_plan(expect: dict[str, Any], plan: dict[str, Any] | None) -> dict[str, bool]:
     """One pass/fail per expected property. No plan (could not interpret) fails them all."""
     scores: dict[str, bool] = {}
@@ -103,7 +115,11 @@ def score_plan(expect: dict[str, Any], plan: dict[str, Any] | None) -> dict[str,
                     name, value, filters.get(name, DEFAULT_FILTERS.get(name))
                 )
             extra = [
-                k for k, v in filters.items() if k not in expected and v != DEFAULT_FILTERS.get(k)
+                k
+                for k, v in filters.items()
+                if k not in expected
+                and v != DEFAULT_FILTERS.get(k)
+                and not _no_effect(k, v, plan or {})
             ]
             scores["filters.extra"] = plan is not None and (
                 not extra or bool(expect.get("extra_filters_ok"))
