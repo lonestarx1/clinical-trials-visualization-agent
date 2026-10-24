@@ -291,8 +291,21 @@ class Meta(BaseModel):
     )
     timings_ms: dict[str, int] = Field(
         default={},
-        description="Time per stage in milliseconds.",
-        examples=[{"retrieve": 25949, "aggregate": 326, "narrate": 2523, "total": 28799}],
+        description="Time per stage in milliseconds: `plan` (guard and planner, side by side), "
+        "`count` (ClinicalTrials.gov counts), `retrieve`, `aggregate`, `narrate`, and `total` "
+        "from the request's arrival. For a background job, `total` is the planning time plus "
+        "the job's own run, leaving out its wait in the queue. A reused answer keeps the "
+        "timings of the run that computed it.",
+        examples=[
+            {
+                "plan": 2840,
+                "count": 610,
+                "retrieve": 25949,
+                "aggregate": 326,
+                "narrate": 2523,
+                "total": 32260,
+            }
+        ],
     )
     details: dict[str, Any] = Field(
         default={},
