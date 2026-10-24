@@ -5,8 +5,9 @@ from contextlib import asynccontextmanager
 import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from openai import AsyncOpenAI
 
-from app.api import debug, health
+from app.api import debug, health, query
 from app.api.errors import install_error_handlers
 from app.core.config import Settings
 from app.core.logging import configure_logging
@@ -23,7 +24,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        for model in sorted(missing_prices(settings, load_pricing())):
+        app.state.pricing = load_pricing()
+        app.state.openai = AsyncOpenAI(api_key=settings.openai_api_key.get_secret_value())
+        for model in sorted(missing_prices(settings, app.state.pricing)):
             log.warning("no price for model %s: its cost will be recorded as unknown", model)
         app.state.engine = create_engine(settings.database_url)
         http = httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=5.0))
@@ -35,6 +38,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         log.info("api started")
         yield
         await http.aclose()
+        await app.state.openai.close()
         await app.state.engine.dispose()
 
     app = FastAPI(
@@ -50,6 +54,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_headers=["Content-Type"],
     )
     app.include_router(health.router)
+    app.include_router(query.router)
     if settings.enable_debug_endpoints:
         app.include_router(debug.router)
     install_error_handlers(app)

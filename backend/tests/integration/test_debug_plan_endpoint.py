@@ -126,3 +126,10 @@ def test_invalid_plans_get_a_422_with_field_errors() -> None:
     error = response.json()["error"]
     assert error["code"] == "invalid_request"
     assert any("dimension" in item["loc"] for item in error["details"])
+
+
+def test_mostly_estimated_years_are_flagged() -> None:
+    """Design Q10, D10.8. In the recorded data, 2026 has one trial with an estimated start."""
+    plan = PA3 | {"intent": "trend", "chart_type": "time_series", "dimension": "start_year"}
+    warnings = post({"plan": plan}).json()["meta"]["warnings"]
+    assert warnings == ["Most trials in 2026 have estimated (planned) dates."]

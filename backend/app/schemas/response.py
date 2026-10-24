@@ -83,6 +83,10 @@ class Meta(BaseModel):
     data_timestamp: str | None = None
     retrieved_at: str | None = None
     source: str = "clinicaltrials.gov"
+    guard: dict[str, Any] | None = None
+    planner: dict[str, Any] | None = None
+    narration: dict[str, Any] | None = None
+    usage: dict[str, Any] | None = None
     trace_id: str | None = None
     timings_ms: dict[str, int] = {}
     details: dict[str, Any] = Field(default={}, description="Status-specific details")

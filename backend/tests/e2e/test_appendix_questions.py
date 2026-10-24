@@ -1,7 +1,7 @@
 """Acceptance tests: the assignment's appendix questions (PA-1..PA-9), with real entities.
 
 Run against a running stack: `make up`, then `make test-e2e` (E2E_BASE_URL, default
-http://localhost:8000). Expected failures until the planner and pipeline exist (M2).
+http://localhost:8000). Uses the real ClinicalTrials.gov API and the real models.
 """
 
 import os
@@ -11,10 +11,8 @@ from typing import Any
 import httpx
 import pytest
 
-pytestmark = [
-    pytest.mark.e2e,
-    pytest.mark.xfail(reason="planner and pipeline arrive in M2", strict=False),
-]
+pytestmark = pytest.mark.e2e
+NETWORKS_IN_M3 = pytest.mark.xfail(reason="network graphs arrive in M3", strict=True)
 
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:8000")
 
@@ -93,7 +91,13 @@ def data_points(visualization: dict[str, Any]) -> list[dict[str, Any]]:
     return list(data)
 
 
-@pytest.mark.parametrize("case", CASES, ids=[c.id for c in CASES])
+PARAMS = [
+    pytest.param(c, id=c.id, marks=NETWORKS_IN_M3 if c.chart_type == "network_graph" else ())
+    for c in CASES
+]
+
+
+@pytest.mark.parametrize("case", PARAMS)
 def test_appendix_question(case: Case) -> None:
     response = httpx.post(f"{BASE_URL}/v1/query", json={"query": case.query}, timeout=300)
     assert response.status_code == 200, response.text
@@ -113,7 +117,10 @@ def test_appendix_question(case: Case) -> None:
 
     points = data_points(viz)
     assert points, "chart has no data"
+    assert any(p["citation_count"] for p in points), "no data point has trials"
     for point in points:
+        if not point["citation_count"]:
+            continue  # zero-filled buckets have nothing to cite
         assert point["citations"], f"data point without citations: {point}"
         for citation in point["citations"]:
             assert citation["nct_id"].startswith("NCT")

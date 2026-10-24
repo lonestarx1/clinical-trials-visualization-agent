@@ -1,0 +1,531 @@
+{
+  "request": {
+    "query": "How are breast cancer trials distributed across phases?",
+    "citations_per_datum": 3
+  },
+  "http_status": 200,
+  "seconds": 31.6,
+  "response": {
+    "schema_version": "1.0",
+    "result_id": null,
+    "status": "ok",
+    "visualization": {
+      "type": "bar_chart",
+      "title": "ClinicalTrials.gov trial counts by phase in breast cancer",
+      "summary": "Bar chart shows 16,765 breast cancer trials by phase, with the largest category Not Applicable at 4,921 trials (29%), followed by Phase 2/Phase 3 at 146.",
+      "encoding": {
+        "x": {
+          "field": "phase",
+          "type": "ordinal",
+          "label": "Phase",
+          "unit": null,
+          "sort": "natural",
+          "time_unit": null
+        },
+        "y": {
+          "field": "trial_count",
+          "type": "quantitative",
+          "label": "Number of trials",
+          "unit": "trials",
+          "sort": null,
+          "time_unit": null
+        }
+      },
+      "data": [
+        {
+          "key": "EARLY_PHASE1",
+          "phase": "Early Phase 1",
+          "trial_count": 228,
+          "citation_count": 228,
+          "citations": [
+            {
+              "nct_id": "NCT04861077",
+              "url": "https://clinicaltrials.gov/study/NCT04861077",
+              "title": "Monitoring Breast Cancer Immunotherapy Treatment With Advanced Positron Emission Tomography Magnetic Resonance Imaging (PET/MRI)",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "EARLY_PHASE1"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07781852",
+              "url": "https://clinicaltrials.gov/study/NCT07781852",
+              "title": "Evaluation of the Distribution of 64Cu/68Ga Labeled CM500 in Healthy Volunteers and Patients With Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "EARLY_PHASE1"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07671092",
+              "url": "https://clinicaltrials.gov/study/NCT07671092",
+              "title": "Imaging Study in Metastatic UC, HR+ and HER2- Breast Cancer, TNBC, and NSCLC",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "EARLY_PHASE1"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "PHASE1",
+          "phase": "Phase 1",
+          "trial_count": 1619,
+          "citation_count": 1619,
+          "citations": [
+            {
+              "nct_id": "NCT07454668",
+              "url": "https://clinicaltrials.gov/study/NCT07454668",
+              "title": "Trastuzumab Deruxtecan + Stereotactic Radiosurgery (SRS) in HER2+ Breast Cancer Brain Metastases",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE1"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07590583",
+              "url": "https://clinicaltrials.gov/study/NCT07590583",
+              "title": "Biology Guided Therapy Recommendations for Treatment Determination of Hormone Receptor-Positive Advanced, Unresectable or Metastatic Breast Cancer, ENDORSE Trial",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE1"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07867262",
+              "url": "https://clinicaltrials.gov/study/NCT07867262",
+              "title": "A Study to Evaluate the Effects of GDC-4198 in Combination With Letrozole, Fulvestrant, or Giredestrant in Participants With Locally Advanced or Metastatic Hormone Receptor-Positive, HER2-Negatve Breast Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE1"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "PHASE1/PHASE2",
+          "phase": "Phase 1/Phase 2",
+          "trial_count": 868,
+          "citation_count": 868,
+          "citations": [
+            {
+              "nct_id": "NCT04430595",
+              "url": "https://clinicaltrials.gov/study/NCT04430595",
+              "title": "Multi-4SCAR-T Therapy Targeting Breast Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE1"
+                },
+                {
+                  "field": "protocolSection.designModule.phases[1]",
+                  "excerpt": "PHASE2"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT02802423",
+              "url": "https://clinicaltrials.gov/study/NCT02802423",
+              "title": "Phase I/II, Evaluate the Safety and Efficacy of BLEX 404 With Docetaxel in Patients With Advanced/Metastatic Triple Negative Breast Cancer.",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE1"
+                },
+                {
+                  "field": "protocolSection.designModule.phases[1]",
+                  "excerpt": "PHASE2"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07752875",
+              "url": "https://clinicaltrials.gov/study/NCT07752875",
+              "title": "A Study of LG00313112 in Participants With Advanced Solid Malignancies Harboring a TP53 Y220C Mutation",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE1"
+                },
+                {
+                  "field": "protocolSection.designModule.phases[1]",
+                  "excerpt": "PHASE2"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "PHASE2",
+          "phase": "Phase 2",
+          "trial_count": 3546,
+          "citation_count": 3546,
+          "citations": [
+            {
+              "nct_id": "NCT07729046",
+              "url": "https://clinicaltrials.gov/study/NCT07729046",
+              "title": "Neu Direction: Testing the Efficacy of Adding HER Inhibition to Standard of Care in Metastatic MLH1-low Endocrine-resistant ER+/HER2- Breast Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE2"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07528768",
+              "url": "https://clinicaltrials.gov/study/NCT07528768",
+              "title": "HEADWATERS: Gemcitabine vs Paclitaxel in Metastatic Triple-Negative Breast Cancer in Women of African Ancestry.",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE2"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07419880",
+              "url": "https://clinicaltrials.gov/study/NCT07419880",
+              "title": "Re-challenge Immunotherapy With Cromolyn, TQB2102, and Panpulimab in Immune-Refractory Triple Negative Breast Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE2"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "PHASE2/PHASE3",
+          "phase": "Phase 2/Phase 3",
+          "trial_count": 146,
+          "citation_count": 146,
+          "citations": [
+            {
+              "nct_id": "NCT07410169",
+              "url": "https://clinicaltrials.gov/study/NCT07410169",
+              "title": "Efficacy and Safety of Hyperbaric Oxygen Therapy in Improving Nab-paclitaxel-Induced Peripheral Neuropathy",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE2"
+                },
+                {
+                  "field": "protocolSection.designModule.phases[1]",
+                  "excerpt": "PHASE3"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07544056",
+              "url": "https://clinicaltrials.gov/study/NCT07544056",
+              "title": "A Study of BEBT-209 Plus Chemotherapy in Patients With Locally Advanced or Metastatic Triple-Negative Breast Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE2"
+                },
+                {
+                  "field": "protocolSection.designModule.phases[1]",
+                  "excerpt": "PHASE3"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07413939",
+              "url": "https://clinicaltrials.gov/study/NCT07413939",
+              "title": "RO7771950 Versus Tucatinib in Combination With Trastuzumab and Capecitabine in People With Locally Advanced or Metastatic Breast Cancer That is Human Epidermal Growth Factor Receptor 2 (HER2)-Positive",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE2"
+                },
+                {
+                  "field": "protocolSection.designModule.phases[1]",
+                  "excerpt": "PHASE3"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "PHASE3",
+          "phase": "Phase 3",
+          "trial_count": 1408,
+          "citation_count": 1408,
+          "citations": [
+            {
+              "nct_id": "NCT07578116",
+              "url": "https://clinicaltrials.gov/study/NCT07578116",
+              "title": "Adding Surgery and Radiation to the Usual Treatment for HER2-Positive Breast Cancer That Had Already Spread at Diagnosis",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE3"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07554573",
+              "url": "https://clinicaltrials.gov/study/NCT07554573",
+              "title": "Assessment of Biosignature Classification of DCIS for RadioTherapy Benefit Post Lumpectomy (ABCD RT)",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE3"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07828054",
+              "url": "https://clinicaltrials.gov/study/NCT07828054",
+              "title": "Premedication With Dexamethasone for Preventing Interstitial Lung Disease in Patients With Breast Cancer Treated With Trastuzumab Deruxtecan",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE3"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "PHASE4",
+          "phase": "Phase 4",
+          "trial_count": 343,
+          "citation_count": 343,
+          "citations": [
+            {
+              "nct_id": "NCT07859319",
+              "url": "https://clinicaltrials.gov/study/NCT07859319",
+              "title": "Evaluation of the Efficacy and Acceptability of a Phytotherapy Combining Devil's Claw, Blackcurrant and Meadowsweet for the Management of Aromatase Inhibitor-induced Arthralgia in Patients Treated for Localized Breast Cancer in the Adjuvant Setting",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE4"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07768358",
+              "url": "https://clinicaltrials.gov/study/NCT07768358",
+              "title": "Tucatinib Continuation Study",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE4"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07490509",
+              "url": "https://clinicaltrials.gov/study/NCT07490509",
+              "title": "Pharmacokinetic Model of Abemaciclib: Correlation With Severe Diarrhea as the Primary Toxicity Endpoint in Patients With Localized Hormone Receptor-positive Breast Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "PHASE4"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "NA",
+          "phase": "Not Applicable",
+          "trial_count": 4921,
+          "citation_count": 4921,
+          "citations": [
+            {
+              "nct_id": "NCT07406594",
+              "url": "https://clinicaltrials.gov/study/NCT07406594",
+              "title": "Gut Microbiome Changes During Abemaciclib Therapy in Breast Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "NA"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07791368",
+              "url": "https://clinicaltrials.gov/study/NCT07791368",
+              "title": "Developing and Testing the Efficacy of AI-Chatbot-Based",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "NA"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07676591",
+              "url": "https://clinicaltrials.gov/study/NCT07676591",
+              "title": "EmpowerHer: Hybrid Digital Intervention for Breast Cancer Survivors",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.phases[0]",
+                  "excerpt": "NA"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "NO_PHASE",
+          "phase": "No phase (observational / expanded access)",
+          "trial_count": 3686,
+          "citation_count": 3686,
+          "citations": [
+            {
+              "nct_id": "NCT07389200",
+              "url": "https://clinicaltrials.gov/study/NCT07389200",
+              "title": "Application of Multimodal MRI-based Radiomics in Histological Grading and Prognostic Assessment of Breast Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.studyType",
+                  "excerpt": "OBSERVATIONAL"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT04982848",
+              "url": "https://clinicaltrials.gov/study/NCT04982848",
+              "title": "Korea Post Marketing Surveillance (PMS) Study of Talzenna®",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.studyType",
+                  "excerpt": "OBSERVATIONAL"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07867470",
+              "url": "https://clinicaltrials.gov/study/NCT07867470",
+              "title": "TROPION Breast Respond in 1L TNBC",
+              "evidence": [
+                {
+                  "field": "protocolSection.designModule.studyType",
+                  "excerpt": "OBSERVATIONAL"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        }
+      ]
+    },
+    "meta": {
+      "interpretation": {
+        "intent": "distribution",
+        "chart_type": "bar_chart",
+        "dimension": "phase",
+        "dimension_2": null,
+        "measure": "trial_count",
+        "chart_type_source": "ai"
+      },
+      "filters": {
+        "conditions": [
+          "breast cancer"
+        ]
+      },
+      "assumptions": [],
+      "warnings": [],
+      "notes": [],
+      "counting_rule": "Each trial is counted once; trials with two phases get a combined bucket (e.g. Phase 2/Phase 3).",
+      "additive": true,
+      "unique_trials": 16765,
+      "excluded": [],
+      "sort": {
+        "by": "x",
+        "order": "natural"
+      },
+      "api_queries": [
+        {
+          "group": null,
+          "url": "https://clinicaltrials.gov/api/v2/studies?query.cond=%22breast+cancer%22",
+          "total_count": 16765
+        }
+      ],
+      "group_overlap": null,
+      "citations": {
+        "requested": "sample",
+        "applied": "sample",
+        "per_datum": 3,
+        "reason": null
+      },
+      "data_timestamp": "2026-10-23T09:00:04",
+      "retrieved_at": "2026-10-24T11:28:06+00:00",
+      "source": "clinicaltrials.gov",
+      "guard": {
+        "verdict": "ok",
+        "model": "gpt-5.4-nano"
+      },
+      "planner": {
+        "steps": 2,
+        "tool_calls": [
+          {
+            "tool": "submit_plan",
+            "ms": 0,
+            "ok": false,
+            "errors": [
+              "chart_type: Input should be 'bar_chart', 'grouped_bar_chart', 'time_series', 'histogram', 'scatter_plot', 'network_graph' or 'metric'",
+              "options.citations_per_datum: Extra inputs are not permitted"
+            ]
+          },
+          {
+            "tool": "submit_plan",
+            "ms": 0,
+            "ok": true
+          }
+        ],
+        "model": "gpt-5.4-mini"
+      },
+      "narration": {
+        "model": "gpt-5.4-nano",
+        "attempts": 1,
+        "fallback": false,
+        "errors": []
+      },
+      "usage": {
+        "llm_calls": 4,
+        "input_tokens": 3293,
+        "output_tokens": 306,
+        "cost_usd": 0.001563,
+        "models": [
+          "gpt-5.4-mini",
+          "gpt-5.4-nano"
+        ]
+      },
+      "trace_id": "cea8236a-b432-403c-be1f-9eb00a7808fa",
+      "timings_ms": {
+        "retrieve": 26132,
+        "aggregate": 262,
+        "narrate": 1863,
+        "total": 28490
+      },
+      "details": {}
+    }
+  }
+}
