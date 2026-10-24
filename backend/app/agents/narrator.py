@@ -161,7 +161,7 @@ def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str
         facts["max_group"] = str(top["group"])
         for i, g in enumerate(plan.groups, start=1):
             facts[f"group_{i}"] = g.label
-    if meta.additive and plan.measure == "trial_count" and meta.unique_trials:
+    if meta.additive and plan.measure == "trial_count" and meta.unique_trials and not plan.groups:
         facts["share_of_max"] = f"{round(100 * top[value_key] / meta.unique_trials)}%"
     if viz.type is ChartType.TIME_SERIES:
         facts["first_bucket"], facts["last_bucket"] = (
