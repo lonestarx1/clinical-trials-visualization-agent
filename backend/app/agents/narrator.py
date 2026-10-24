@@ -18,8 +18,8 @@ from pydantic import BaseModel, ValidationError
 from app.ctgov.countries import CANONICAL as COUNTRIES
 from app.llm.client import LLM, LLMUnavailable
 from app.pipeline.aggregate import NOT_REPORTED_LABEL
-from app.pipeline.charts import ChartMeta
-from app.registry import DIMENSIONS, MEASURES, ChartType
+from app.pipeline.charts import ChartMeta, measure_text
+from app.registry import DIMENSIONS, ChartType
 from app.registry.enums import Phase, Status
 from app.schemas.plan import QueryPlan
 from app.schemas.response import Visualization
@@ -136,7 +136,7 @@ def _without_source(title: str) -> str:
 def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str, str]:
     facts = {
         "total": _fmt(meta.unique_trials),
-        "measure": MEASURES[plan.measure].label.lower(),
+        "measure": measure_text(plan)[0].lower(),
         "dimension": DIMENSIONS[plan.dimension].label.lower() if plan.dimension else "",
         "scope": _scope(plan),
     }
