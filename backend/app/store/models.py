@@ -5,7 +5,7 @@ and the traces table (traces stay in logs and meta)."""
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import (
     CHAR,
@@ -27,7 +27,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
-    type_annotation_map = {dict[str, Any]: JSONB, list[Any]: JSONB}
+    type_annotation_map: ClassVar[dict[Any, Any]] = {dict[str, Any]: JSONB, list[Any]: JSONB}
 
 
 def _now() -> Any:
@@ -176,5 +176,3 @@ class LlmUsage(Base):
     cost_usd: Mapped[Decimal | None] = mapped_column(Numeric(12, 6))
     price_version: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = _now()
-
-
