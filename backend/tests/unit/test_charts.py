@@ -394,3 +394,9 @@ def test_full_citation_lists_for_networks() -> None:
     result = chart(p)
     assert len(result.full_citations["drug:pembrolizumab"]) == 5
     assert len(result.full_citations["drug:anastrozole|drug:pembrolizumab"]) == 1
+
+
+def test_template_summary_formats_large_numbers() -> None:
+    """The template is the narrator's fallback; it showed '4228' and '1171' in the UI."""
+    result = chart(plan(dimension="sponsor_class", measure="total_enrollment"))
+    assert "1,301" in result.visualization.summary

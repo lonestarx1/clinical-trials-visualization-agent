@@ -23,15 +23,23 @@ curl -s localhost:8000/v1/query -H 'Content-Type: application/json' \
 - Web UI: http://localhost:3000 (questions can be shared as `?q=...` links)
 - Interactive API docs (OpenAPI): http://localhost:8000/docs
 
-![Melanoma drug co-occurrence network](docs/screenshots/network.png)
+![An answer: lung cancer trials by country](docs/screenshots/answer.png)
 
-## Web UI (reference renderer)
+## Web UI
 
-A small Next.js + Apache ECharts app in [`frontend/`](frontend/). It renders every chart type **only from the response's `encoding`** ([`lib/adapter.ts`](frontend/lib/adapter.ts), tested against the example JSONs), which shows the schema can be rendered without guessing. Click any bar, point, node or link to see its citations and page through all of them; "How we got this" shows the interpretation, filters, assumptions, exclusions, the exact ClinicalTrials.gov queries, cache status, AI cost and timings; "Raw JSON" shows the response. Broad questions show background-job progress. The app proxies `/api/*` to the backend, so the API address is a runtime setting (`API_BASE_URL`).
+A Next.js + Apache ECharts app in [`frontend/`](frontend/), built for people who need to trust the numbers:
 
-| Comparison | Geographic |
-|---|---|
-| ![Grouped bars](docs/screenshots/comparison.png) | ![Countries](docs/screenshots/countries.png) |
+- **Ask in plain words**, or refine with filters (drug, condition, sponsor, country, phase, status, years, chart type) shown as removable chips. Grouped example questions and your recent questions on the home screen.
+- **Every chart traces back to the trials.** Click any bar, point, node or link: a drawer lists the trials behind it, each with the exact record lines that put it there, highlighted (field path on hover), and pages through all of them.
+- **Readable charts:** a colour-blind-safe palette validated for light and dark surfaces, horizontal bars for names, direct value labels, networks with clusters named after their largest entity, and a **table view** of every value.
+- **Plain-language method notes:** what was counted, how the question was read, what was not counted, and links to the exact ClinicalTrials.gov queries. Technical details and the raw JSON fold away.
+- **Smooth to use:** progress while answers are computed (real page progress for background jobs), light and dark themes, shareable links to an answer (`?q=`) and to one data point's trials (`&d=`), PNG download, keyboard and screen-reader support, phone layouts.
+
+The charts are drawn **only from the response's `encoding`** ([`lib/adapter.ts`](frontend/lib/adapter.ts), tested against the example JSONs), which shows the schema renders without guessing. The app proxies `/api/*` to the backend, so the API address is a runtime setting (`API_BASE_URL`).
+
+| Evidence for one bar | Drug network | Phone |
+|---|---|---|
+| ![Evidence drawer](docs/screenshots/evidence.png) | ![Network](docs/screenshots/network.png) | ![Phone](docs/screenshots/phone.png) |
 
 ## How it works
 

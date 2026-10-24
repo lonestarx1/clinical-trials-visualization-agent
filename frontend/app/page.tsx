@@ -1,127 +1,167 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Chart } from "@/components/Chart";
-import { CitationsPanel } from "@/components/CitationsPanel";
-import { MetaPanel } from "@/components/MetaPanel";
-import { EMPTY, type FormState, QueryForm, toRequest } from "@/components/QueryForm";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { Answer } from "@/components/Answer";
+import { datumLabel, EvidenceDrawer } from "@/components/EvidenceDrawer";
+import { Logo } from "@/components/Logo";
+import { Notice } from "@/components/Notice";
+import { Progress } from "@/components/Progress";
+import { Question } from "@/components/Question";
+import { SearchBar } from "@/components/SearchBar";
+import { ThemePicker } from "@/components/ThemePicker";
 import { getJob, getOptions, type Options, postQuery } from "@/lib/api";
-import type { ApiError, Datum, JobStatus, QueryResponse } from "@/lib/types";
+import { readRecent, rememberQuestion } from "@/lib/recent";
+import { type Ask, EMPTY_ASK, EXAMPLE_GROUPS, toRequestBody } from "@/lib/request";
+import type { ApiError, Datum, JobStatus, NetworkData, QueryResponse } from "@/lib/types";
+import { useTheme } from "@/lib/useTheme";
 
-const STATUS_TEXT: Record<string, string> = {
-  no_matching_trials: "No trials match these filters.",
-  out_of_scope: "This question is outside what this service answers.",
-  could_not_interpret: "The agent could not turn this question into a valid chart plan.",
-};
+type View =
+  | { kind: "home" }
+  | { kind: "working"; job: JobStatus | null }
+  | { kind: "answer"; response: QueryResponse }
+  | { kind: "notice"; response?: QueryResponse; error?: ApiError["error"] };
 
 export default function Home() {
   const [options, setOptions] = useState<Options | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [response, setResponse] = useState<QueryResponse | null>(null);
-  const [error, setError] = useState<ApiError["error"] | null>(null);
-  const [job, setJob] = useState<JobStatus | null>(null);
+  const [ask, setAsk] = useState<Ask>(EMPTY_ASK);
+  const [asked, setAsked] = useState<Ask | null>(null);
+  const [view, setView] = useState<View>({ kind: "home" });
   const [selected, setSelected] = useState<Datum | null>(null);
-  const [tab, setTab] = useState<"how" | "json">("how");
-  const [initialQuery, setInitialQuery] = useState<string>();
+  const [recent, setRecent] = useState<string[]>([]);
+  const { theme, selection, choose } = useTheme();
   const run = useRef(0);
+  const onHome = useRef(true);
+  useEffect(() => { onHome.current = view.kind === "home"; }, [view.kind]);
+
+  const submit = useCallback(async (a: Ask) => {
+    const id = ++run.current;
+    const start = () => { setAsked(a); setSelected(null); setView({ kind: "working", job: null }); };
+    // The search box glides into place as the question header (where the browser supports it).
+    if (onHome.current && document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.startViewTransition(() => flushSync(start));
+    } else start();
+    setRecent(rememberQuestion(a.query.trim()));
+    const keep = new URLSearchParams(window.location.search);
+    const d = keep.get("q") === a.query.trim() ? keep.get("d") : null;
+    window.history.replaceState(null, "", `?q=${encodeURIComponent(a.query.trim())}${d ? `&d=${encodeURIComponent(d)}` : ""}`);
+    try {
+      const outcome = await postQuery(toRequestBody(a));
+      if (id !== run.current) return;
+      if (outcome.kind === "error") return setView({ kind: "notice", error: outcome.error });
+      let response: QueryResponse | null = outcome.kind === "result" ? outcome.response : null;
+      if (outcome.kind === "job") {
+        let job = await getJob(outcome.job.job_id);
+        while (id === run.current && (job.status === "pending" || job.status === "running")) {
+          setView({ kind: "working", job });
+          await new Promise((r) => setTimeout(r, 1500));
+          job = await getJob(outcome.job.job_id);
+        }
+        if (id !== run.current) return;
+        if (!job.result) {
+          return setView({ kind: "notice", error: job.error ?? { code: "job_failed", message: "The background job failed.", details: null, trace_id: "" } });
+        }
+        response = job.result;
+      }
+      setView(response!.visualization ? { kind: "answer", response: response! } : { kind: "notice", response: response! });
+      // Deep link to one data point's trials: ?q=...&d=<datum key>
+      const wanted = new URLSearchParams(window.location.search).get("d");
+      const data = response!.visualization?.data;
+      if (wanted && data) {
+        const points = Array.isArray(data) ? data : [...data.nodes, ...data.edges];
+        setSelected(points.find((p) => p.key === wanted) ?? null);
+      }
+    } catch {
+      if (id === run.current) setView({ kind: "notice", error: { code: "network", message: "Can't reach the server. Check your connection and ask again.", details: null, trace_id: "" } });
+    }
+  }, []);
 
   useEffect(() => {
     getOptions().then(setOptions);
-    // Shareable links: ?q=<question> runs the question on load.
+    setRecent(readRecent());
     const q = new URLSearchParams(window.location.search).get("q");
     if (q) {
-      setInitialQuery(q);
-      ask({ ...EMPTY, query: q });
+      const a = { ...EMPTY_ASK, query: q };
+      setAsk(a);
+      submit(a);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submit]);
+
+  const labels = useMemo(() => {
+    const viz = view.kind === "answer" ? view.response.visualization : null;
+    if (!viz || Array.isArray(viz.data)) return new Map<string, string>();
+    return new Map((viz.data as NetworkData).nodes.map((node) => [node.key, String(node.label)]));
+  }, [view]);
+
+  const select = useCallback((d: Datum | null) => {
+    setSelected(d);
+    const params = new URLSearchParams(window.location.search);
+    if (d) params.set("d", d.key); else params.delete("d");
+    window.history.replaceState(null, "", `?${params}`);
   }, []);
 
-  async function ask(form: FormState) {
-    const id = ++run.current;
-    setBusy(true); setError(null); setResponse(null); setJob(null); setSelected(null);
-    try {
-      const outcome = await postQuery(toRequest(form));
-      if (id !== run.current) return;
-      if (outcome.kind !== "job") window.history.replaceState(null, "", `?q=${encodeURIComponent(form.query)}`);
-      if (outcome.kind === "error") setError(outcome.error);
-      else if (outcome.kind === "result") setResponse(outcome.response);
-      else {
-        let status = await getJob(outcome.job.job_id);
-        while (id === run.current && (status.status === "pending" || status.status === "running")) {
-          setJob(status);
-          await new Promise((r) => setTimeout(r, 1500));
-          status = await getJob(outcome.job.job_id);
-        }
-        if (id !== run.current) return;
-        setJob(null);
-        if (status.result) setResponse(status.result);
-        else setError(status.error ?? { code: "job_failed", message: "The background job failed.", details: null, trace_id: "" });
-      }
-    } catch (e) {
-      setError({ code: "network_error", message: e instanceof Error ? e.message : "Request failed", details: null, trace_id: "" });
-    } finally {
-      if (id === run.current) setBusy(false);
-    }
-  }
+  const goHome = () => { run.current++; setView({ kind: "home" }); setAsk(EMPTY_ASK); setSelected(null); window.history.replaceState(null, "", "/"); };
+  const busy = view.kind === "working";
+  const pick = (q: string) => { const a = { ...EMPTY_ASK, query: q }; setAsk(a); submit(a); };
 
-  const viz = response?.visualization ?? null;
   return (
-    <main>
-      <header>
-        <h1>ClinicalTrials.gov <span>Query-to-Visualization</span></h1>
-        <p>Ask a question about clinical trials. An agent plans the chart; every number is computed from live
-          ClinicalTrials.gov data and every data point cites the trials behind it.</p>
+    <div className="app">
+      <header className="topbar">
+        <button className="brand" onClick={goHome} aria-label="Clinical Trials Explorer, start over">
+          <Logo />Clinical Trials Explorer
+        </button>
+        <div className="topbar-actions">
+          {view.kind !== "home" && <button className="ghost new-question" onClick={goHome}>New<span className="wide-only"> question</span></button>}
+          <ThemePicker selection={selection} onChoose={choose} />
+        </div>
       </header>
 
-      <QueryForm options={options} busy={busy} onSubmit={ask} initialQuery={initialQuery} />
-
-      {busy && !job && <div className="panel status"><span className="spinner" /> Planning and fetching live data…</div>}
-      {job && (
-        <div className="panel status">
-          <span className="spinner" /> Broad question: running as a background job.
-          {job.progress.pages_total ? ` Fetched ${job.progress.pages_done ?? 0} of ${job.progress.pages_total} pages of trials.` : ""}
-          <progress value={job.progress.pages_done ?? 0} max={job.progress.pages_total || 1} />
-        </div>
-      )}
-      {error && (
-        <div className="panel error">
-          <strong>{error.message}</strong>
-          <span className="muted"> ({error.code}{error.trace_id ? `, trace ${error.trace_id}` : ""})</span>
-        </div>
-      )}
-
-      {response && !viz && (
-        <div className="panel">
-          <h2>{STATUS_TEXT[response.status] ?? response.status}</h2>
-          {response.meta.details?.reason && <p>{response.meta.details.reason}</p>}
-          {response.meta.details?.search_counts && <p className="muted">Searches: {JSON.stringify(response.meta.details.search_counts)}</p>}
-        </div>
-      )}
-
-      {response && viz && (
-        <section className="result">
-          <div className="panel chart-panel">
-            <h2>{viz.title}</h2>
-            <p className="summary">{viz.summary}</p>
-            <Chart viz={viz} onSelect={setSelected} />
-            {response.meta.warnings?.length > 0 && <p className="warning">{response.meta.warnings.join(" ")}</p>}
-          </div>
-          <CitationsPanel datum={selected} resultId={response.result_id} />
-        </section>
+      {view.kind === "home" && (
+        <main className="home">
+          <section className="hero">
+            <h1>Ask ClinicalTrials.gov a question.<br />Get a chart you can trace to every trial.</h1>
+            <p className="lede">Counts, trends, comparisons and networks from over 600,000 registered studies, computed live.
+              Click any bar or node to read the exact record lines behind it.</p>
+            <SearchBar value={ask} onChange={setAsk} onSubmit={submit} busy={busy} options={options} size="large" />
+          </section>
+          <section className="examples" aria-label="Example questions">
+            {EXAMPLE_GROUPS.map((g) => (
+              <div key={g.title} className="example-group">
+                <h2>{g.title}</h2>
+                <ul>{g.questions.map((q) => <li key={q}><button className="example" onClick={() => pick(q)}>{q}</button></li>)}</ul>
+              </div>
+            ))}
+            {recent.length > 0 && (
+              <div className="example-group">
+                <h2>Your recent questions</h2>
+                <ul>{recent.map((q) => <li key={q}><button className="example" onClick={() => pick(q)}>{q}</button></li>)}</ul>
+              </div>
+            )}
+          </section>
+        </main>
       )}
 
-      {response && (
-        <section className="panel">
-          <div className="tabs">
-            <button className={tab === "how" ? "active" : ""} onClick={() => setTab("how")}>How we got this</button>
-            <button className={tab === "json" ? "active" : ""} onClick={() => setTab("json")}>Raw JSON</button>
-          </div>
-          {tab === "how" ? <MetaPanel response={response} /> : <pre className="json">{JSON.stringify(response, null, 2)}</pre>}
-        </section>
+      {view.kind !== "home" && asked && (
+        <main className="page">
+          <Question asked={asked} draft={ask} onDraft={setAsk} onSubmit={submit} busy={busy} options={options} />
+          {view.kind === "working" && <>
+            <Progress key={asked.query} job={view.job} />
+            <div className="skeleton" aria-hidden><span /><span /><span /></div>
+          </>}
+          {view.kind === "notice" && <Notice response={view.response} error={view.error} onRetry={() => submit(asked)} />}
+          {view.kind === "answer" && <>
+            <Answer response={view.response} theme={theme} onSelect={select}
+              onCopyLink={() => navigator.clipboard?.writeText(window.location.href)} />
+            <EvidenceDrawer datum={selected} resultId={view.response.result_id}
+              title={selected ? datumLabel(selected, labels) : ""} onClose={() => select(null)} />
+          </>}
+        </main>
       )}
 
-      <footer>Data: <a href="https://clinicaltrials.gov/data-api/api" target="_blank" rel="noreferrer">ClinicalTrials.gov API</a>.
-        This tool describes trial registrations; it does not assess whether treatments work.</footer>
-    </main>
+      <footer className="footer">
+        Data from the <a href="https://clinicaltrials.gov/data-api/api" target="_blank" rel="noreferrer">ClinicalTrials.gov API</a>.
+        This tool describes trial registrations. It does not say whether a treatment works.
+      </footer>
+    </div>
   );
 }

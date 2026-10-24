@@ -73,7 +73,8 @@ category.
 - Only mention categories that appear in the chart labels or the facts.
 - Describe what the chart shows. No judgements about drugs, treatments or sponsors, and no \
 medical conclusions (never words like "effective", "safe", "best", "promising").
-- Title: at most {TITLE_MAX} characters. Summary: one sentence, at most {SUMMARY_MAX} characters.
+- Title: at most {TITLE_MAX} characters; don't start it with "ClinicalTrials.gov".
+- Summary: one sentence, at most {SUMMARY_MAX} characters.
 - Return JSON: {{"title": "...", "summary": "..."}}."""
 
 SCHEMA = {
@@ -121,6 +122,15 @@ def _labels(plan: QueryPlan, viz: Visualization) -> list[str]:
         return []
     key = plan.dimension if viz.type is not ChartType.HISTOGRAM else "key"
     return [str(r[key]) for r in viz.data if key in r]
+
+
+_SOURCE_PREFIX = re.compile(r"^\s*clinicaltrials\.gov\s*[:\-\u2013]?\s*", re.IGNORECASE)
+
+
+def _without_source(title: str) -> str:
+    """Every chart comes from ClinicalTrials.gov, so a title doesn't need to say so."""
+    stripped = _SOURCE_PREFIX.sub("", title)
+    return stripped[:1].upper() + stripped[1:] if stripped else title
 
 
 def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str, str]:
@@ -291,9 +301,8 @@ async def narrate(
             errors = check_text(out.title, facts, plan, viz, max_length=TITLE_MAX)
             errors += check_text(out.summary, facts, plan, viz, max_length=SUMMARY_MAX)
             if not errors:
-                return Narration(
-                    render(out.title, facts), render(out.summary, facts), model, attempt, False
-                )
+                title = _without_source(render(out.title, facts))
+                return Narration(title, render(out.summary, facts), model, attempt, False)
         items += reply.output_items
         items.append(
             {"role": "user", "content": "Fix these problems and answer again: " + "; ".join(errors)}
