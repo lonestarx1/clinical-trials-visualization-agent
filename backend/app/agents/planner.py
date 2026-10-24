@@ -91,7 +91,8 @@ started since 2015 distributed?", a histogram). Only suggest what the options su
 top_n 5, "the 3 most" means top_n 3; bars of names show 10 when unset), histogram_bins, \
 count_entity and min_trials (with distinct_count), phase_mode, condition_source, \
 include_unknown, show_empty, network_min_edge_weight, edge_metric, hide_query_entity.
-- filters: OR within a filter, AND across filters. Copy drug, condition, sponsor and country \
+- filters: OR within a filter, AND across filters. Every drug, condition, sponsor and country \
+the question names goes in filters, or in groups when comparing. Never drop one. Copy the \
 terms exactly as the user wrote them. Never translate brand names or add synonyms: \
 ClinicalTrials.gov resolves synonyms itself.
 - "A vs B" or "compare X across A and B": use 2-4 groups (label + filters); shared filters go \
