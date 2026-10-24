@@ -2,7 +2,7 @@
 
 Status: **Decided** (2026-10-24)
 
-## Fields (PDF names; entity fields accept a string or a list = OR)
+## Fields (names from the assignment; entity fields accept a string or a list = OR)
 
 | Field | Type | Required | Validation |
 |---|---|---|---|
@@ -31,7 +31,7 @@ Rendering/analysis options (`top_n`, `phase_mode`, `condition_source`, `include_
 
 Unknown fields are rejected (422).
 
-The frontend (built later) will offer **pickers** for these fields to reduce user mistakes. The backend still validates everything, because the API is public.
+The web app offers **pickers** for these fields, built from `GET /v1/options`, to reduce mistakes. The backend still validates everything, because the API is public.
 
 ## Merge rules
 

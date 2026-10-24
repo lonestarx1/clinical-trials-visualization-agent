@@ -83,7 +83,7 @@ The data-source interface (D6.6) makes this a contained change.
 
 ### Citations with S1/S2
 
-S1/S2 return counts only, so we can't produce per-trial citations for those values directly. Options (decided in the citations question, Q14):
+S1/S2 return counts only, so we can't produce per-trial citations for those values directly. Options (decided in Q14):
 - cite the exact **API query** that produced each count (reproducible), and/or
 - fetch a small sample of NCT IDs per bucket (`pageSize` = N), which costs extra calls.
 

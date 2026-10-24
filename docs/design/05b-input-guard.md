@@ -37,7 +37,7 @@ The guard is **defence in depth**, not the main defence. An AI classifier can be
 
 ## Tradeoffs
 
-- **Fail closed** puts safety first: if the guard is down, the service is down. This is mitigated by the retry and a short timeout. We accept the availability cost, as the user decided.
+- **Fail closed** puts safety first: if the guard is down, the service is down. This is mitigated by the retry and a short timeout. We accept that availability cost.
 - **False positives** (a real question flagged as malicious) are possible. Mitigation: a narrow prompt focused on clearly malicious patterns, plus test cases with real questions to measure them.
 
 ## Requirement links
