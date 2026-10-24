@@ -4,7 +4,7 @@ from typing import Any
 
 import httpx
 
-from app.pipeline.run import run_plan
+from app.pipeline.run import COUNTED_NOTE, run_plan
 from app.schemas.plan import QueryPlan
 from tests.support.fakes import json_response
 from tests.support.recorded_api import BASE, VERSION, recorded_client
@@ -27,13 +27,14 @@ def study(nct: str, date: str) -> dict[str, Any]:
 SAMPLES = {Y15: [study("N1", "2015-12-31")], Y16: [study("N2", "2016-11-02")]}
 
 
-def handler(year_2016: int):  # type: ignore[no-untyped-def]
+def handler(year_2016: int, scale: int = 1000):  # type: ignore[no-untyped-def]
+    """Thousands of trials by default: enough pages that counting per year is quicker."""
     counts = {
-        SPAN: 30,
-        f"({SPAN} AND {SPAN})": 30,
-        f"({SPAN} AND {Y15})": 10,
-        f"({SPAN} AND {Y16})": year_2016,
-        f"(({SPAN} AND {Y15}) AND {EST})": 1,
+        SPAN: 30 * scale,
+        f"({SPAN} AND {SPAN})": 30 * scale,
+        f"({SPAN} AND {Y15})": 10 * scale,
+        f"({SPAN} AND {Y16})": year_2016 * scale,
+        f"(({SPAN} AND {Y15}) AND {EST})": 1 * scale,
         f"(({SPAN} AND {Y16}) AND {EST})": 0,
     }
 
@@ -68,8 +69,8 @@ async def test_years_are_counted_not_downloaded() -> None:
     response = await run_plan(PLAN, client, base_url=BASE, citations_per_datum=2)
     rows = response.visualization.data  # type: ignore[union-attr]
     assert [(r["start_year"], r["trial_count"], r["estimated_count"]) for r in rows] == [  # type: ignore[index]
-        ("2015", 10, 1),
-        ("2016", 20, 0),
+        ("2015", 10_000, 1_000),
+        ("2016", 20_000, 0),
     ]
     assert [[c["nct_id"] for c in r["citations"]] for r in rows] == [["N1"], ["N2"]]  # type: ignore[index]
     assert all(r["search_url"].startswith(BASE + "/studies?") for r in rows)  # type: ignore[index]
@@ -78,7 +79,18 @@ async def test_years_are_counted_not_downloaded() -> None:
     samples = [r for r in transport.requests if r.url.params.get("pageSize") == "2"]
     assert {r.url.params["sort"] for r in samples} == {"StartDate:desc"}
     assert response.meta.citations.applied == "sample"
-    assert response.meta.unique_trials == 30
+    assert response.meta.unique_trials == 30_000
+
+
+async def test_a_few_pages_of_trials_are_downloaded_not_counted_per_year() -> None:
+    """30 trials are one page: quicker than 7 count and sample calls."""
+    client, transport = recorded_client(handler(year_2016=20, scale=1))
+    response = await run_plan(PLAN, client, base_url=BASE, citations_per_datum=2)
+    downloads = [r for r in transport.requests if r.url.params.get("pageSize") == "1000"]
+    per_year = [r for r in transport.requests if Y15 in r.url.params.get("filter.advanced", "")]
+    assert (len(downloads), per_year) == (1, [])
+    assert response.status == "ok"
+    assert COUNTED_NOTE not in response.meta.notes
 
 
 async def test_counted_years_answer_full_citation_requests_with_a_sample() -> None:
