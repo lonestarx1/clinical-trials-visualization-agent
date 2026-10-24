@@ -3,12 +3,22 @@
 # Terraform values use the braced form).
 set -euxo pipefail
 
-# 2 GB of swap as a safety margin for the largest questions (kubelet told to allow it below).
+# 8 GB of swap for the largest questions. Kubernetes keeps pods off swap by default
+# (NoSwap), so the kubelet is set to LimitedSwap: a Burstable pod gets a share of swap in
+# proportion to its memory request (the API requests 1.5 GiB of 4 GiB, so ~3 GB of swap).
 if [ ! -f /swapfile ]; then
-  fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile
+  fallocate -l 8G /swapfile && chmod 600 /swapfile && mkswap /swapfile
   echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 swapon /swapfile || true
+mkdir -p /var/lib/rancher/k3s/agent/etc/kubelet.conf.d
+cat > /var/lib/rancher/k3s/agent/etc/kubelet.conf.d/90-swap.conf <<'YAML'
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+failSwapOn: false
+memorySwap:
+  swapBehavior: LimitedSwap
+YAML
 
 # k3s applies anything in this folder at start: cert-manager through k3s's Helm controller,
 # and Traefik set to keep the client IP (the API rate-limits per IP).

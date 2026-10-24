@@ -27,12 +27,14 @@ The app runs on Kubernetes. For cost reasons the cluster is **k3s on a single EC
 - **One API replica, on purpose.** ClinicalTrials.gov allows ~40 requests/min from our IP, and each replica has its own limiter. More replicas would share that budget, not add to it.
   - Rolling updates still have no downtime (`maxUnavailable: 0`).
   - Background jobs already work across replicas, thanks to the `SKIP LOCKED` queue and heartbeats.
-- **t3.large (8 GB).** The largest question (273k trials) peaks at about 2 GB in the API. k3s, Postgres and the web app take about 1.1 GB more. A 2 GB swap file adds a margin.
+- **t3.medium (4 GB) with an 8 GB swap file on a 50 GB disk.** The largest question (273k trials) peaks at about 2 GB in the API, and k3s, Postgres and the web app take about 1.2 GB.
+  - Kubernetes keeps pods off swap by default, so the kubelet runs with `LimitedSwap`. A pod's swap share is proportional to its memory request: the API requests 1.5 GiB of 4, which gives it about 3 GB of swap.
+  - A larger node (`instance_type = "t3.large"`) avoids swapping entirely.
 - **Postgres in the cluster** keeps cost down. It holds caches, stored answers and the job queue, all of which can be rebuilt. In production it would be RDS.
 
 ## Cost (Seoul, on-demand)
 
-About **$2.70/day**: t3.large $0.104/h, EIP $0.005/h, 30 GB gp3, ECR and Secrets Manager pennies. With `use_spot = true` it's about **$1/day**. `make infra-destroy` removes everything, images included.
+About **$1.50/day**: t3.medium $0.052/h, EIP $0.005/h, 50 GB gp3 (~$0.15/day), ECR and Secrets Manager pennies. With `use_spot = true` it's about **$0.75/day**. `make infra-destroy` removes everything, images included.
 
 ## Deploying from scratch
 

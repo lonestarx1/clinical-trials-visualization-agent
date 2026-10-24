@@ -14,9 +14,15 @@ variable "name" {
 }
 
 variable "instance_type" {
-  description = "One node runs k3s, the API, the web app and Postgres. The largest question needs ~2 GB, so 8 GB (t3.large) leaves headroom; t3.medium (4 GB) is tight."
+  description = "One node runs k3s, the API, the web app and Postgres. The largest question needs ~2 GB on top of ~1.2 GB for the rest; 4 GB plus swap covers it."
   type        = string
-  default     = "t3.large"
+  default     = "t3.medium"
+}
+
+variable "disk_gb" {
+  description = "Root disk, including an 8 GB swap file."
+  type        = number
+  default     = 50
 }
 
 variable "use_spot" {

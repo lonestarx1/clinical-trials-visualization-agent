@@ -73,8 +73,8 @@ spec:
           resources:
             requests:
               cpu: 250m
-              memory: 512Mi
+              memory: 1536Mi # also sets its swap share under LimitedSwap (~3 GB of 8)
             limits:
-              memory: 4Gi # the largest question peaks around 2 GB
+              memory: 2560Mi # RAM; the largest question (~2 GB peak) can spill into swap
           securityContext:
             allowPrivilegeEscalation: false
