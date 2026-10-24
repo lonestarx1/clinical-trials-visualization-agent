@@ -113,6 +113,12 @@ The built responses differed from this design in two places. The code was kept a
 - **Network channels are flat** (`node_id`, `node_size`, `edge_width`...), not nested `node: {...}` / `edge: {...}` objects. Every chart's `encoding` is then the same shape (a map from channel name to one field descriptor), so a renderer reads all of them the same way. Nodes and edges also carry `key`, `degree`, `community`, `is_query_entity` and `jaccard` (Q13). See [`docs/examples/5-drug-network.json`](../examples/5-drug-network.json).
 - **`no_matching_trials` gives per-search counts** (`meta.details.search_counts`), not per-filter counts. The searches are already counted before retrieval, so this costs nothing; per-filter counts would need one more count call per filter and are future work.
 
+## Revision (2026-10-25): fast mode
+
+- Request: `mode` (`live` default, or `fast`; [Q22](22-term-sets.md)). It doesn't change the plan or the stored answer.
+- Response: `meta.data_source` (`live` or `fast`). `meta.api_queries` holds the live searches in both modes.
+- `GET /health`: `fast_mode` (`status`, `data_timestamp` of the mirror).
+
 ## Requirement links
 
 P3-5..P3-12 (output components, metadata, schema docs), P4-1, P4-2 (structured spec, multiple types), P7-12, P7-13 (I/O design).

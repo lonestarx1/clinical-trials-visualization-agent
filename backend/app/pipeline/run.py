@@ -15,7 +15,13 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 
 from app.agents.narrator import Narration
-from app.ctgov.client import PAGE_SIZE, CtgovClient, InconsistentResults, VersionInfo
+from app.ctgov.client import (
+    PAGE_SIZE,
+    CtgovClient,
+    FetchResult,
+    InconsistentResults,
+    VersionInfo,
+)
 from app.ctgov.compiler import Search, compile_plan
 from app.ctgov.essie import Area, Range
 from app.ctgov.retrieval import DATE_TYPE_PIECE, count_per_year, fields_for
@@ -246,7 +252,10 @@ async def execute(
     now: datetime | None = None,
     narrator: Narrator | None = None,
     progress: Progress | None = None,
+    fetched: list[FetchResult] | None = None,
 ) -> Executed:
+    """`fetched`: each search's trials, already read (fast mode's mirror records); otherwise
+    they are counted per year or downloaded."""
     searches, meta = prepared.searches, prepared.meta
     now = now or datetime.now(UTC)
     stored = [
@@ -262,7 +271,7 @@ async def execute(
 
     retrieve_start = time.perf_counter()
     counted = None
-    if prepared.span is not None:
+    if prepared.span is not None and fetched is None:
         try:
             counted = await _counted_years(prepared, ctgov, base_url, citations_per_datum)
         except InconsistentResults as exc:
@@ -280,7 +289,7 @@ async def execute(
         aggregate_start = time.perf_counter()
     else:
         chart, studies, retrieve_ms, aggregate_start = await _downloaded(
-            prepared, ctgov, base_url, citations_per_datum, now, progress
+            prepared, ctgov, base_url, citations_per_datum, now, progress, fetched
         )
         if meta.citations is not None:
             _apply_citation_mode(chart, meta.citations, citations_full_max)
@@ -321,6 +330,7 @@ async def _downloaded(
     citations_per_datum: int,
     now: datetime,
     progress: Progress | None,
+    fetched: list[FetchResult] | None = None,
 ) -> tuple[ChartResult, dict[str, dict[str, Any]], int, float]:
     """Strategy S3 (design Q6): download every matching trial, then aggregate."""
     plan, searches, meta = prepared.plan, prepared.searches, prepared.meta
@@ -338,7 +348,7 @@ async def _downloaded(
 
         return on_page
 
-    results = await gather_or_cancel(
+    results = fetched or await gather_or_cancel(
         *(ctgov.fetch_all(s, fields, tracker(i)) for i, s in enumerate(searches))
     )
     meta.api_queries = [

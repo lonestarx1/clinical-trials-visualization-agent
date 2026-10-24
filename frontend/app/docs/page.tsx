@@ -20,6 +20,7 @@ const SECTIONS = [
   { id: "response", title: "The response" },
   { id: "statuses-errors", title: "Statuses and errors" },
   { id: "jobs", title: "Background jobs" },
+  { id: "fast-mode", title: "Fast mode" },
   { id: "citations", title: "Citations paging" },
   { id: "options", title: "Options" },
   { id: "limits", title: "Limits" },
@@ -220,6 +221,7 @@ const REQUEST_FIELDS: Row[] = [
   ["top_n", "integer or null", "null", <>Keep only the top N categories (1 to 50).</>],
   ["match_mode", "\"strict\" | \"broad\"", "\"strict\"", <>How drugs and conditions match. <code>strict</code> uses the intervention and condition fields (with synonyms); <code>broad</code> also matches titles, keywords and descriptions.</>],
   ["sponsor_role", "\"lead\" | \"any\"", "\"lead\"", <><code>lead</code>: the lead sponsor only. <code>any</code>: lead sponsor or collaborator.</>],
+  ["mode", "\"live\" | \"fast\"", "\"live\"", <><code>live</code>: fetch the matching trials from ClinicalTrials.gov now. <code>fast</code>: read them from our daily-synced copy of ClinicalTrials.gov, after ClinicalTrials.gov&apos;s own search has picked the trials and a live count has confirmed their number. Both give the same answer. When a check fails, or fast mode is off, the question is answered live and <code>meta.notes</code> says why; <code>meta.data_source</code> says which mode answered (<a href="#fast-mode">fast mode</a>).</>],
   ["citations", "\"sample\" | \"full\"", "\"sample\"", <><code>sample</code>: up to <code>citations_per_datum</code> citations inline per data point. <code>full</code>: every citation inline, as long as the whole response has at most 2,000; above that it falls back to a sample, and <code>meta.citations</code> says so (<a href="#per-datum-citations">details</a>).</>],
   ["citations_per_datum", "integer", "5", <>How many citations each data point carries inline (1 to 50).</>],
   ["phase_mode", "\"combined\" | \"split\"", "\"combined\"", <><code>combined</code>: a Phase 2/3 trial counts once, in a &quot;Phase 2/Phase 3&quot; bucket. <code>split</code>: it counts in both phases.</>],
@@ -255,6 +257,7 @@ const META_FIELDS: [string[], React.ReactNode][] = [
   [["unique_trials", "additive"], <><code>unique_trials</code> is the number of distinct trials behind the chart. <code>additive: false</code> means one trial can sit in several buckets, so the values don&apos;t add up to it.</>],
   [["excluded"], <>Trials left out and why, e.g. <code>{"{"} &quot;reason&quot;: &quot;start after 2026&quot;, &quot;count&quot;: 7 {"}"}</code>.</>],
   [["notes"], <>Context for the reader, e.g. &quot;Showing the top 10 of 69 countries.&quot;</>],
+  [["data_source"], <><code>live</code> or <code>fast</code>: where the answer&apos;s trials came from (<a href="#fast-mode">fast mode</a>).</>],
   [["api_queries"], <>Every ClinicalTrials.gov API v2 query that was run, with its <code>total_count</code> (and <code>group</code> for comparisons). Open the URL to check the numbers yourself.</>],
   [["sort", "citations"], <>How <code>data</code> is ordered (<code>by</code> x or y, <code>order</code>), and which citation mode was <code>requested</code> and <code>applied</code>, with the <code>reason</code> when they differ (<a href="#per-datum-citations">full citations</a>).</>],
   [["group_overlap", "network"], <>Comparisons: trials shared by each pair of groups. Networks: node and edge counts before and after pruning, and the community algorithm.</>],
@@ -439,6 +442,17 @@ export default function DocsPage() {
               <li>Asking the same question after a cancel starts a new job.</li>
             </ul>
             <p>A question answered in the request (200) can&apos;t be cancelled. If you close the connection early, the server still finishes and stores the answer, so asking the same question again is quick (<code>meta.cache.result</code> is <code>hit</code>). If the question turns out to be broad, its job starts anyway; wait for the 202 if you may want to cancel it.</p>
+          </section>
+
+          <section id="fast-mode" aria-labelledby="fast-mode-h">
+            <h2 id="fast-mode-h">Fast mode</h2>
+            <p>Live answers download every matching trial, at most 1,000 per request and about 10 requests per 10 seconds, so broad questions take minutes. With <code>{"\"mode\": \"fast\""}</code>, the trials come from our copy of ClinicalTrials.gov instead, which is updated with every daily release. The answer stays exact:</p>
+            <ul>
+              <li><strong>ClinicalTrials.gov still picks the trials.</strong> Each search term (a drug, condition, sponsor or place) is resolved by its own search, synonyms included, and remembered as a set of trial IDs. Our copy never interprets a term.</li>
+              <li><strong>A live count confirms every answer.</strong> The number of trials from our copy must equal ClinicalTrials.gov&apos;s count for the same search, at the same data version.</li>
+              <li><strong>Anything else answers live:</strong> our copy is still syncing a new release, a new search term is very large, or the counts disagree. <code>meta.notes</code> says why.</li>
+            </ul>
+            <p><code>GET /health</code> reports <code>fast_mode.status</code>: <code>ready</code>, <code>syncing</code>, <code>not_loaded</code> or <code>off</code>. <code>meta.api_queries</code> keeps the live search URLs in both modes, so every number can still be checked on ClinicalTrials.gov.</p>
           </section>
 
           <section id="citations" aria-labelledby="citations-h">

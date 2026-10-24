@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Options } from "@/lib/api";
+import { type FastStatus, fastHint } from "@/lib/mode";
 import { activeFilters, type Ask, EMPTY_ASK } from "@/lib/request";
 
-export function SearchBar({ value, onChange, onSubmit, busy, options, size = "large", autoFocus, onCancel }: {
+export function SearchBar({ value, onChange, onSubmit, busy, options, size = "large", autoFocus, onCancel, fastStatus = "unknown" }: {
   value: Ask;
   onChange: (a: Ask) => void;
   onSubmit: (a: Ask) => void;
@@ -13,6 +14,7 @@ export function SearchBar({ value, onChange, onSubmit, busy, options, size = "la
   size?: "large" | "compact";
   autoFocus?: boolean;
   onCancel?: () => void;
+  fastStatus?: FastStatus;
 }) {
   const [refining, setRefining] = useState(false);
   const input = useRef<HTMLTextAreaElement>(null);
@@ -58,6 +60,20 @@ export function SearchBar({ value, onChange, onSubmit, busy, options, size = "la
           {busy ? "Working" : "Ask"}
         </button>
       </form>
+
+      <div className="mode-picker">
+        <div className="segmented" role="radiogroup" aria-label="How to answer">
+          <button type="button" role="radio" aria-checked={value.mode === "live"} className={value.mode === "live" ? "on" : ""}
+            onClick={() => set("mode", "live")}>Live</button>
+          <button type="button" role="radio" aria-checked={value.mode === "fast"} className={value.mode === "fast" ? "on" : ""}
+            onClick={() => set("mode", "fast")}>Fast</button>
+        </div>
+        <p className="mode-hint">
+          {value.mode === "fast"
+            ? fastHint(fastStatus) ?? "From our copy of ClinicalTrials.gov, updated daily. ClinicalTrials.gov's search still picks the trials, and a live count confirms them."
+            : "Straight from ClinicalTrials.gov. Broad questions can take minutes."}
+        </p>
+      </div>
 
       {filters.length > 0 && !refining && (
         <div className="chips" aria-label="Filters that will be applied">
@@ -110,7 +126,7 @@ export function SearchBar({ value, onChange, onSubmit, busy, options, size = "la
             ))}
           </fieldset>
           <div className="refine-actions">
-            <button className="ghost" onClick={() => onChange({ ...EMPTY_ASK, query: value.query })}>Clear filters</button>
+            <button className="ghost" onClick={() => onChange({ ...EMPTY_ASK, query: value.query, mode: value.mode })}>Clear filters</button>
             <button className="primary" disabled={busy || !value.query.trim()} onClick={submit}>Ask with filters</button>
           </div>
         </div>

@@ -200,6 +200,12 @@ class Meta(BaseModel):
         description="Things to know, e.g. a request field overriding the question, or a "
         "chart type replaced by a better fit.",
     )
+    data_source: Literal["live", "fast"] = Field(
+        default="live",
+        description="Which mode answered: `live` (trials fetched from ClinicalTrials.gov) or "
+        "`fast` (trials read from our copy at the same `data_timestamp`, checked against a "
+        "live count). `api_queries` holds the live searches either way.",
+    )
     notes: list[str] = Field(
         default=[],
         description="Facts about the chart, e.g. `Showing the top 10 of 84 countries.`",

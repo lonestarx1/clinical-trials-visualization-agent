@@ -1,4 +1,15 @@
+import type { FastStatus } from "./mode";
 import type { ApiError, Citation, JobAccepted, JobStatus, QueryResponse } from "./types";
+
+/** Whether fast mode can answer now (`/health` `fast_mode.status`). */
+export async function getFastStatus(): Promise<FastStatus> {
+  try {
+    const res = await fetch("/api/health", { cache: "no-store" });
+    return (await res.json())?.fast_mode?.status ?? "unknown";
+  } catch {
+    return "unknown";
+  }
+}
 
 export type QueryOutcome =
   | { kind: "result"; response: QueryResponse }

@@ -11,7 +11,8 @@ import { Progress } from "@/components/Progress";
 import { Question } from "@/components/Question";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemePicker } from "@/components/ThemePicker";
-import { cancelJob, getJob, getOptions, type Options, postQuery } from "@/lib/api";
+import { cancelJob, getFastStatus, getJob, getOptions, type Options, postQuery } from "@/lib/api";
+import { answerUrl, type FastStatus, modeFrom } from "@/lib/mode";
 import { isStopShortcut } from "@/lib/question";
 import { readRecent, rememberQuestion } from "@/lib/recent";
 import { type Ask, EMPTY_ASK, EXAMPLE_GROUPS, toRequestBody } from "@/lib/request";
@@ -38,6 +39,7 @@ export default function Home() {
   const [view, setView] = useState<View>({ kind: "home" });
   const [selected, setSelected] = useState<Datum | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
+  const [fastStatus, setFastStatus] = useState<FastStatus>("unknown");
   const { theme, selection, choose } = useTheme();
   const run = useRef(0);
   const halt = useRef<(() => void) | null>(null); // stops the run in progress (Stop, Esc)
@@ -60,7 +62,7 @@ export default function Home() {
     setRecent(rememberQuestion(a.query.trim()));
     const keep = new URLSearchParams(window.location.search);
     const d = keep.get("q") === a.query.trim() ? keep.get("d") : null;
-    window.history.replaceState(null, "", `?q=${encodeURIComponent(a.query.trim())}${d ? `&d=${encodeURIComponent(d)}` : ""}`);
+    window.history.replaceState(null, "", answerUrl(a.query.trim(), a.mode, d));
     try {
       const outcome = await postQuery(toRequestBody(a));
       if (outcome.kind === "job") {
@@ -98,10 +100,13 @@ export default function Home() {
 
   useEffect(() => {
     getOptions().then(setOptions);
+    getFastStatus().then(setFastStatus);
     setRecent(readRecent());
     const q = new URLSearchParams(window.location.search).get("q");
+    const mode = modeFrom(window.location.search);
+    setAsk((a) => ({ ...a, mode }));
     if (q) {
-      const a = { ...EMPTY_ASK, query: q };
+      const a = { ...EMPTY_ASK, query: q, mode };
       setAsk(a);
       submit(a);
     }
@@ -142,9 +147,9 @@ export default function Home() {
     return () => window.removeEventListener("keydown", onKey);
   }, [working, stop]);
 
-  const goHome = () => { run.current++; setView({ kind: "home" }); setAsk(EMPTY_ASK); setSelected(null); window.history.replaceState(null, "", "/"); };
+  const goHome = () => { run.current++; setView({ kind: "home" }); setAsk({ ...EMPTY_ASK, mode: ask.mode }); setSelected(null); window.history.replaceState(null, "", ask.mode === "fast" ? "/?mode=fast" : "/"); };
   const busy = view.kind === "working";
-  const pick = (q: string) => { const a = { ...EMPTY_ASK, query: q }; setAsk(a); submit(a); };
+  const pick = (q: string) => { const a = { ...EMPTY_ASK, query: q, mode: ask.mode }; setAsk(a); submit(a); };
 
   return (
     <div className="app">
@@ -166,7 +171,7 @@ export default function Home() {
             <h1>Ask ClinicalTrials.gov a question.<br />Get a chart you can trace to every trial.</h1>
             <p className="lede">Counts, trends, comparisons and networks from over 600,000 registered studies, computed live.
               Click any bar or node to read the exact record lines behind it.</p>
-            <SearchBar value={ask} onChange={setAsk} onSubmit={submit} busy={busy} options={options} size="large" />
+            <SearchBar value={ask} onChange={setAsk} onSubmit={submit} busy={busy} options={options} size="large" fastStatus={fastStatus} />
           </section>
           <section className="examples" aria-label="Example questions">
             {EXAMPLE_GROUPS.map((g) => (
@@ -187,7 +192,7 @@ export default function Home() {
 
       {view.kind !== "home" && asked && (
         <main className="page">
-          <Question asked={asked} draft={ask} onDraft={setAsk} onSubmit={submit} busy={busy} options={options} />
+          <Question asked={asked} draft={ask} onDraft={setAsk} onSubmit={submit} busy={busy} options={options} fastStatus={fastStatus} />
           {view.kind === "working" && <>
             <Progress key={asked.query} job={view.job} onStop={stop} />
             <div className="skeleton" aria-hidden><span /><span /><span /></div>

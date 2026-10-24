@@ -38,6 +38,7 @@ def test_health_ok_when_database_is_reachable() -> None:
         "status": "ok",
         "checks": {"database": "ok", "ctgov": "ok"},
         "data_timestamp": "2026-10-23T09:00:04",
+        "fast_mode": {"status": "off", "data_timestamp": None},  # off by default
     }
 
 
@@ -56,6 +57,7 @@ def test_clinicaltrials_outage_is_reported_but_not_fatal() -> None:
         "status": "ok",
         "checks": {"database": "ok", "ctgov": "error"},
         "data_timestamp": None,
+        "fast_mode": {"status": "off", "data_timestamp": None},
     }
 
 

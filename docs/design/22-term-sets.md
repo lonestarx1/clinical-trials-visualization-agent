@@ -1,6 +1,6 @@
 # Design Q22: The API picks the trials, our database counts them
 
-Status: **Proposed** (2026-10-25). Not built. A **second mode, `fast`**, next to today's live fetching, which stays the default and is unchanged. It builds on the mirror designed in [Q21](21-local-mirror-revisited.md) and removes the reason Q21 gave for not building it.
+Status: **Built** (2026-10-25; see "As built: fast mode" below). A **second mode, `fast`**, next to today's live fetching, which stays the default and is unchanged. It builds on the mirror designed in [Q21](21-local-mirror-revisited.md) and removes the reason Q21 gave for not building it.
 
 ## The problem
 
@@ -174,6 +174,22 @@ ClinicalTrials.gov's [Terms and Conditions](https://clinicaltrials.gov/about-sit
 **As built (2026-10-25), term sets:** a compiled `Search` keeps its clauses, and `split()` turns them into terms (any clause with a phrase) and structured clauses. `term_set()` lists a term with `fields=NCTId`, reuses it for the same data, refreshes it with one narrowed call after an update, and lists it again after 7 days. Measured against the live API with the live mirror: "breast cancer" 16,765 trials listed in 19.9 s (17 pages), Keytruda 2,652 in 3.6 s, Pfizer (lead) 3,892 in 6.3 s, Japan 9,396 in 12.0 s, each equal to the API's count. A refresh across five days of updates took **1.7 s** and gave exactly the same set as a full listing.
 
 **As built (2026-10-25), `to_sql` and the cross-check:** `app/mirror/query.py` turns each structured clause into a condition on `registry.trials` (JSON paths, list containment for phases and ages, partial dates read as their first day), and each term filter into a join with its term sets. Anything it can't evaluate exactly (no clauses, an unknown field, a term without a set) raises `NotInMirror`, so the question goes live. The live cross-check (`tests/live/test_mirror_cross_check.py`) compared the mirror with the API on about 100 structured filters (every phase, status, study type, sponsor class, age group, sex, allocation, masking, purpose, both booleans, every start year) and 6 searches with terms (conditions, a broad condition, a drug, a lead sponsor, a country). **All matched but one: the API's `AREA[Sex]ALL` matches every trial** (608,415), not only trials whose sex is "ALL" (523,690). Essie reads an unquoted `ALL` as "everything"; quoted, `AREA[Sex]"ALL"` matches exactly the 523,690 that `/stats/field/values` counts. **Fixed in both modes** (2026-10-25): the compiler now quotes the code `ALL`, so a "sex: all" filter means trials open to all sexes in live mode too, and the mirror matches it exactly. `NONE`, `NA` and the booleans were checked and match as plain codes.
+
+## As built: fast mode (2026-10-25)
+
+- **Request and response:** `POST /v1/query` takes `mode` (`live`, the default, or `fast`), and `meta.data_source` says which mode answered. `GET /health` reports `fast_mode.status` (`ready`, `syncing`, `not_loaded`, `off`) and the data version the mirror holds. The plan cache ignores `mode`, so both modes share plans; a stored answer serves either mode.
+- **The path** (`app/mirror/fast.py`, called from `handle_query` after `prepare()`):
+  1. the mirror must hold the API's current `dataTimestamp`;
+  2. the chart's fields must be ones the mirror keeps;
+  3. at most `FAST_MAX_TRIALS` (300,000) trials, since the records are read into memory as in live mode;
+  4. for each search, every term set is resolved or refreshed. A term with no set yet is counted first, and one above `FAST_NEW_TERM_MAX_TRIALS` (20,000) answers live rather than list that many IDs while the user waits;
+  5. the SQL count must equal the live count `prepare()` already made;
+  6. then the mirror's records go through the same aggregation, citation check and narration as live mode.
+  Any failure, including an unexpected error, answers live with a note in `meta.notes`. A fast answer is answered synchronously: it never becomes a background job.
+- **Shadow runs:** a sample of fast answers (`FAST_MODE_SHADOW_RATE`, default 10%, only those of at most 20 pages, so shadows don't eat the API budget) is recomputed live in the background and compared point by point (every value except the citation sample). A difference is logged as `fast-mode drift`. The `registry.drift` table is not built: drift goes to the logs.
+- **Rollout, deviated from:** step 5 planned a week of shadow-only running before offering `fast`. We offered it at once, as an opt-in, because every fast answer is already checked against a live count and falls back to live when the count differs, and a sample is shadow-run. The residual risk is a swap (one trial in, one out) that keeps the count equal; the shadow sample and the weekly full re-sync are there for it.
+- **Web app:** a Live/Fast switch under the search box, kept in shared links (`&mode=fast`), with a line saying what fast mode does, or why it is answering live right now. Each answer says where its trials came from: "Live from ClinicalTrials.gov" or "Fast: our copy of the <date> data, checked against ClinicalTrials.gov".
+- **Resumable load:** a restarted first load (a deploy, a crash) kept nothing and started again from zero. Now each slice the mirror already holds in full (its count equals the API's) is kept after one count call, and the trials changed since the oldest saved one are fetched again, so kept slices end on the current data. A mirror copied from another database resumes the same way. Runs left `running` by a stopped process are closed as failed.
 
 ## Rollout
 

@@ -45,4 +45,4 @@ def result_key(plan: QueryPlan, citations_per_datum: int, citations: str = "samp
 
 # Request fields that change only how much citation detail is inlined, not the plan: left out
 # of the plan-cache key, but part of the result key (result_key).
-_RENDER_ONLY = {"citations", "citations_per_datum"}
+_RENDER_ONLY = {"citations", "citations_per_datum", "mode"}  # none of them change the plan

@@ -96,6 +96,12 @@ class Settings(BaseSettings):
     # limiter, capped at half the budget so a long load can't starve questions.
     mirror_sync_enabled: bool = False
     mirror_sync_rate_per_min: PositiveInt = 27
+    # Fast mode (design Q22): `mode: "fast"` answers from the mirror once its checks pass.
+    fast_mode_enabled: bool = False
+    fast_new_term_max_trials: PositiveInt = 20_000  # a new term above this answers live
+    fast_max_trials: PositiveInt = 300_000  # the most a fast answer reads into memory
+    fast_mode_shadow_rate: float = Field(default=0.1, ge=0, le=1)  # fast answers re-run live
+    fast_mode_shadow_max_pages: PositiveInt = 20  # only small ones: shadows share the API budget
     sync_max_seconds: PositiveInt = 60
     citations_full_max: PositiveInt = 2000
 

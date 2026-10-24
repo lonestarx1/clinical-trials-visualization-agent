@@ -7,6 +7,7 @@ questions become background jobs, LLM usage is recorded and capped per day.
 
 import asyncio
 import logging
+import random
 import time
 import uuid
 from collections.abc import Awaitable, Callable, Coroutine
@@ -22,12 +23,13 @@ from app.agents.guard import check_request
 from app.agents.narrator import narrate
 from app.agents.planner import PlannerResult, plan_request
 from app.core.config import Settings
-from app.ctgov.client import CtgovClient
+from app.ctgov.client import CtgovClient, FetchResult
 from app.ctgov.compiler import Search
 from app.ctgov.essie import Area, Range
 from app.llm.client import LLM, UsageLog
+from app.mirror.fast import FastUnavailable, differences, fetch_from_mirror
 from app.pipeline.keys import planner_version, request_key, result_key
-from app.pipeline.run import Executed, Prepared, elapsed_ms, execute, prepare
+from app.pipeline.run import Executed, Prepared, elapsed_ms, execute, prepare, run_plan
 from app.schemas.plan import QueryPlan
 from app.schemas.request import QueryRequest
 from app.schemas.response import Meta, QueryResponse
@@ -384,8 +386,12 @@ async def handle_query(
         started=started,
         timings_ms=ctx.timings_ms,
     )
+    fetched = None
+    if request.mode == "fast" and not prepared.empty:
+        fetched = await _fast(prepared, ctgov, settings, sessions)
     if (
-        sessions is not None
+        fetched is None
+        and sessions is not None
         and not prepared.empty
         and prepared.estimated_seconds > settings.sync_max_seconds
     ):
@@ -416,6 +422,7 @@ async def handle_query(
         citations_per_datum=request.citations_per_datum,
         citations_full_max=settings.citations_full_max,
         narrator=partial(narrate, llms.narrator),
+        fetched=fetched,
     )
     response = _finish(executed.response, ctx, llms)
     if sessions is not None:
@@ -428,7 +435,86 @@ async def handle_query(
             version=(prepared.version.data_timestamp, prepared.version.api_version),
         )
         await _record_usage(sessions, llms, trace_id, None, price_version)
+    if fetched is not None:
+        _shadow(prepared, request, response, ctgov, settings)
     return response
+
+
+FAST_OFF = "Fast mode is turned off on this server, so this was answered live."
+_SHADOWS: set[asyncio.Task[None]] = set()  # running shadow runs, kept from garbage collection
+
+
+async def _fast(
+    prepared: Prepared, ctgov: CtgovClient, settings: Settings, sessions: Sessions | None
+) -> list[FetchResult] | None:
+    """The trials from the mirror (design Q22), or None (with a note) to answer live."""
+    meta = prepared.meta
+    if not settings.fast_mode_enabled or sessions is None:
+        meta.notes.append(FAST_OFF)
+        return None
+    try:
+        fetched = await fetch_from_mirror(
+            prepared,
+            ctgov,
+            sessions,
+            new_term_max_trials=settings.fast_new_term_max_trials,
+            max_trials=settings.fast_max_trials,
+        )
+    except FastUnavailable as exc:
+        meta.notes.append(f"Fast mode wasn't used: {exc}. Answered live.")
+        return None
+    except Exception:  # the mirror must never break a question: answer live
+        log.exception("fast mode failed; answering live")
+        meta.notes.append("Fast mode wasn't used: our copy couldn't be read. Answered live.")
+        return None
+    meta.data_source = "fast"
+    meta.notes.append(
+        f"Fast mode: read from our copy of ClinicalTrials.gov (data of "
+        f"{prepared.version.data_timestamp[:10]}), after ClinicalTrials.gov's search picked "
+        "the trials and a live count confirmed their number."
+    )
+    return fetched
+
+
+def _shadow(
+    prepared: Prepared,
+    request: QueryRequest,
+    fast: QueryResponse,
+    ctgov: CtgovClient,
+    settings: Settings,
+) -> None:
+    """For a sample of small fast answers, compute the live answer too and log any difference."""
+    if (
+        fast.visualization is None
+        or prepared.pages > settings.fast_mode_shadow_max_pages
+        or random.random() >= settings.fast_mode_shadow_rate
+    ):
+        return
+    task = asyncio.create_task(
+        _compare_live(prepared.plan, request, fast, ctgov, settings.ctgov_base_url)
+    )
+    _SHADOWS.add(task)
+    task.add_done_callback(_SHADOWS.discard)
+
+
+async def _compare_live(
+    plan: QueryPlan, request: QueryRequest, fast: QueryResponse, ctgov: CtgovClient, base_url: str
+) -> None:
+    try:
+        live = await run_plan(
+            plan, ctgov, base_url=base_url, citations_per_datum=request.citations_per_datum
+        )
+        assert fast.visualization is not None and live.visualization is not None
+        diff = differences(
+            fast.visualization.model_dump(mode="json"), live.visualization.model_dump(mode="json")
+        )
+    except Exception:
+        log.exception("fast-mode shadow run failed (trace %s)", fast.meta.trace_id)
+        return
+    if diff:
+        log.warning("fast-mode drift (trace %s): %s", fast.meta.trace_id, "; ".join(diff[:20]))
+    else:
+        log.info("fast-mode shadow run matched (trace %s)", fast.meta.trace_id)
 
 
 async def run_job(
