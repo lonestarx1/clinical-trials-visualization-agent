@@ -110,3 +110,13 @@ describe("datumAt", () => {
     expect(datumAt(net, { seriesIndex: 0, dataIndex: 0, dataType: "edge" })).toBe((net.data as NetworkData).edges[0]);
   });
 });
+
+describe("network legend", () => {
+  it("lists clusters in numeric order", () => {
+    const chart = toChart(example("5-drug-network"));
+    if (chart.kind !== "echarts") throw new Error("expected echarts");
+    const names = ((chart.option.series as any[])[0].categories as { name: string }[]).map((c) => c.name);
+    const numbers = names.map((n) => Number(n.replace("Cluster ", "")));
+    expect(numbers).toEqual([...numbers].sort((a, b) => a - b));
+  });
+});
