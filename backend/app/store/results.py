@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.response import SCHEMA_VERSION
 from app.store.models import DataVersion, Result, ResultCitation, ResultDatum
 
-CODE_VERSION = "0.4.0"
+CODE_VERSION = "0.5.0"
 _CHUNK = 2000
 
 
