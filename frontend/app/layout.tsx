@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
-import { THEME_SCRIPT } from "@/lib/useTheme";
+import { themeScript } from "@/lib/themes/runtime";
 import "./globals.css";
 
 const sans = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-sans" });
@@ -11,17 +11,12 @@ export const metadata: Metadata = {
   description: "Ask questions about ClinicalTrials.gov and get charts where every number links back to the trials behind it.",
 };
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f9fc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0e131b" },
-  ],
-};
+export const viewport: Viewport = { themeColor: "#eef2f8" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} /></head>
+      <head><script dangerouslySetInnerHTML={{ __html: themeScript() }} /></head>
       <body>{children}</body>
     </html>
   );

@@ -1,32 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { currentTheme, type Theme } from "./theme";
+import { type Theme, toChartTheme } from "./theme";
+import { CHANGE_EVENT, applyTheme, prefersDark, readSelection, resolve, saveSelection, type Selection } from "./themes/runtime";
 
-const KEY = "ctx-theme";
+/** The chosen theme ("system" or a theme id) and its chart colours. */
+export function useTheme(): { theme: Theme; selection: Selection; choose: (s: Selection) => void } {
+  const [selection, setSelection] = useState<Selection>("system");
+  const [dark, setDark] = useState(false);
 
-/** The chart theme, following the page theme (system setting unless the user picked one). */
-export function useTheme(): [Theme, () => void] {
-  const [theme, setTheme] = useState<Theme>(currentTheme);
   useEffect(() => {
-    const update = () => setTheme(currentTheme());
+    setSelection(readSelection());
+    setDark(prefersDark());
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    media.addEventListener("change", update);
-    window.addEventListener("ctx-theme-change", update);
-    update();
+    const onMedia = () => {
+      setDark(media.matches);
+      if (readSelection() === "system") applyTheme(resolve("system", media.matches));
+    };
+    const onChange = (e: Event) => setSelection((e as CustomEvent<Selection>).detail);
+    media.addEventListener("change", onMedia);
+    window.addEventListener(CHANGE_EVENT, onChange);
     return () => {
-      media.removeEventListener("change", update);
-      window.removeEventListener("ctx-theme-change", update);
+      media.removeEventListener("change", onMedia);
+      window.removeEventListener(CHANGE_EVENT, onChange);
     };
   }, []);
-  const toggle = () => {
-    const next = currentTheme().name === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem(KEY, next); } catch { /* private mode: keep it for this visit */ }
-    window.dispatchEvent(new Event("ctx-theme-change"));
-  };
-  return [theme, toggle];
-}
 
-/** Runs before paint so a saved theme never flashes the other one. */
-export const THEME_SCRIPT = `try{var t=localStorage.getItem("${KEY}");if(t)document.documentElement.dataset.theme=t}catch(e){}`;
+  return { theme: toChartTheme(resolve(selection, dark)), selection, choose: saveSelection };
+}

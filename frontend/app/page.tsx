@@ -6,6 +6,7 @@ import { datumLabel, EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { Notice } from "@/components/Notice";
 import { Progress } from "@/components/Progress";
 import { SearchBar } from "@/components/SearchBar";
+import { ThemePicker } from "@/components/ThemePicker";
 import { getJob, getOptions, type Options, postQuery } from "@/lib/api";
 import { readRecent, rememberQuestion } from "@/lib/recent";
 import { type Ask, EMPTY_ASK, EXAMPLE_GROUPS, toRequestBody } from "@/lib/request";
@@ -25,7 +26,7 @@ export default function Home() {
   const [view, setView] = useState<View>({ kind: "home" });
   const [selected, setSelected] = useState<Datum | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
-  const [theme, toggleTheme] = useTheme();
+  const { theme, selection, choose } = useTheme();
   const run = useRef(0);
 
   const submit = useCallback(async (a: Ask) => {
@@ -105,9 +106,7 @@ export default function Home() {
             <SearchBar value={ask} onChange={setAsk} onSubmit={submit} busy={busy} options={options} size="compact" />
           </div>
         )}
-        <button className="ghost icon theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${theme.name === "dark" ? "light" : "dark"} mode`}>
-          {theme.name === "dark" ? "☀" : "☾"}
-        </button>
+        <div className="theme-slot"><ThemePicker selection={selection} onChoose={choose} /></div>
       </header>
 
       {view.kind === "home" && (
