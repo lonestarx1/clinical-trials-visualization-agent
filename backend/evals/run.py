@@ -17,7 +17,7 @@ import logging
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import asdict
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -229,7 +229,7 @@ async def main(args: argparse.Namespace) -> Path:
         sheets = await fact_sheets(load_narrator_cases(), ctgov, settings.ctgov_base_url)
     result: dict[str, Any] = {
         "label": args.label,
-        "date": datetime.now(UTC).date().isoformat(),
+        "date": datetime.now().astimezone().date().isoformat(),
         "runs_per_case": args.runs,
         "cases": {},
         "stages": {},
