@@ -236,6 +236,17 @@ async def _counted_years(
     samples = dict(zip(wanted, pages, strict=True))
     urls = {y: s.url(base_url) for y, s in year_searches.items()}
     chart = counted_time_series(plan, counts, samples, limit, search_urls=urls)
+    chart.citation_sources = {
+        str(y): {
+            "params": year_searches[y].params,
+            "fields": fields_for(plan),
+            "sort": f"{dim.filter_piece}:desc",
+            "dimension": dim.key,
+            "count": n,
+        }
+        for y, n in counts.years.items()
+        if n > len(chart.full_citations.get(str(y), []))
+    }
     studies = {
         s["protocolSection"]["identificationModule"]["nctId"]: s for page in pages for s in page
     }

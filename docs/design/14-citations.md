@@ -45,6 +45,8 @@ Every number in a chart is backed by the trials that produced it. For each trial
 - Each data point cites the **exact API query** that reproduces its count: `{ "type": "api_query", "url": "...", "total_count": 326 }`.
 - Trial-level citations for these data points are fetched **on demand** by the citations endpoint (it runs the bucket's query with paging), which costs no API calls unless someone asks.
 
+**As built (2026-10-25):** trials-per-year series counted one call per year (S2) are the only count-only path. Each year row carries its reproducing search as `search_url` and cites a sample of its newest trials inline. The stored data point keeps that year's search (`result_datums.source`), and its `citation_count` is the year's true count. When a client pages past the stored citations, the endpoint reads the next ClinicalTrials.gov page of that search (newest first, 200 at a time), cites each trial by the same rule as the answer (its start year is the row's year), stores the new citations after the existing ones and remembers the next page token. The sample is not repeated, and a later read of the same pages costs no API call. A trial whose record has changed since the answer and no longer fits the year is skipped, so on a day the data updates the listed trials can differ slightly from the count. Before this, the endpoint returned only the inline sample for these rows.
+
 ## `citations: "full"` request option (with a backend size guard)
 
 - A request may ask for all citations inline: `citations: "sample"` (default) or `"full"`.

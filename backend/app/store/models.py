@@ -99,6 +99,11 @@ class ResultDatum(Base):
     label: Mapped[str] = mapped_column(Text)
     value: Mapped[float | None] = mapped_column(Float)
     citation_count: Mapped[int] = mapped_column(Integer)
+    # When the answer read only a sample: the API search listing every trial, the token of
+    # its next unread page, and whether every page has been stored (design Q14).
+    source: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    next_page_token: Mapped[str | None] = mapped_column(Text)
+    complete: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
 
 
 class ResultCitation(Base):

@@ -1,6 +1,7 @@
 """Stored results and their full citation lists (design Q14, Q16)."""
 
 import uuid
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -31,6 +32,10 @@ class Datum:
     label: str
     value: float | None
     citations: list[dict[str, Any]]  # every contributing trial, in citation order
+    # A data point whose answer read only a sample: its true trial count, and the API search
+    # that lists the rest (design Q14). None when `citations` is already the full list.
+    count: int | None = None
+    source: dict[str, Any] | None = None
 
 
 @dataclass
@@ -103,7 +108,9 @@ async def save_result(
                     "datum_key": d.key,
                     "label": d.label,
                     "value": d.value,
-                    "citation_count": len(d.citations),
+                    "citation_count": len(d.citations) if d.count is None else d.count,
+                    "source": d.source,
+                    "complete": d.source is None,
                 }
                 for d in datums
             ],
@@ -132,6 +139,57 @@ async def _live_result(session: AsyncSession, result_id: uuid.UUID) -> Result:
     if result.expires_at <= datetime.now(UTC):
         raise Expired(f"result {result_id} has expired")
     return result
+
+
+# (source, datum key, page token) -> one page of the data point's API search as citations, and
+# the next page's token (None after the last).
+Page = tuple[list[dict[str, Any]], str | None]
+FetchPage = Callable[[dict[str, Any], str, str | None], Awaitable[Page]]
+
+
+async def extend_citations(
+    session: AsyncSession, result_id: uuid.UUID, datum_key: str, *, upto: int, fetch: FetchPage
+) -> None:
+    """Store more of a sampled data point's trials from its API search until `upto` are stored.
+
+    Pages are read in order and appended once: the row lock keeps two readers from fetching
+    the same page. Trials already stored (the answer's own sample) are not repeated.
+    """
+    await _live_result(session, result_id)
+    datum = await session.scalar(
+        select(ResultDatum)
+        .where(ResultDatum.result_id == result_id, ResultDatum.datum_key == datum_key)
+        .with_for_update()
+    )
+    if datum is None or datum.complete or datum.source is None:
+        return
+    stored = await session.scalars(
+        select(ResultCitation.nct_id).where(
+            ResultCitation.result_id == result_id, ResultCitation.datum_key == datum_key
+        )
+    )
+    seen = set(stored)
+    while len(seen) < upto and not datum.complete:
+        page, token = await fetch(datum.source, datum_key, datum.next_page_token)
+        fresh = [c for c in page if c["nct_id"] not in seen]
+        if fresh:
+            await session.execute(
+                insert(ResultCitation),
+                [
+                    {
+                        "result_id": result_id,
+                        "datum_key": datum_key,
+                        "rank": len(seen) + i,
+                        "nct_id": c["nct_id"],
+                        "title": c.get("title"),
+                        "evidence": c["evidence"],
+                    }
+                    for i, c in enumerate(fresh)
+                ],
+            )
+            seen.update(c["nct_id"] for c in fresh)
+        datum.next_page_token, datum.complete = token, token is None
+    await session.flush()
 
 
 async def citation_page(
