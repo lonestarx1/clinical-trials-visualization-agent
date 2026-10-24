@@ -28,6 +28,7 @@ Designed with the user, one question at a time, on 2026-10-24. Each file records
 | 18 | [18-testing.md](18-testing.md) | Unit, contract, integration (recorded API + fake AI), database, cross-check, AI eval (~40), **live end-to-end (~60 questions)**, smoke; CI on every push |
 | 19 | [19-deployment-ui.md](19-deployment-ui.md) | Next.js + ECharts reference UI (citations panel, "how we got this", raw JSON); EC2 + Caddy HTTPS at `api.engineeradriel.com`; IaC; Secrets Manager; Vercel frontend; submission = zip + endpoint |
 | 20 | [20-model-selection.md](20-model-selection.md) | Model per AI stage chosen by a **measured bake-off** (quality bars, then lowest measured cost, then latency); official prices recorded; starting defaults guard/narrator `gpt-5.4-nano`, planner `gpt-5.4-mini`, fallback `gpt-4.1-mini` (different family) |
+| 21 | [21-local-mirror-revisited.md](21-local-mirror-revisited.md) | Mirror **revisited after a 7-minute broad question, still not built**: designed (same Postgres, `registry` schema, JSONB + indexed columns + child tables, daily delta sync), but a local copy can't reproduce the API's synonym/MeSH search (~20% of "lung cancer" trials missed). Hybrid routing of structured-only questions noted as the next step |
 
 ## Fixes made in the consistency review (2026-10-24)
 

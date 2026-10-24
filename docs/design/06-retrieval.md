@@ -54,6 +54,8 @@ We spent real design time on this option before choosing live retrieval. Recorde
 
 The data-source interface (D6.6) makes this a contained change.
 
+**Revisited on 2026-10-25** after a broad question took ~7 minutes: see [21-local-mirror-revisited.md](21-local-mirror-revisited.md). Still not built; the deciding issue was search accuracy (the API resolves synonyms; a local copy can't, yet).
+
 ## How a request is fetched
 
 1. **Size first:** one cheap `countTotal` call (~0.35 s) per search tells us how many studies match, hence how many pages, before we fetch anything.
