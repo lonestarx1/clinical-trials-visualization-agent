@@ -122,7 +122,14 @@ QUERY_OK: dict[str, Any] = {
         },
         "cache": {"plan": "miss", "result": "miss"},
         "trace_id": TRACE_ID,
-        "timings_ms": {"retrieve": 25949, "aggregate": 326, "narrate": 2523, "total": 28799},
+        "timings_ms": {
+            "plan": 2840,
+            "count": 610,
+            "retrieve": 25949,
+            "aggregate": 326,
+            "narrate": 2523,
+            "total": 32260,
+        },
         "details": {},
     },
 }

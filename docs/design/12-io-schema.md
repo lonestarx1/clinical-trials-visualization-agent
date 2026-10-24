@@ -61,7 +61,7 @@ The request schema is in Q5 (`05-request-fields.md`).
     "cache": { "plan": "hit | miss", "result": "hit | miss | revalidated" },
     "details": "non-ok statuses only, see below",
     "trace_id": "uuid",
-    "timings_ms": { "plan": 0, "retrieve": 0, "aggregate": 0, "narrate": 0, "total": 0 }
+    "timings_ms": { "plan": 0, "count": 0, "retrieve": 0, "aggregate": 0, "narrate": 0, "total": 0 }
   }
 }
 ```
