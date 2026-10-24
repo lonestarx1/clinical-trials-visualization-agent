@@ -58,7 +58,8 @@ class Models:
 
 
 @pytest.fixture
-def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[tuple[TestClient, Models]]:
+def client(monkeypatch: pytest.MonkeyPatch, sessions: Any) -> Iterator[tuple[TestClient, Models]]:
+    """`sessions` empties the tables first, so caches never leak between tests."""
     monkeypatch.setenv("OPENAI_API_KEY", "test-key-not-real")
     monkeypatch.setenv("ADMIN_TOKEN", "admin-secret-for-tests")
     monkeypatch.setenv("DATABASE_URL", os.environ["DATABASE_URL"])
