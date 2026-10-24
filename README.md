@@ -225,7 +225,7 @@ The code was written test-first: each `test:` commit fails before the `feat:` co
 | Database (CI) | `make test-db` | 32 tests against Postgres (in its own `ctviz_test` database): repositories, stored results and citation paging, plan and result caches (per citation mode), background jobs (heartbeats, requeue after a restart, expiry), the daily budget (cached answers still served) |
 | Live API | `make test-live` | 18 checks: query syntax against the real API, and **cross-checks**. Our aggregated counts equal the API's own counts exactly, and the sponsor counts and per-year counts equal an independent tally of the raw records |
 | End to end | `make test-e2e` | 11 questions through the running stack, with real models and live data: **the 9 appendix questions all pass**, plus a sponsor-count question and a refused "average duration" |
-| AI evaluation | `make eval`, `make bakeoff` | 42 planner questions, 36 labelled guard requests and 10 narrator fact sheets, scored against the design's quality bars with the real models, 3 runs per case. **Every stage passes every bar** ([results](docs/eval/README.md)), and the models were chosen by a measured bake-off |
+| AI evaluation | `make eval`, `make bakeoff` | 42 planner questions, 36 labelled guard requests and 25 narrator fact sheets, scored against the design's quality bars with the real models, 3 runs per case. **Every stage passes every bar** ([results](docs/eval/README.md)), and the models were chosen by a measured bake-off |
 | Web (CI) | `make test-web` | 66 tests: the chart adapter against the example responses, theme contrast gates, the question, evidence and API-guide helpers |
 
 CI never calls ClinicalTrials.gov or a model: the live and end-to-end suites are opt-in.

@@ -34,7 +34,7 @@ def test_set_sizes_and_unique_ids() -> None:
     assert sum(c.expected == "malicious" for c in GUARD) >= 12
     assert sum(c.expected == "ok" for c in GUARD) >= 15
     assert sum(c.expected == "off_topic" for c in GUARD) >= 4
-    assert len(NARRATOR) >= 10
+    assert len(NARRATOR) >= 25
     for cases in (PLANNER, GUARD, NARRATOR):
         ids = [c.id for c in cases]
         assert len(ids) == len(set(ids))
