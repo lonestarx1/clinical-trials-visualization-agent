@@ -88,6 +88,39 @@ def test_query_entity_is_flagged_and_can_be_hidden() -> None:
     assert (len(nodes(hidden)), len(edges(hidden))) == (14, 15)
 
 
+@pytest.mark.parametrize("term", ["Keytruda", "MK-3475", "lambrolizumab"])
+def test_query_entity_is_found_by_any_name_its_records_list(term: str) -> None:
+    """The records list pembrolizumab's other names (Keytruda, MK-3475, Lambrolizumab), and
+    the API matches them; the node is keyed "pembrolizumab", the MeSH term."""
+    flagged = network(filters={"drugs": [term]})
+    assert [n for n, v in nodes(flagged).items() if v["is_query_entity"]] == ["drug:pembrolizumab"]
+    hidden = network(filters={"drugs": [term]}, options={"hide_query_entity": True})
+    assert "drug:pembrolizumab" not in nodes(hidden)
+    assert (len(nodes(hidden)), len(edges(hidden))) == (14, 15)
+    assert flagged.meta.network["query_entities"] == [  # type: ignore[index]
+        {"term": term, "node": "drug:pembrolizumab", "matched_by": "name"}
+    ]
+
+
+def test_query_entity_named_nowhere_is_the_entity_in_most_trials() -> None:
+    """No record calls it "Pembro", but every trial matched the search: pembrolizumab is in 5
+    of the 7 trials with a drug, and no other drug is in more than 1, so it's the query entity."""
+    flagged = network(filters={"drugs": ["Pembro"]})
+    assert [n for n, v in nodes(flagged).items() if v["is_query_entity"]] == ["drug:pembrolizumab"]
+    assert flagged.meta.network["query_entities"] == [  # type: ignore[index]
+        {"term": "Pembro", "node": "drug:pembrolizumab", "matched_by": "in most trials"}
+    ]
+
+
+def test_no_entity_is_guessed_when_none_is_in_most_trials() -> None:
+    """Breast Neoplasms is in 1 of the 7 trials with a MeSH condition: not the query entity."""
+    result = network(filters={"conditions": ["breast cancer"]}, dimension_2="condition")
+    assert not any(v["is_query_entity"] for v in nodes(result).values())
+    assert result.meta.network["query_entities"] == [  # type: ignore[index]
+        {"term": "breast cancer", "node": None, "matched_by": None}
+    ]
+
+
 def test_communities_are_deterministic() -> None:
     first = {k: v["community"] for k, v in nodes(network()).items()}
     second = {k: v["community"] for k, v in nodes(network()).items()}
