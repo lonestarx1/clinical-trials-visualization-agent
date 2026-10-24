@@ -15,7 +15,7 @@ from typing import Any, Literal
 from pydantic import ValidationError
 
 from app.registry import DIMENSIONS, ChartType, DimensionKind, Intent
-from app.schemas.plan import QueryPlan
+from app.schemas.plan import Filters, QueryPlan
 from app.schemas.request import QueryRequest
 
 DEFAULT_CHART = {
@@ -323,6 +323,33 @@ def _measure_mismatch(plan: QueryPlan, request: QueryRequest) -> list[str]:
     return errors
 
 
+# ---------- the question must name something to filter or group by ----------
+
+# Words that name a grouping ("by phase", "per year", "which countries") or ask for a count.
+_NAMED = re.compile(
+    r"\b(?:by|per|each|across|over time|trend|top|most|fewest|which|where|when|compare|vs"
+    r"|distribut\w*|breakdown|break down|split|how many|number of|count|total"
+    r"|phases?|status\w*|types?|sponsor\w*|compan\w*|funder\w*|interventions?|age\w*|sex"
+    r"|gender|volunteers?|allocation|randomi[sz]\w*|mask\w*|blind\w*|purposes?|results?"
+    r"|years?|annual\w*|posted|registered|countr\w*|nations?|states?|places?|locations?"
+    r"|collaborat\w*|drugs?|treatments?|therap\w*|conditions?|diseases?|sites?|hospitals?"
+    r"|investigators?|enrol\w*|participants?|sizes?|duration|long|length)\b",
+    re.IGNORECASE,
+)
+
+
+def _too_broad(plan: QueryPlan, request: QueryRequest) -> list[str]:
+    """ "Show me trials": no filter, no groups, and no grouping or count in the question. Answered,
+    it reads the whole registry (minutes of work) for a chart the user never asked for."""
+    if plan.filters != Filters() or plan.groups or _NAMED.search(request.query):
+        return []
+    return [
+        "The question is too broad: it names no condition, drug, sponsor, place, phase or "
+        "other grouping. Set scope out_of_scope with scope_reason saying so, and a "
+        "scope_suggestion with a narrower question (e.g. a condition by phase)."
+    ]
+
+
 # ---------- the gate ----------
 
 
@@ -356,6 +383,7 @@ def check_plan(raw: dict[str, Any], request: QueryRequest, *, final: bool = Fals
     result.errors += compat
     result.errors += _grounding_errors(plan, request)
     result.errors += _measure_mismatch(plan, request)
+    result.errors += _too_broad(plan, request)
 
     unrequested = _unrequested(plan, request)
     if unrequested and not plan.assumptions:
