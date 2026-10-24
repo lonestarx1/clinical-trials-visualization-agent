@@ -3,7 +3,6 @@
 Expected values were read by hand from the sample JSON (jq), not from this code.
 """
 
-import copy
 from datetime import date
 
 import pytest
@@ -115,7 +114,7 @@ def test_sponsor_names_are_case_folded_keys_with_raw_labels() -> None:
     ]
 
 
-def test_drugs_group_by_mesh_term() -> None:
+def test_drugs_group_by_the_mesh_term_of_each_drug_intervention() -> None:
     values = extract(load_sample("combo"), "drug")
     assert [v.key for v in values] == [
         "anastrozole",
@@ -125,13 +124,27 @@ def test_drugs_group_by_mesh_term() -> None:
         "pembrolizumab",
     ]
     mesh = "derivedSection.interventionBrowseModule.meshes"
-    assert values[2].evidence[0] == Evidence(f"{mesh}[2].term", "exemestane")
+    path = "protocolSection.armsInterventionsModule.interventions"
+    # the citation shows both the MeSH term and the raw intervention name it was matched to
+    assert values[1].evidence == (
+        Evidence(f"{mesh}[1].term", "Doxorubicin"),
+        Evidence(f"{path}[1].name", "Doxorubicin Hydrochloride"),
+    )
 
 
-def test_drugs_fall_back_to_cleaned_names_without_mesh_and_skip_placebo() -> None:
-    study = copy.deepcopy(load_sample("placebo"))
-    del study["derivedSection"]["interventionBrowseModule"]
-    values = extract(study, "drug")
+def test_mesh_terms_without_a_drug_intervention_are_ignored() -> None:
+    """Live finding: trial-level MeSH lists include 'Specimen Handling', 'Introns', ..."""
+    assert keys("many_locations", "drug") == ["ipilimumab", "pembrolizumab", "interferon alpha-2"]
+    assert keys("future_start", "drug") == ["dabrafenib", "trametinib", "pembrolizumab"]
+
+
+def test_drugs_without_a_matching_mesh_term_keep_their_cleaned_name() -> None:
+    assert keys("multi_phase", "drug") == ["tew-7197"]  # MeSH says vactosertib: no shared word
+    assert keys("missing_start", "drug")[0] == "individual patient tcr transduced pbl"
+
+
+def test_placebo_interventions_are_skipped() -> None:
+    values = extract(load_sample("placebo"), "drug")
     assert [v.key for v in values] == ["chemotherapy plus tcm 1&icis plustcm2"]
     path = "protocolSection.armsInterventionsModule.interventions"
     assert values[0].evidence == (
