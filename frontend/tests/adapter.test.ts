@@ -173,3 +173,14 @@ describe("table view", () => {
     expect(table.rows.length).toBe((viz.data as NetworkData).nodes.length + (viz.data as NetworkData).edges.length);
   });
 });
+
+describe("direct labels", () => {
+  it("single-series horizontal bars carry their values at the bar end", () => {
+    const chart = toChart(example("4-recruiting-countries"));
+    if (chart.kind !== "echarts") throw new Error("expected echarts");
+    const series = (chart.option.series as any[])[0];
+    expect(series.label.show).toBe(true);
+    expect(series.label.position).toBe("right");
+    expect((chart.option.xAxis as any).nameLocation).toBe("middle");
+  });
+});
