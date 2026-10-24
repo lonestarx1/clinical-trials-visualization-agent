@@ -21,3 +21,15 @@ def test_the_guard_prompt_calls_writing_requests_misuse() -> None:
     """It labelled "Write a 1000-word essay about ..." off_topic, not malicious."""
     assert "however harmless the topic" in guard.INSTRUCTIONS
     assert "off_topic" in guard.INSTRUCTIONS and "questions" in guard.INSTRUCTIONS
+
+
+def test_the_planner_prompt_never_drops_a_named_term() -> None:
+    """It dropped "melanoma" from "intervention types for melanoma trials" (PA-4, 1 run in 3)."""
+    assert "Never drop one" in planner.INSTRUCTIONS
+
+
+def test_the_guard_prompt_keeps_advice_questions_off_topic_and_filters_ok() -> None:
+    """After the misuse rule, "How do I bake sourdough bread?" became malicious, and
+    "Ignore trials without a start date ..." was still blocked."""
+    assert "cooking" in guard.INSTRUCTIONS and "shopping" in guard.INSTRUCTIONS
+    assert "ignore trials without a start date" in guard.INSTRUCTIONS

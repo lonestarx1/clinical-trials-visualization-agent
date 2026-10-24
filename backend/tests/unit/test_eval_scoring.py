@@ -196,3 +196,29 @@ def test_planner_summary_names_the_failed_properties_per_case() -> None:
         PlannerRun("c", 1, {"dimension": True}, True, True, 1, 900, 0.001),
     ]
     assert planner_summary(runs)["failures"] == {"b": {"dimension": 2, "scope": 1}}
+
+
+def test_a_base_filter_repeating_the_groups_terms_is_not_an_extra_filter() -> None:
+    """(A or B) and A is A: the chart is the same, so it isn't a wrong filter."""
+    plan = PLAN | {
+        "chart_type": "grouped_bar_chart",
+        "filters": {"drugs": ["pembrolizumab", "nivolumab"], "sponsor_role": "any"},
+        "groups": [
+            {"label": "P", "filters": {"drugs": ["pembrolizumab"]}},
+            {"label": "N", "filters": {"drugs": ["nivolumab"]}},
+        ],
+    }
+    expect = {"groups": [{"drugs": ["pembrolizumab"]}, {"drugs": ["nivolumab"]}], "filters": {}}
+    assert score_plan(expect, plan)["filters.extra"] is True
+
+
+def test_a_base_filter_narrower_than_the_groups_is_still_extra() -> None:
+    plan = PLAN | {
+        "filters": {"drugs": ["pembrolizumab"]},
+        "groups": [
+            {"label": "P", "filters": {"drugs": ["pembrolizumab"]}},
+            {"label": "N", "filters": {"drugs": ["nivolumab"]}},
+        ],
+    }
+    expect = {"groups": [{"drugs": ["pembrolizumab"]}, {"drugs": ["nivolumab"]}], "filters": {}}
+    assert score_plan(expect, plan)["filters.extra"] is False
