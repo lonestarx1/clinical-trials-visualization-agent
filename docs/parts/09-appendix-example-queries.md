@@ -1,34 +1,16 @@
-# Appendix: Example Query Types (Non-Exhaustive)
+# Appendix: example question classes
 
-## 1. Source text (verbatim)
+## 1. Summary
 
-> You do not need to support all of these, but they illustrate the breadth we care about:
->
-> **Time trends**
->
-> - "How has the number of trials for *[drug]* changed per year since 2015?"
-> - "How many trials started each year for *[condition]*?"
->
-> **Distributions**
->
-> - "How are *[condition]* trials distributed across phases?"
-> - "What are the most common intervention types for *[drug/condition]* trials?"
->
-> **Comparisons**
->
-> - "Compare phases for trials involving *Drug A* vs *Drug B*."
-> - "Compare sponsor categories across two conditions."
->
-> **Geographic patterns**
->
-> - "Which countries have the most recruiting trials for *[condition]*?"
->
-> **Relationships/networks**
->
-> - "Show a network of sponsors <-> drugs for *[condition]* trials."
-> - "Which drugs frequently co-occur in combination studies (drug <-> drug network)?"
->
-> To repeat, these are just some example queries and visualization possible. You are not restricted to these in your assignment.
+The brief lists example questions to show the range of questions it has in mind. Supporting all of them is not required, and other questions and charts are welcome. In our own words, the examples are:
+
+| Class | Example questions |
+|---|---|
+| Time trends | How the number of trials for a given drug changed per year since 2015; how many trials started each year for a given condition |
+| Distributions | How a condition's trials are spread across phases; the most common intervention types for a drug's or condition's trials |
+| Comparisons | Phases of trials for drug A vs drug B; sponsor categories across two conditions |
+| Geographic patterns | The countries with the most recruiting trials for a condition |
+| Relationships and networks | A network of sponsors and drugs for a condition's trials; drugs that often appear together in combination studies (a drug-drug network) |
 
 ## 2. Atomic requirements
 
@@ -38,7 +20,9 @@
 | PA-1..9 | SHOULD | The 9 questions below each map to a plan (see table). |
 | PA-10 | MAY | Go beyond these (e.g. histogram/scatter on numeric fields). |
 
-## 3. Question-by-question breakdown (proposal; API field names to verify)
+## 3. Question-by-question breakdown
+
+This was the first proposal, written before the API fields were verified. How each question is now handled is in the appendix table of [`../design/requirements-coverage.md`](../design/requirements-coverage.md); all 9 pass end to end.
 
 | ID | Question | Filters | Group-by / structure | Measure | Chart | Details to watch |
 |---|---|---|---|---|---|---|
@@ -52,19 +36,19 @@
 | PA-8 | Network **sponsors <-> drugs** for *[condition]* | condition | bipartite: sponsor nodes, drug nodes; edge = trial links them | edge weight = number of trials | `network_graph` | Lead sponsor only, or collaborators too? Drug names need normalisation (dose text, brand vs generic). Exclude placebo. Prune to top-N. |
 | PA-9 | Drugs that **co-occur in combination studies** (drug <-> drug) | trials with ≥2 drug interventions (optionally a condition scope) | co-occurrence: drug nodes; edge = both in the same trial | edge weight = number of trials | `network_graph` | No condition given means all of ClinicalTrials.gov, which is too large. Require or default a scope (e.g. a condition or drug), and say so in `meta`. Exclude placebo/standard-of-care terms. Self-loops removed. |
 
-## 4. What it really means
+## 4. What it means
 
-- All 9 fit **one plan shape**: `filters + (optional) comparison groups + dimension(s) + measure -> chart type`. That's the "single coherent approach" Part 4 asks for. If our plan schema can express all 9 without special cases, coverage is solved by design.
+- All 9 fit **one plan shape**: `filters + (optional) comparison groups + dimension(s) + measure -> chart type`. That is the "one coherent approach" Part 4 asks for. If our plan schema can express all 9 without special cases, coverage is solved by design.
 - Repeated hard parts, in priority order:
   1. Multi-valued fields: phases, interventions, countries, conditions.
   2. Large result sets for broad conditions (pagination / caps / count queries).
   3. Name normalisation for drugs and sponsors (affects PA-8, PA-9, and drug filters).
   4. Comparison = several sub-queries, merged into one chart.
-- PA-9 has no scope in the wording, so it tests whether we handle "too broad" questions sensibly instead of timing out.
+- PA-9 names no scope, so it tests whether a "too broad" question is handled sensibly instead of timing out.
 
 ## 5. Acceptance checks
 
 - [ ] Each of PA-1..PA-9 runs end to end with a real entity filled in (e.g. pembrolizumab, nivolumab, breast cancer, lung cancer, Alzheimer's disease). Results go to a test/eval script.
 - [ ] 5 of them (one per class) become the official `examples/` for Part 6.
 - [ ] Each multi-valued counting rule is documented in the README and reported in `meta`.
-- [ ] Too-broad queries (PA-9 with no scope) return a sensible, scoped answer with a note, not a timeout.
+- [ ] Too-broad queries (PA-9 with no scope) return a sensible answer with a note, not a timeout. (Decided in [design Q6](../design/06-retrieval.md): instead of forcing a scope, such questions run as a background job, and the planner may suggest a narrower scope.)

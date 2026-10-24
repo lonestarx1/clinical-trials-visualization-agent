@@ -109,7 +109,7 @@ The [API guide](https://trials.cheiron.engineeradriel.com/docs) walks through re
 | Method | Path | Purpose |
 |---|---|---|
 | `POST` | `/v1/query` | Question -> chart spec (200), or a background job for broad questions (**202** + `poll_url`) |
-| `GET` | `/v1/jobs/{job_id}` | Job status, page progress, and the result when done |
+| `GET` | `/v1/jobs/{job_id}` | Job status, page progress, and the result when done (kept 24 h after finishing, then `410 expired`) |
 | `GET` | `/v1/results/{result_id}/citations?datum=<key>&cursor=&page_size=` | **Every** trial behind one data point (bar, bucket, node, edge...), keyset-paginated |
 | `GET` | `/v1/options` | Dimensions, measures, chart types and filter values with labels (for pickers) |
 | `GET` | `/v1/usage` | Today's LLM calls and cost (admin token) |
@@ -125,10 +125,11 @@ The [API guide](https://trials.cheiron.engineeradriel.com/docs) walks through re
 | `status` | string[] | no | Overall status, e.g. `RECRUITING` or `"Recruiting"` |
 | `start_year`, `end_year` | int | no | Start-date range |
 | `compare` | 2-4 x `{label, drug_name?, condition?, sponsor?, country?}` | no | Comparison groups |
-| `chart_type` | enum | no | `bar_chart`, `grouped_bar_chart`, `time_series`, `histogram`, `scatter_plot`, `network_graph`, `metric`; checked for compatibility |
+| `chart_type` | enum | no | `bar_chart`, `grouped_bar_chart`, `time_series`, `histogram`, `scatter_plot`, `network_graph`, `metric`. Checked against the plan: one that can't show the question answers 200 `could_not_interpret` (not 422: fit depends on the dimension the planner picks) |
 | `top_n` | int 1-50 | no | |
 | `match_mode` | `strict` \| `broad` | no | Drug/condition matching (default `strict`) |
 | `sponsor_role` | `lead` \| `any` | no | Default `lead` |
+| `citations` | `sample` \| `full` | no | Default `sample`. `full` inlines every citation, up to 2,000 per response (`CITATIONS_FULL_MAX`); above that it falls back to a sample and `meta.citations.reason` says why |
 | `citations_per_datum` | int 1-50 | no | Default 5 |
 | `phase_mode`, `condition_source`, `include_unknown`, `edge_metric`, `hide_query_entity` | | no | See [request fields](docs/design/05-request-fields.md) |
 
@@ -163,9 +164,9 @@ Unknown fields are rejected (422). Full schema: `/openapi.json`.
 }
 ```
 
-Per chart type: [response schema design](docs/design/12-io-schema.md). Each data point carries up to `citations_per_datum` citations inline, plus `citation_count`. The full list comes from the citations endpoint, using the response's `result_id` and the data point's `key`. `meta.cache` says whether the plan and result came from cache (`hit`, `revalidated`, `miss`).
+Per chart type: [response schema design](docs/design/12-io-schema.md). Each data point carries up to `citations_per_datum` citations inline (all of them with `citations: "full"`), plus `citation_count`. The full list always comes from the citations endpoint, using the response's `result_id` and the data point's `key`. `meta.citations` reports the mode `requested` and `applied`, and the `reason` when they differ. `meta.cache` says whether the plan and result came from cache (`hit`, `revalidated`, `miss`).
 
-Errors share one body: `{"error": {"code", "message", "details", "trace_id"}}` with codes `invalid_request` (422), `rejected_by_policy` (400), `not_found` (404), `expired` (410), `too_many_requests` (429), `upstream_unavailable` / `llm_unavailable` / `safety_check_unavailable` / `budget_exceeded` (503) and `internal_error` (500).
+Errors share one body, routing errors included: `{"error": {"code", "message", "details", "trace_id"}}` with codes `invalid_request` (422), `rejected_by_policy` (400), `unauthorized` (401, `/v1/usage`), `not_found` (404, also unknown paths), `method_not_allowed` (405), `expired` (410, results and jobs), `too_many_requests` (429), `upstream_unavailable` / `llm_unavailable` / `safety_check_unavailable` / `budget_exceeded` (503) and `internal_error` (500). Once the daily AI budget is spent, `budget_exceeded` goes only to questions that need a model call: an exact repeat whose stored answer is still valid is answered with no model call.
 
 ## Examples (real outputs)
 
@@ -201,8 +202,8 @@ The code was written test-first: each `test:` commit fails before the `feat:` co
 
 | Suite | Command | What |
 |---|---|---|
-| Offline (CI) | `make test` | 395 unit, contract and integration tests: compiler strings written by hand, chart numbers worked out by hand from recorded real trials and small fixtures, scripted fake models for the agents |
-| Database (CI) | `make test-db` | 18 tests against Postgres (in its own `ctviz_test` database): repositories, stored results and citation paging, plan and result caches, background jobs (heartbeats, requeue after a restart), the daily budget |
+| Offline (CI) | `make test` | 407 unit, contract and integration tests: compiler strings written by hand, chart numbers worked out by hand from recorded real trials and small fixtures, scripted fake models for the agents |
+| Database (CI) | `make test-db` | 23 tests against Postgres (in its own `ctviz_test` database): repositories, stored results and citation paging, plan and result caches (per citation mode), background jobs (heartbeats, requeue after a restart, expiry), the daily budget (cached answers still served) |
 | Live API | `make test-live` | 18 checks: query syntax against the real API, and **cross-checks**. Our aggregated counts equal the API's own counts exactly, and the sponsor counts and per-year counts equal an independent tally of the raw records |
 | End to end | `make test-e2e` | 11 questions through the running stack, with real models and live data: **the 9 appendix questions all pass**, plus a sponsor-count question and a refused "average duration" |
 | Web (CI) | `make test-web` | 57 tests: the chart adapter against the example responses, theme contrast gates, the question, evidence and API-guide helpers |

@@ -7,10 +7,15 @@ from typing import Any
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.store.models import Job
+from app.store.models import Job, Result
+from app.store.results import Expired, NotFound
 
 ACTIVE = ("pending", "running")
 RETENTION = timedelta(hours=24)
+
+
+class JobExpired(Expired):
+    """A finished job past its retention, or whose stored result has expired (410)."""
 
 
 async def create(
@@ -66,6 +71,26 @@ async def claim_next(session: AsyncSession, *, worker_id: str) -> Job | None:
 
 async def get(session: AsyncSession, job_id: uuid.UUID) -> Job | None:
     return await session.get(Job, job_id, populate_existing=True)
+
+
+async def get_live(session: AsyncSession, job_id: uuid.UUID) -> tuple[Job, Result | None]:
+    """A job and its stored result, expiring the same way results do (design Q14, Q17).
+
+    `expires_at` is set when a job finishes. A succeeded job also expires with its result:
+    its `result` would otherwise outlive the citations it points to.
+    """
+    job = await get(session, job_id)
+    if job is None:
+        raise NotFound(f"no job {job_id}")
+    now = datetime.now(UTC)
+    if job.expires_at is not None and job.expires_at <= now:
+        raise JobExpired(f"job {job_id} has expired")
+    result = None
+    if job.result_id is not None:
+        result = await session.get(Result, job.result_id)
+        if result is None or result.expires_at <= now:
+            raise JobExpired(f"the result of job {job_id} has expired")
+    return job, result
 
 
 async def progress(session: AsyncSession, job_id: uuid.UUID, value: dict[str, Any]) -> None:

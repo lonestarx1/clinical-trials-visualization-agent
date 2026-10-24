@@ -29,16 +29,20 @@ def request_key(request: QueryRequest, settings: Settings) -> str:
     return _hash({"query": query, "fields": fields, "planner": planner_version(settings)})
 
 
-def result_key(plan: QueryPlan, citations_per_datum: int) -> str:
+def result_key(plan: QueryPlan, citations_per_datum: int, citations: str = "sample") -> str:
+    """One stored answer per plan and citation options: a `full` answer inlines different
+    citations from a `sample` one, so a reused answer always honours the mode asked for."""
     return _hash(
         {
             "plan": plan.model_dump(mode="json"),
             "citations_per_datum": citations_per_datum,
+            "citations": citations,
             "code": CODE_VERSION,
             "schema": SCHEMA_VERSION,
         }
     )
 
 
-# Request fields that change only how much citation detail is inlined, not the plan.
+# Request fields that change only how much citation detail is inlined, not the plan: left out
+# of the plan-cache key, but part of the result key (result_key).
 _RENDER_ONLY = {"citations", "citations_per_datum"}

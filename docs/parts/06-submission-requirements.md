@@ -1,67 +1,55 @@
-# Part 6: Submission Requirements
+# Part 6: Deliverables
 
-## 1. Source text (verbatim)
+## 1. Summary
 
-> Submit a zip file containing:
->
-> 1. **Code:** All source code required to run the service.
-> 2. **README:** must include
->    - how to run (install, configure, start)
->    - request/response schema documentation (inputs/outputs)
->    - key design decisions and tradeoffs
->    - limitations and what you would improve with more time
-> 3. **Example Runs:** Provide **3-5 example queries** with the **actual JSON outputs** produced by your system.
-> 4. **(Optional) Demo**
->    - a small UI
->    - a deployed endpoint
->    - a short demo video
+The submission contains:
 
-Related, from Cheiron's email (2026-10-24 12:50 KST):
+1. **Code:** all source code needed to run the service.
+2. **README** covering how to run it (install, configure, start), the request and response schemas, the key design decisions and trade-offs, and the limitations and what we would improve with more time.
+3. **Example runs:** 3 to 5 example questions, each with the actual JSON the system returned.
+4. **Optional demo:** a small UI, a deployed endpoint, or a short video.
 
-> Submit Your Work: https://you.ashbyhq.com/Cheiron/assignment/593473ca-1a6c-4167-8c9c-905a36f54cbe
-> A file or GitHub link both work.
-> Please submit before your 24-hour window closes.
-> Late submissions won't be considered, so plan accordingly.
+The brief asks for an archive of the work; a repository link was also accepted. The work is submitted within the exercise's time box.
 
 ## 2. Atomic requirements
 
-| ID | Level | Requirement | Source phrase |
-|---|---|---|---|
-| P6-1 | MUST | Include **all** source code needed to run the service: nothing missing, no private dependencies, no hard-coded local paths. | "All source code required to run the service." |
-| P6-2 | MUST | README: **how to run**, covering all three of **install, configure, start**. | "how to run (install, configure, start)" |
-| P6-3 | MUST | README: **request and response schema** documentation. | "request/response schema documentation (inputs/outputs)" |
-| P6-4 | MUST | README: **key design decisions and tradeoffs**. | "key design decisions and tradeoffs" |
-| P6-5 | MUST | README: **limitations** and **what we'd improve with more time**. | "limitations and what you would improve with more time" |
-| P6-6 | MUST | **3 to 5** example queries, each with the **actual** JSON output from **our system**, not hand-written. | "3-5 example queries with the actual JSON outputs produced by your system" |
-| P6-7 | BONUS | Small UI. | "a small UI" |
-| P6-8 | BONUS | Deployed endpoint. | "a deployed endpoint" |
-| P6-9 | BONUS | Short demo video. | "a short demo video" |
-| P6-10 | MUST | Submit through the Ashby link **before Sun 2026-10-25 15:00 KST**. Late is rejected. | email |
-| P6-11 | MUST | Format: a zip file **or** a GitHub link. | PDF + email |
+| ID | Level | Requirement |
+|---|---|---|
+| P6-1 | MUST | Include **all** source code needed to run the service: nothing missing, no private dependencies, no hard-coded local paths. |
+| P6-2 | MUST | README: **how to run**, covering all three of **install, configure, start**. |
+| P6-3 | MUST | README: **request and response schema** documentation. |
+| P6-4 | MUST | README: **key design decisions and trade-offs**. |
+| P6-5 | MUST | README: **limitations** and **what we would improve with more time**. |
+| P6-6 | MUST | **3 to 5** example queries, each with the **actual** JSON output from **our system**, not written by hand. |
+| P6-7 | BONUS | A small UI. |
+| P6-8 | BONUS | A deployed endpoint. |
+| P6-9 | BONUS | A short demo video. |
+| P6-10 | MUST | Submit within the exercise's time box. |
+| P6-11 | MUST | Format: an archive **or** a repository link. |
 
-## 3. What it really means
+## 3. What it means
 
-- "Configure" means: which environment variables, which API key, and the defaults. `.env.example` plus a table in the README.
-- "Actual JSON outputs" will likely be compared with what the code does. They must be produced by a script against the real system and saved as files (e.g. `examples/01-time-trend.request.json` + `.response.json`), and they must match the current schema at submission.
-- Exactly **3-5**: not 2, not 12. Pick 5 that show the widest range: the 5 appendix classes, including a network graph and a comparison. Extra examples can go in a separate folder if they add value, but the 5 main ones come first.
-- Optional demo items are bonus points, but only **after** the MUST items are solid.
+- "Configure" means: which environment variables, which API key, and the defaults. A `.env.example` plus a section in the README.
+- "Actual JSON outputs" are likely to be compared with what the code does. They must be produced by a script against the real system and saved as files, and they must match the current schema at submission. (Built: [`../examples/`](../examples).)
+- Exactly **3 to 5**: not 2, not 12. Pick the 5 that show the widest range: the 5 appendix classes, including a network graph and a comparison.
+- The optional demo items earn bonus points, but only **after** the MUST items are solid.
 
-## 4. Ambiguities and proposed decisions
+## 4. Ambiguities and decisions
 
-- **Zip vs GitHub link.** The email allows either. **Decided (Q19):** submit a **zip of the repository** plus the **deployed endpoint** (`https://api.engineeradriel.com` + the Vercel frontend). The git history (with `.git` included or a public repo link) shows iteration, which Part 8 rewards.
-  - As a safety net, also attach a zip, if the Ashby form accepts both.
-  - Make sure the repo has no secrets (`.env` is ignored; scan before pushing).
-- **Should example runs be frozen after LLM or API changes?** Live data changes daily. Proposed: save the outputs with a `retrieved_at` timestamp, and note that live counts will drift.
-- **Deployed endpoint and the LLM key.** A public endpoint spends Cheiron's OpenAI key.
-  - Proposed: rate limit plus a short daily cap, or a shared demo token.
-  - The key must be stored as a secret on the host, never in the repo.
-  - Decide in the deploy step.
-- **Demo video.** Low cost if done at the end with a screen recording (2-3 minutes). Optional.
+- **Archive vs repository link.** Either works. **Decided ([design Q19](../design/19-deployment-ui.md)):** an archive of the repository plus a **deployed endpoint**. The git history shows iteration, which Part 8 rewards.
+  - The repository must contain no secrets (`.env` is git-ignored, and the history is scanned before pushing).
+  - The deployment target first planned in Q19 (`api.engineeradriel.com` plus a Vercel frontend) was replaced on 2026-10-25. **Resolved:** the web app and API run on Kubernetes (k3s) on one EC2 instance, at https://trials.cheiron.engineeradriel.com and https://api.cheiron.engineeradriel.com; see [design Q19](../design/19-deployment-ui.md), "Revision (2026-10-25)".
+- **Should example runs be frozen after model or API changes?** Live data changes daily. The outputs are saved with a `retrieved_at` timestamp, and live counts are expected to drift.
+- **Deployed endpoint and model cost.** A public endpoint spends money on every model call.
+  - Proposed: a rate limit plus a daily spending cap.
+  - The API key is stored as a secret on the host, never in the repository.
+  - **Resolved:** configurable per-client limits ([design Q19](../design/19-deployment-ui.md), "Configurable limits"), a daily AI spending cap that returns `budget_exceeded` ([design Q16](../design/16-database.md), [Q17](../design/17-error-handling.md)), and the key kept in AWS Secrets Manager (Q19 revision).
+- **Demo video.** Low cost if recorded at the end (2 to 3 minutes). Optional.
 
 ## 5. Acceptance checks
 
-- [ ] Fresh clone + README steps on a clean machine (or clean Docker) -> service runs. Actually test this before submitting.
-- [ ] README has all 4 required sections plus the Part 8 integrity section.
-- [ ] `examples/` holds 3-5 request/response pairs created by a script, and they validate against the schema.
-- [ ] No secrets in git history (`git log -p | grep -i "sk-"` or a secret scanner).
-- [ ] Submitted on Ashby with margin (target ~14:00 KST Sunday). Screenshot of the confirmation saved.
+- [ ] A fresh clone plus the README steps on a clean machine (or clean Docker) gives a running service.
+- [ ] The README has all 4 required sections plus the Part 8 tool-use section.
+- [ ] `examples/` holds 3 to 5 request and response pairs created by a script, and they validate against the schema.
+- [ ] No secrets in the git history (a secret scanner, or `git log -p | grep -i "sk-"`).
+- [ ] Submitted within the time box.

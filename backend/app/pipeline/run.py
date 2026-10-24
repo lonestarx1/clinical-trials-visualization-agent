@@ -12,7 +12,7 @@ import uuid
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Literal
 
 from app.agents.narrator import Narration
 from app.ctgov.client import PAGE_SIZE, CtgovClient, InconsistentResults, VersionInfo
@@ -45,6 +45,8 @@ log = logging.getLogger(__name__)
 
 Narrator = Callable[[QueryPlan, Visualization, ChartMeta], Awaitable[Narration]]
 Progress = Callable[[int, int], Awaitable[None]]  # (pages_done, pages_total)
+CitationMode = Literal["sample", "full"]
+CITATIONS_FULL_MAX = 2000  # default for Settings.citations_full_max
 
 
 def _ms(start: float) -> int:
@@ -129,7 +131,12 @@ class Executed:
 
 
 async def prepare(
-    plan: QueryPlan, ctgov: CtgovClient, *, citations_per_datum: int, now: datetime | None = None
+    plan: QueryPlan,
+    ctgov: CtgovClient,
+    *,
+    citations_per_datum: int,
+    citations: CitationMode = "sample",
+    now: datetime | None = None,
 ) -> Prepared:
     now = now or datetime.now(UTC)
     searches = compile_plan(plan)
@@ -144,7 +151,7 @@ async def prepare(
         filters=_filters_meta(plan),
         assumptions=list(plan.assumptions),
         warnings=[w for s in searches for w in s.warnings],
-        citations=CitationsMeta(per_datum=citations_per_datum),
+        citations=CitationsMeta(requested=citations, per_datum=citations_per_datum),
         trace_id=str(uuid.uuid4()),
         retrieved_at=now.isoformat(timespec="seconds"),
     )
@@ -195,6 +202,7 @@ async def execute(
     *,
     base_url: str,
     citations_per_datum: int = 5,
+    citations_full_max: int = CITATIONS_FULL_MAX,
     now: datetime | None = None,
     narrator: Narrator | None = None,
     progress: Progress | None = None,
@@ -226,7 +234,7 @@ async def execute(
         ]
         if meta.citations is not None:
             meta.citations.applied = "sample"
-            meta.citations.reason = "counted per year"
+            meta.citations.reason = "counted per year: each year cites a sample of its trials"
         meta.notes.append(COUNTED_NOTE)
         retrieve_ms = _ms(retrieve_start)
         aggregate_start = time.perf_counter()
@@ -234,8 +242,36 @@ async def execute(
         chart, studies, retrieve_ms, aggregate_start = await _downloaded(
             prepared, ctgov, base_url, citations_per_datum, now, progress
         )
+        if meta.citations is not None:
+            _apply_citation_mode(chart, meta.citations, citations_full_max)
+    # After the citation mode: full lists are checked too (Q14, `full` never skips the check).
     await asyncio.to_thread(verify_citations, chart.visualization, studies)
     return await _finish_chart(prepared, chart, retrieve_ms, aggregate_start, stored, narrator)
+
+
+def _apply_citation_mode(chart: ChartResult, cited: CitationsMeta, full_max: int) -> None:
+    """`citations: "full"` inlines every citation, unless the total is above `full_max` (Q14).
+
+    Above the limit the sample stays, and `reason` says why; the full lists are still stored
+    for the citations endpoint either way.
+    """
+    if cited.requested != "full":
+        return
+    total = sum(len(c) for c in chart.full_citations.values())
+    if total > full_max:
+        cited.applied = "sample"
+        cited.reason = (
+            f"{full_max:,} citation limit exceeded ({total:,} contributing trial references); "
+            "page through them with the citations endpoint"
+        )
+        return
+    data: Any = chart.visualization.data
+    for point in [*data["nodes"], *data["edges"]] if isinstance(data, dict) else data:
+        full = chart.full_citations.get(str(point["key"]))
+        if full is not None:
+            point["citations"] = list(full)
+            point["citations_truncated"] = point["citation_count"] > len(full)
+    cited.applied = "full"
 
 
 async def _downloaded(
@@ -335,11 +371,14 @@ async def run_plan(
     *,
     base_url: str,
     citations_per_datum: int = 5,
+    citations: CitationMode = "sample",
     now: datetime | None = None,
     narrator: Narrator | None = None,
 ) -> QueryResponse:
     """prepare + execute in one go (debug endpoint and tests)."""
-    prepared = await prepare(plan, ctgov, citations_per_datum=citations_per_datum, now=now)
+    prepared = await prepare(
+        plan, ctgov, citations_per_datum=citations_per_datum, citations=citations, now=now
+    )
     executed = await execute(
         prepared,
         ctgov,
