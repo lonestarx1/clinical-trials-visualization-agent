@@ -157,9 +157,23 @@ The SQL times are estimates, to be measured. With indexes on the extracted colum
 | `registry.sync_runs` | As in Q21 |
 | `registry.drift` | Each failed check or shadow-run difference: the search, the live and mirror values, and what was refreshed |
 
+## Terms of use (checked 2026-10-25)
+
+ClinicalTrials.gov's [Terms and Conditions](https://clinicaltrials.gov/about-site/terms-conditions) apply to "all data obtained from ClinicalTrials.gov, independent of format and method of acquisition", and the data "are available to all requesters, both within and outside the United States, at no charge". Nothing in them forbids keeping a copy. They stay in effect "as long as the user retains any of the data". (The page renders in the browser; the text was read from the site's own script bundle on 2026-10-25.)
+
+| The terms say | How `fast` mode meets it |
+|---|---|
+| "Attribute the source of the data as ClinicalTrials.gov" | Every answer already names ClinicalTrials.gov and links the live search; `fast` answers say "from our copy of ClinicalTrials.gov" |
+| "Update the data such that they are current at all times" | The daily update (Part 1), and `fast` answers only when the mirror matches the API's current `dataTimestamp`; otherwise `live` |
+| "Clearly display the date the data were processed by ClinicalTrials.gov" | `meta.data_timestamp`, already shown in the web app |
+| "State any modifications made to the content of the data" | Records are stored as the API returns them, limited to the fields the registry uses (34, listed in code); no values are changed. Grouping rules are stated per answer, as today (Q9, Q11) |
+| Don't "assert any proprietary rights" or present it as other than a U.S. Government database | The API guide and README say the data belong to ClinicalTrials.gov (NLM) |
+| Don't use email addresses from the database for marketing | The mirror stores no email fields |
+| Some data "may be subject to the copyright of third parties" | We store and show only the structured fields charts need, no free-text descriptions |
+
 ## Rollout
 
-1. **Terms of use:** read and record them (Q21, step 1). Credit the source and show the data date (already shown).
+1. **Terms of use:** done, see above.
 2. **Mirror ingestion:** the sync loop, first load, daily update, removals by bisection, then the weekly re-sync. Off by default (`MIRROR_SYNC_ENABLED`). Measure O5.
 3. **`to_sql` and the cross-check suite:** for every registry enum value and every year, the mirror count equals the live count; for a sample of terms, the term set equals the live ID list.
 4. **Term sets:** resolve, refresh, re-resolve, pre-warm.
