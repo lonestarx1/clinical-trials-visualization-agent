@@ -302,3 +302,52 @@ async def test_version_is_cached() -> None:
     clock.now += 2
     assert (await client.version()).data_timestamp == "2026-10-24T09:00:01"
     assert transport.requests[1].url.path == "/api/v2/version"
+
+
+# ---------- count cache ----------
+
+
+def counts_then_versions(*bodies: dict[str, Any]) -> Any:
+    """Answers /version with the given bodies in turn, and counts with 1, 2, 3, ..."""
+    versions, served = list(bodies), [0]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/version"):
+            return json_response(versions.pop(0))
+        served[0] += 1
+        return json_response({"totalCount": served[0]})
+
+    return handler
+
+
+async def test_counts_are_cached_for_the_ttl() -> None:
+    """The planner, the count stage and repeat questions count the same searches."""
+    clock = FakeClock()
+    client, transport = make_client(counts_then_versions(), clock, count_ttl=600.0)
+    other = Search({"query.cond": '"glioma"'})
+    assert [await client.count(SEARCH), await client.count(other)] == [1, 2]
+    clock.now += 599
+    assert [await client.count(SEARCH), await client.count(other)] == [1, 2]
+    assert len(transport.requests) == 2
+    clock.now += 2
+    assert await client.count(SEARCH) == 3
+
+
+async def test_new_data_drops_the_cached_counts() -> None:
+    clock = FakeClock()
+    old = {"apiVersion": "2.0.5", "dataTimestamp": "2026-10-23T09:00:04"}
+    new = old | {"dataTimestamp": "2026-10-24T09:00:01"}
+    client, _ = make_client(
+        counts_then_versions(old, new), clock, count_ttl=3600.0, version_ttl=600.0
+    )
+    await client.version()
+    assert await client.count(SEARCH) == 1
+    clock.now += 601
+    await client.version()  # ClinicalTrials.gov published its daily update
+    assert await client.count(SEARCH) == 2
+
+
+async def test_counts_are_not_cached_by_default() -> None:
+    clock = FakeClock()
+    client, _ = make_client(counts_then_versions(), clock)
+    assert [await client.count(SEARCH), await client.count(SEARCH)] == [1, 2]
