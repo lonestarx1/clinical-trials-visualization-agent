@@ -1,4 +1,5 @@
-# Local stack: `make up` (or `docker compose up --build`). Only OPENAI_API_KEY is required in .env.
+# Local stack: `make up` (or `docker compose up --build`), then http://localhost:3000.
+# Only OPENAI_API_KEY is required in .env.
 services:
   postgres:
     image: postgres:17-alpine
@@ -29,6 +30,16 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:8000:8000"
+
+  web:
+    build: ./frontend
+    environment:
+      API_BASE_URL: http://api:8000  # runtime setting; the browser only talks to web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
 
 volumes:
   pgdata:
