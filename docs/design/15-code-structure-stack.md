@@ -1,4 +1,4 @@
-# Design Q15: Code Structure, Stack, Agent Framework, Packaging
+# Design Q15: Code structure, stack, agent framework, packaging
 
 Status: **Decided** (2026-10-24)
 

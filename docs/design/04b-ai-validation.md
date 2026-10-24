@@ -1,4 +1,4 @@
-# Design Q4b: Validating AI Output (plan, title)
+# Design Q4b: Validating AI output (plan, title)
 
 Status: **Decided** (2026-10-24). All 9 checks adopted. **Revised** the same day: the AI summary was removed (see [the revision](#revision-2026-10-24-the-ai-summary-is-removed) below).
 

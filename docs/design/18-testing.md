@@ -1,4 +1,4 @@
-# Design Q18: Testing Strategy
+# Design Q18: Testing strategy
 
 Status: **Decided** (2026-10-24)
 

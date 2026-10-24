@@ -1,4 +1,4 @@
-# Design Q8: Cache, Rate Limiting, Retries
+# Design Q8: Cache, rate limiting, retries
 
 Status: **Decided** (2026-10-24)
 

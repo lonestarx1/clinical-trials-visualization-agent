@@ -1,4 +1,4 @@
-# Design Q21: A Local Mirror, Revisited
+# Design Q21: A local mirror, revisited
 
 Status: **Revisited and not built** (2026-10-25). Q6's decision (D6.1, live data only) stands for this submission. This file records why we reopened it, what we designed, and the finding that settled it.
 

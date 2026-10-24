@@ -1,4 +1,4 @@
-# Design Q10: Missing, Partial and Estimated Values
+# Design Q10: Missing, partial and estimated values
 
 Status: **Decided** (2026-10-24)
 

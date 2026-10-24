@@ -1,4 +1,4 @@
-# Design Q11: Name Normalisation
+# Design Q11: Name normalisation
 
 Status: **Decided** (2026-10-24)
 

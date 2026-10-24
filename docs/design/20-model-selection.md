@@ -1,4 +1,4 @@
-# Design Q20 (O2): Selecting the AI Model for Each Task
+# Design Q20 (O2): Selecting the AI model for each task
 
 Status: **Process decided** (2026-10-24). Starting defaults set; final choices come from a measured comparison ("bake-off") once the AI evaluation set exists (Q18).
 

@@ -1,4 +1,4 @@
-# Design Q9: Counting Rules for Multi-Valued Fields
+# Design Q9: Counting rules for multi-valued fields
 
 Status: **Decided** (2026-10-24)
 

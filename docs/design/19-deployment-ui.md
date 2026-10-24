@@ -1,4 +1,4 @@
-# Design Q19: Deployment and Demo UI
+# Design Q19: Deployment and demo UI
 
 Status: **Decided** (2026-10-24)
 

@@ -1,4 +1,4 @@
-# Design Q6: How We Get the Data (retrieval strategy)
+# Design Q6: How we get the data (retrieval strategy)
 
 Status: **Decided** (2026-10-24)
 

@@ -1,4 +1,4 @@
-# Design Q2: Overall Pipeline
+# Design Q2: Overall pipeline
 
 Status: **Decided** (2026-10-24)
 

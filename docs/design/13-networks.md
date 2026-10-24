@@ -1,4 +1,4 @@
-# Design Q13: Network Graphs That Are Meaningful
+# Design Q13: Meaningful network graphs
 
 Status: **Decided** (2026-10-24)
 

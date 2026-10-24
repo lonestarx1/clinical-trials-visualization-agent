@@ -1,4 +1,4 @@
-# Design Q14: Deep Citations
+# Design Q14: Deep citations
 
 Status: **Decided** (2026-10-24)
 

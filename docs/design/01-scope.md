@@ -1,4 +1,4 @@
-# Design Q1: Scope - Which Questions We Support
+# Design Q1: Scope (which questions we support)
 
 Status: **Decided** (2026-10-24)
 

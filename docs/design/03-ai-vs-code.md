@@ -1,4 +1,4 @@
-# Design Q3: What the AI Decides vs What Code Decides
+# Design Q3: What the AI decides vs what code decides
 
 Status: **Decided** (2026-10-24)
 

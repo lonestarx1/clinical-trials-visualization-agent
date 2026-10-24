@@ -1,4 +1,4 @@
-# Design Q17: Error Handling
+# Design Q17: Error handling
 
 Status: **Decided** (2026-10-24)
 

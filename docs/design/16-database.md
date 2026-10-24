@@ -1,4 +1,4 @@
-# Design Q16: Database Schema (Postgres)
+# Design Q16: Database schema (Postgres)
 
 Status: **Decided** (2026-10-24)
 

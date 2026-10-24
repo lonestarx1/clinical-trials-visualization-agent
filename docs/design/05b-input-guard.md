@@ -1,4 +1,4 @@
-# Design Q5b: Input Guard (rejecting obviously malicious requests)
+# Design Q5b: Input guard (rejecting obviously malicious requests)
 
 Status: **Decided** (2026-10-24)
 

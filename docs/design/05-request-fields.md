@@ -1,4 +1,4 @@
-# Design Q5: Structured Request Fields and How They Merge with the Question
+# Design Q5: Structured request fields and how they merge with the question
 
 Status: **Decided** (2026-10-24)
 

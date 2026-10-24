@@ -1,4 +1,4 @@
-# Design Q12: Request / Response Formats
+# Design Q12: Request and response formats
 
 Status: **Decided** (2026-10-24). The detailed field-level schema is generated from the code (Pydantic -> OpenAPI/JSON Schema) and documented in the README.
 
