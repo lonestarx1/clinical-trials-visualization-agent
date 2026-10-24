@@ -8,7 +8,7 @@ spec:
   ports:
     - port: 8000
 ---
-# One replica on purpose: ClinicalTrials.gov allows ~40 requests/min from our IP and each
+# One replica on purpose: ClinicalTrials.gov allows ~10 requests per 10 s from our IP and each
 # replica has its own limiter, so more replicas would share (not add) that budget. Background
 # jobs already work across replicas (SKIP LOCKED queue + heartbeats) if this changes.
 apiVersion: apps/v1

@@ -114,6 +114,8 @@ S1/S2 return counts only, so we can't produce per-trial citations for those valu
 
 Unscoped categorical questions avoid this cost through S1/S2.
 
+**Revision (2026-10-25): measured limit, and the quicker strategy.** The real limit is ~10 requests per ~10 s ([live probe §8](../api/live-probe.md)), and the limiter now allows a burst of 9, so the S2 count calls of a question mostly start at once. Pages still come one by one (page tokens), so the column "Conservative" above stays about right for S3. A trials-per-year series now uses S2 only when its count calls are quicker than downloading its pages: 30 trials over 20 years is one page, not 61 calls.
+
 ## Requirement links
 
 P2-1, P2-2 (authoritative live source), P1-3 (retrieve relevant data), P7-1..P7-3 (rational design, real-world data), P7-8 (robustness).

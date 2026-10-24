@@ -64,7 +64,7 @@ Each milestone had an **exit check**: what had to be true before its pull reques
   - A declarative **registry** of 25 dimensions (categorical, entity, time, numeric), each with its API fields, filter, enum and counting rule, plus measures, chart types and intents ([Q15](design/15-code-structure-stack.md)).
   - Strict request and plan **schemas**.
   - An **Essie expression tree** where request text can only enter as one quoted phrase, and a **compiler** from plan to API parameters ([Q7](design/07-query-compilation.md)).
-  - An async **client** with a shared rate limiter (40 requests/min, 2 in flight), jittered retries that honour `Retry-After`, a circuit breaker, and page-token paging with a result-count check ([Q6](design/06-retrieval.md), [Q8](design/08-cache-ratelimit-retries.md)).
+  - An async **client** with a shared rate limiter (40 requests/min, 2 in flight; since measured and raised to 9 per 10 s, 9 in flight), jittered retries that honour `Retry-After`, a circuit breaker, and page-token paging with a result-count check ([Q6](design/06-retrieval.md), [Q8](design/08-cache-ratelimit-retries.md)).
   - Count-per-bucket retrieval with an exactness check.
 - **Exit check:** an integration test turns hand-written plans for three appendix questions into the exact expected API calls.
 - **Live checks:** query escaping holds on the real API (an injection attempt matches fewer than 100 trials, not all ~600k), every filter narrows the results, and study-type buckets add up exactly.
@@ -154,7 +154,7 @@ Never cut: input validation, the plan gate, narration checks, citation exactness
 | Risk | Mitigation | Outcome |
 |---|---|---|
 | Planner quality below the bar | Tool feedback and a code gate first; a bigger model only as a last resort | All 9 appendix questions pass with the starting model (`gpt-5.4-mini`) |
-| ClinicalTrials.gov throttling during development | Recorded fixtures for tests, a global client-side rate limiter, and the rate-limit test left for last | The real limit is still unmeasured (see [what's planned](#whats-planned)) |
+| ClinicalTrials.gov throttling during development | Recorded fixtures for tests, a global client-side rate limiter, and the rate-limit test left for last | Measured on 2026-10-25 (~10 requests per 10 s); the limiter now allows 9 per 10 s ([live probe §8](api/live-probe.md)) |
 | Broad questions too slow | Count per bucket before fetching, and background jobs, never a silent partial answer | Per-year counts became fast; broad questions that need every record still take minutes, as background jobs (see [limitations](../README.md#limitations)) |
 
 ## What's planned
@@ -163,5 +163,4 @@ Never cut: input validation, the plan gate, narration checks, citation exactness
 - **A model bake-off per stage** ([Q20](design/20-model-selection.md)): candidates must first meet the quality bars on the evaluation set, then the cheapest by measured cost wins, then the fastest. The planner comes first. Until then, the guard and narrator use `gpt-5.4-nano` and the planner `gpt-5.4-mini`.
 - **Remaining live checks against ClinicalTrials.gov:**
   - whether every visible change to a trial updates its `LastUpdatePostDate` (which cache revalidation relies on);
-  - how `/stats/field/values` counts, and its 250-value cap;
-  - a careful ramp test to measure the real rate limit, then tune the 40 requests/min default. This one runs last, because it risks getting blocked.
+  - how `/stats/field/values` counts, and its 250-value cap.

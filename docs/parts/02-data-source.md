@@ -37,7 +37,7 @@ Each item below was an open question before the design. All but the rate limit w
 - [x] Date formats (full vs partial) and how missing values appear.
 - [x] Enumeration values (phase, status, intervention type, sponsor class).
 - [x] Error behaviour (400 with a plain-text message, 404 for an unknown study).
-- [ ] Rate limits (429s). **Not tested on purpose**, to avoid being blocked. No official limit is published, so the client stays under a conservative estimate (about 40 requests a minute) and retries 429s and 5xx with backoff; see [`../api/live-probe.md`](../api/live-probe.md), section 8.
+- [x] Rate limits (429s). Measured with a careful ramp test on 2026-10-25: about 10 requests per 10 seconds per IP, no limit on concurrency, and no `Retry-After` on the 429. The client allows 9 per 10 seconds and retries 429s and 5xx with backoff; see [`../api/live-probe.md`](../api/live-probe.md), section 8.
 
 ## 5. Ambiguities and decisions
 
