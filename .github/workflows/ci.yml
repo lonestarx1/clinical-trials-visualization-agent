@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ctviz
+          POSTGRES_PASSWORD: ctviz
+          POSTGRES_DB: ctviz
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ctviz -d ctviz"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.7.14"
+      - run: uv sync --frozen
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Type check
+        run: uv run mypy app
+      - name: Offline tests
+        run: uv run pytest
+      - name: Database tests
+        run: uv run pytest -m db
+        env:
+          DATABASE_URL: postgresql+asyncpg://ctviz:ctviz@localhost:5432/ctviz

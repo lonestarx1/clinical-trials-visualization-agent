@@ -11,3 +11,6 @@ dist/
 
 # Large raw API dumps from the probe (re-creatable with scripts/api_probe)
 docs/api/probe-data/raw/
+
+# backend
+backend/.venv/

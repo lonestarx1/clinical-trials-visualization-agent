@@ -1,0 +1,33 @@
+# Local stack: `make up` (or `docker compose up --build`). Only OPENAI_API_KEY is required in .env.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ctviz
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ctviz}
+      POSTGRES_DB: ctviz
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ctviz -d ctviz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ctviz:${POSTGRES_PASSWORD:-ctviz}@postgres:5432/ctviz
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+
+volumes:
+  pgdata:
