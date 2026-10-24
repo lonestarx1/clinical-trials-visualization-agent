@@ -81,6 +81,15 @@ async def test_years_are_counted_not_downloaded() -> None:
     assert response.meta.unique_trials == 30
 
 
+async def test_counted_years_answer_full_citation_requests_with_a_sample() -> None:
+    client, _ = recorded_client(handler(year_2016=20))
+    response = await run_plan(PLAN, client, base_url=BASE, citations_per_datum=2, citations="full")
+    cited = response.meta.citations
+    assert cited is not None
+    assert (cited.requested, cited.applied) == ("full", "sample")
+    assert cited.reason is not None and "counted per year" in cited.reason
+
+
 async def test_years_that_do_not_add_up_fall_back_to_the_download() -> None:
     client, transport = recorded_client(handler(year_2016=19))
     response = await run_plan(PLAN, client, base_url=BASE, citations_per_datum=2)
