@@ -187,3 +187,12 @@ def test_choose_prefers_the_faster_of_two_within_20_percent_on_cost() -> None:
 
 def test_choose_returns_none_when_no_candidate_passes() -> None:
     assert choose({"a": {"bars": {"x": False}, "cost_per_call": 0.001, "p95_ms": 1}}) is None
+
+
+def test_planner_summary_names_the_failed_properties_per_case() -> None:
+    runs = [
+        PlannerRun("b", 1, {"dimension": False, "scope": True}, True, False, 4, 3000, 0.004),
+        PlannerRun("b", 2, {"dimension": False, "scope": False}, True, False, 4, 3000, 0.004),
+        PlannerRun("c", 1, {"dimension": True}, True, True, 1, 900, 0.001),
+    ]
+    assert planner_summary(runs)["failures"] == {"b": {"dimension": 2, "scope": 1}}

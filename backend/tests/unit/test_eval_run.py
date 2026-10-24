@@ -50,6 +50,8 @@ async def test_planner_runs_score_the_submitted_plan() -> None:
     )
     (run,) = runs
     assert all(run.scores.values()) and run.valid and run.first_try and run.steps == 1
+    assert run.plan is not None and run.plan["dimension"] == "phase"
+    assert run.tools == ["submit_plan: ok"]
 
 
 async def test_a_planner_that_gives_up_scores_nothing() -> None:
