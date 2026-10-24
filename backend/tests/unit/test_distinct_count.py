@@ -132,3 +132,28 @@ def test_narrator_facts_name_the_counted_entity() -> None:
     result = chart(plan(3))
     facts = fact_sheet(plan(3), result.visualization, result.meta)
     assert facts["measure"] == "lead sponsors with at least 3 trials"
+
+
+def test_narrator_gets_the_entity_and_threshold_as_separate_facts() -> None:
+    from app.agents.narrator import fact_sheet
+
+    result = chart(plan(3))
+    facts = fact_sheet(plan(3), result.visualization, result.meta)
+    assert (facts["entity"], facts["min_trials"]) == ("lead sponsors", "3")
+
+
+def test_text_that_repeats_a_phrase_is_sent_back() -> None:
+    from app.agents.narrator import check_text, fact_sheet
+
+    p, result = plan(3), chart(plan(3))
+    facts = fact_sheet(p, result.visualization, result.meta)
+    errors = check_text(
+        "Lead sponsors with ≥{measure} trials by start year",
+        facts,
+        p,
+        result.visualization,
+        max_length=200,
+    )
+    assert any("repeats" in e for e in errors)
+    ok = check_text("{measure} by start year", facts, p, result.visualization, max_length=200)
+    assert ok == []
