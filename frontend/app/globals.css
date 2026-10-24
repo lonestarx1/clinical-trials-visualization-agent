@@ -79,6 +79,8 @@ button:disabled { cursor: default; opacity: 0.5; }
 .swatch span { width: 0.5rem; height: 1rem; border-radius: 2px; }
 .swatch-auto { width: calc(1.5rem + 12px); height: calc(1rem + 8px); background: linear-gradient(135deg, #ffffff 50%, #141c2b 50%); border-color: var(--line-strong); }
 @media (max-width: 560px) { .theme-name { display: none; } }
+/* Small phones: the top bar holds two page links and the theme picker, so the logo stands in for the name. */
+@media (max-width: 440px) { .brand-name { display: none; } .topbar .docs-link { padding-inline: 0.55rem; } }
 .page { width: 100%; max-width: 1200px; margin: 0 auto; padding: 1.75rem 1.25rem 3rem; flex: 1; }
 .footer { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 1.5rem 1.25rem 2rem; border-top: 1px solid var(--line); }
 .footer a { color: inherit; }

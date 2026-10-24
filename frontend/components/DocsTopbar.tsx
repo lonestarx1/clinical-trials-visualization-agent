@@ -17,7 +17,7 @@ export function DocsTopbar() {
   return (
     <header className="topbar">
       <Link className="brand" href="/" aria-label="Clinical Trials Explorer, ask a question">
-        <Logo />Clinical Trials Explorer
+        <Logo /><span className="brand-name">Clinical Trials Explorer</span>
       </Link>
       <div className="topbar-actions">
         {link("/examples", "Examples")}
