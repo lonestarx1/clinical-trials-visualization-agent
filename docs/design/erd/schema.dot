@@ -154,6 +154,29 @@ digraph schema {
       <TR><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">timestamptz</TD><TD>idx</TD></TR>
     </TABLE>>];
 
+  registry_trials [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="3" BGCOLOR="#00695C"><FONT COLOR="white"><B>registry.trials</B> (the mirror, Q22)</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>nct_id</B></TD><TD ALIGN="LEFT">text</TD><TD>PK</TD></TR>
+      <TR><TD ALIGN="LEFT">record</TD><TD ALIGN="LEFT">jsonb (the API's study)</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">start_year</TD><TD ALIGN="LEFT">integer (nullable)</TD><TD>idx</TD></TR>
+      <TR><TD ALIGN="LEFT">last_update_post_date</TD><TD ALIGN="LEFT">date (nullable)</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">synced_at</TD><TD ALIGN="LEFT">timestamptz</TD><TD></TD></TR>
+    </TABLE>>];
+
+  registry_sync_runs [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="3" BGCOLOR="#00695C"><FONT COLOR="white"><B>registry.sync_runs</B> (loads and updates)</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>run_id</B></TD><TD ALIGN="LEFT">integer</TD><TD>PK</TD></TR>
+      <TR><TD ALIGN="LEFT">kind</TD><TD ALIGN="LEFT">text (load|update)</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">status</TD><TD ALIGN="LEFT">text (running|succeeded|failed)</TD><TD>idx</TD></TR>
+      <TR><TD ALIGN="LEFT">data_timestamp</TD><TD ALIGN="LEFT">timestamptz</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">since</TD><TD ALIGN="LEFT">date (nullable)</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">upserted, removed</TD><TD ALIGN="LEFT">integer</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">error</TD><TD ALIGN="LEFT">text (nullable)</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">started_at, finished_at</TD><TD ALIGN="LEFT">timestamptz</TD><TD>idx</TD></TR>
+    </TABLE>>];
+
   // Relationships: tail = "one" side (tee), head = "many" side (crow)
   data_versions:data_timestamp_out:e -> api_searches:verified_data_ts:w [xlabel="verified against"];
   data_versions:data_timestamp_out:e -> results:verified_data_ts:w      [xlabel="verified against"];

@@ -12,7 +12,7 @@ import logging
 import random
 import time
 from collections import OrderedDict, deque
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from types import TracebackType
 from typing import Any, Protocol
@@ -68,6 +68,7 @@ class RateLimiter:
 
     Up to `burst` requests may start at once: at most `burst` starts in any window of
     `burst * 60 / per_minute` seconds (a sliding window). `burst=1` spaces every start evenly.
+    With a `parent`, a request also waits its turn there: a lower cap inside a shared budget.
     """
 
     def __init__(
@@ -77,7 +78,9 @@ class RateLimiter:
         clock: ClockLike | None = None,
         *,
         burst: int = 1,
+        parent: "RateLimiter | None" = None,
     ) -> None:
+        self._parent = parent
         self._window = burst * 60.0 / per_minute
         self._starts: deque[float] = deque(maxlen=burst)
         self._slots = asyncio.Semaphore(concurrency)
@@ -95,6 +98,8 @@ class RateLimiter:
                         await self._clock.sleep(free_at - start)
                     start = max(free_at, self._clock.monotonic())
                 self._starts.append(start)
+            if self._parent is not None:
+                await self._parent.__aenter__()
         except BaseException:  # cancelled while waiting its turn (a cancelled job): no __aexit__
             self._slots.release()
             raise
@@ -105,6 +110,8 @@ class RateLimiter:
         exc: BaseException | None,
         tb: TracebackType | None,
     ) -> None:
+        if self._parent is not None:
+            await self._parent.__aexit__(exc_type, exc, tb)
         self._slots.release()
 
 
@@ -200,26 +207,39 @@ class CtgovClient:
 
         `on_page(pages_done)` is awaited after each page (job progress).
         """
+        studies: dict[str, dict[str, Any]] = {}
+        pages = total = 0
+        async for batch, reported in self.pages(search, fields):
+            pages, total = pages + 1, reported
+            if on_page is not None:
+                await on_page(pages)
+            for study in batch:
+                studies.setdefault(_nct_id(study), study)
+        return FetchResult(list(studies.values()), total)
+
+    async def pages(
+        self, search: Search, fields: Sequence[str]
+    ) -> AsyncIterator[tuple[list[dict[str, Any]], int]]:
+        """Each page of matching studies as it arrives, with the reported total.
+
+        After the last page, the distinct trials seen must add up to the total.
+        """
         params = search.params | {"fields": ",".join(fields), "pageSize": str(PAGE_SIZE)}
         body = await self._get("/studies", params | {"countTotal": "true"})
         total = int(body["totalCount"])
-        studies: dict[str, dict[str, Any]] = {}
-        pages = 0
+        seen: set[str] = set()
         while True:
-            pages += 1
-            if on_page is not None:
-                await on_page(pages)
-            for study in body.get("studies", []):
-                studies.setdefault(_nct_id(study), study)
+            studies = list(body.get("studies", []))
+            seen.update(_nct_id(study) for study in studies)
+            yield studies, total
             token = body.get("nextPageToken")
             if not token:  # an empty page with a token is not the end
                 break
             body = await self._get("/studies", params | {"pageToken": token})
-        if len(studies) != total:
+        if len(seen) != total:
             raise InconsistentResults(
-                f"fetched {len(studies)} distinct trials but the API reported {total}"
+                f"fetched {len(seen)} distinct trials but the API reported {total}"
             )
-        return FetchResult(list(studies.values()), total)
 
     async def first_page(
         self, search: Search, fields: Sequence[str], size: int, sort: str | None = None

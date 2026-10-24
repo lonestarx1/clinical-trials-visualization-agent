@@ -20,6 +20,7 @@ from app.core.pricing import load_pricing, missing_prices
 from app.ctgov.client import CtgovClient, RateLimiter
 from app.store.db import create_engine
 from app.store.results import CODE_VERSION
+from app.workers.mirror import mirror_loop
 from app.workers.runner import requeue_stale, worker_loop
 
 log = logging.getLogger(__name__)
@@ -39,15 +40,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.openai = AsyncOpenAI(api_key=settings.openai_api_key.get_secret_value())
         app.state.llm_factory = openai_factory(app.state.openai, settings, app.state.pricing)
         http = httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=5.0))
+        limiter = RateLimiter(
+            settings.ctgov_rate_limit_per_min,
+            settings.ctgov_max_concurrency,
+            burst=settings.ctgov_rate_burst,
+        )
         app.state.ctgov = CtgovClient(
+            settings.ctgov_base_url, http, limiter, count_ttl=settings.ctgov_count_cache_seconds
+        )
+        # The mirror's sync: its own lower cap under the shared limiter, and no caching.
+        app.state.mirror_ctgov = CtgovClient(
             settings.ctgov_base_url,
             http,
-            RateLimiter(
-                settings.ctgov_rate_limit_per_min,
-                settings.ctgov_max_concurrency,
-                burst=settings.ctgov_rate_burst,
-            ),
-            count_ttl=settings.ctgov_count_cache_seconds,
+            RateLimiter(settings.mirror_sync_rate_per_min, 4, parent=limiter),
+            version_ttl=0,
         )
         workers: list[asyncio.Task[None]] = []
         try:
@@ -58,6 +64,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except Exception:  # the API still serves synchronous questions without workers
             log.exception("background workers not started (database unavailable?)")
         log.info("api started with %d background workers", len(workers))
+        if settings.mirror_sync_enabled:
+            workers.append(asyncio.create_task(mirror_loop(app)))
+            log.info("mirror sync started")
         yield
         for task in workers:
             task.cancel()

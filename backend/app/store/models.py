@@ -1,9 +1,12 @@
 """Postgres tables (design Q16). Built: data versions, plan cache (L2), results (L3) with
 datums and full citations, jobs, and LLM usage. Not built: the page-level API cache (L1)
-and the traces table (traces stay in logs and meta)."""
+and the traces table (traces stay in logs and meta).
+
+The `registry` schema holds the mirror of ClinicalTrials.gov (design Q22): trials and sync runs.
+"""
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, ClassVar
 
@@ -11,6 +14,7 @@ from sqlalchemy import (
     CHAR,
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -176,3 +180,42 @@ class LlmUsage(Base):
     cost_usd: Mapped[Decimal | None] = mapped_column(Numeric(12, 6))
     price_version: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = _now()
+
+
+class MirrorTrial(Base):
+    """One study, as the API returns it (only the mirror's fields), keyed by NCT ID."""
+
+    __tablename__ = "trials"
+    __table_args__ = (
+        Index("trials_start_year", "start_year"),
+        {"schema": "registry"},
+    )
+
+    nct_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    record: Mapped[dict[str, Any]]
+    start_year: Mapped[int | None] = mapped_column(Integer)
+    last_update_post_date: Mapped[date | None] = mapped_column(Date)
+    synced_at: Mapped[datetime] = _now()
+
+
+class SyncRun(Base):
+    """One load or daily update. The last succeeded run's data timestamp is the mirror's."""
+
+    __tablename__ = "sync_runs"
+    __table_args__ = (
+        CheckConstraint("kind IN ('load','update')", name="sync_runs_kind"),
+        CheckConstraint("status IN ('running','succeeded','failed')", name="sync_runs_status"),
+        Index("sync_runs_status_finished", "status", "finished_at"),
+        {"schema": "registry"},
+    )
+
+    run_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    kind: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(Text, default="running", server_default="running")
+    data_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    since: Mapped[date | None] = mapped_column(Date)  # updates: LastUpdatePostDate from
+    upserted: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    removed: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    error: Mapped[str | None] = mapped_column(Text)
+    started_at: Mapped[datetime] = _now()
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
