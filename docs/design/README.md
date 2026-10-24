@@ -1,6 +1,6 @@
 # System design: index
 
-This folder records how the backend and web app are designed, one decision per file (Q1 to Q21). Each file states the decision, the reasons, the alternatives we considered and the assignment requirements it covers. Requirement IDs such as `P3-7` are defined in [`docs/parts/README.md`](../parts/README.md), and [`requirements-coverage.md`](requirements-coverage.md) maps each one to the decisions that cover it.
+This folder records how the backend and web app are designed, one decision per file (Q1 to Q22). Each file states the decision, the reasons, the alternatives we considered and the assignment requirements it covers. Requirement IDs such as `P3-7` are defined in [`docs/parts/README.md`](../parts/README.md), and [`requirements-coverage.md`](requirements-coverage.md) maps each one to the decisions that cover it.
 
 Most decisions were made on 2026-10-24, before and during the build. Later changes are recorded as dated revisions inside each file. Plans that were replaced stay in the files, marked **Superseded**, with a link to what replaced them. Where the build differs from the design, the file has an **As built** note.
 
@@ -31,6 +31,7 @@ Most decisions were made on 2026-10-24, before and during the build. Later chang
 | 19 | [19-deployment-ui.md](19-deployment-ui.md) | Next.js + ECharts reference UI (citations panel, "how we got this", raw JSON). **Deployed (revised 2026-10-25):** k3s on one EC2 t3.medium, Terraform + Kustomize, web and API at `trials.` / `api.cheiron.engineeradriel.com`, chosen for the deadline and cost (~$1.50/day). The original plan (Compose on EC2 behind Caddy, frontend on Vercel) is superseded. Production path: EKS multi-AZ, RDS, workers on KEDA, shared rate limiter, CloudFront + WAF, Argo CD |
 | 20 | [20-model-selection.md](20-model-selection.md) | Model per AI stage chosen by a **measured bake-off** (quality bars, then lowest measured cost, then latency); official prices recorded. Defaults in use: guard and narrator `gpt-5.4-nano`, planner `gpt-5.4-mini`, fallback `gpt-4.1-mini` (different family). The bake-off has not run yet |
 | 21 | [21-local-mirror-revisited.md](21-local-mirror-revisited.md) | Mirror **revisited after a broad question took 7 minutes, and still not built**: designed (same Postgres, `registry` schema, JSONB + indexed columns + child tables, daily delta sync), but a local copy can't reproduce the API's synonym and MeSH search (~20% of "lung cancer" trials missed). Routing structured-only questions to a mirror is the noted next step |
+| 22 | [22-term-sets.md](22-term-sets.md) | **Proposed, not built:** a second, opt-in `fast` mode next to live fetching, which stays the default. The API resolves each search term to a set of NCT IDs (so its synonyms stay exact), and a local mirror supplies the records; each answer is checked against a live count and falls back to `live` on any difference. Broad questions: minutes to about a second |
 
 ## Changelog
 
@@ -43,6 +44,7 @@ Dated revisions made after the first decision. Each one is recorded in full in t
 | 2026-10-24 | [Q11](11-name-normalization.md) | Each drug intervention takes only the MeSH term that matches its name or other names, so non-drug MeSH terms stay out of drug charts |
 | 2026-10-24 | [Q13](13-networks.md) | Default minimum edge weight lowered from 2 to 1, so small scopes keep their links |
 | 2026-10-25 | [Q21](21-local-mirror-revisited.md), Q6 | Local mirror revisited and still not built; search accuracy, not terms of use, is now the deciding reason |
+| 2026-10-25 | [Q22](22-term-sets.md), Q21, Q6 | Proposed a `fast` mode (term sets + mirror) as a second mode; live fetching stays the default and the fallback |
 | 2026-10-25 | [Q19](19-deployment-ui.md#revision-2026-10-25-what-was-actually-deployed), Q15 | Deployment revised: k3s on one EC2 instance with Terraform and Kustomize, instead of Compose behind Caddy with the frontend on Vercel |
 
 ### Consistency review (2026-10-24)

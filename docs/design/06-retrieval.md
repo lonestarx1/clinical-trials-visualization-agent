@@ -58,7 +58,7 @@ This option got real design time before we chose live retrieval. It is recorded 
 
 The data-source interface (D6.6) makes this a contained change.
 
-**Revisited on 2026-10-25** after a broad question took about 7 minutes: see [Q21](21-local-mirror-revisited.md). Still not built. The deciding issue is search accuracy: the API resolves synonyms, and a local copy can't yet.
+**Revisited on 2026-10-25** after a broad question took about 7 minutes: see [Q21](21-local-mirror-revisited.md). Still not built. The deciding issue is search accuracy: the API resolves synonyms, and a local copy can't yet. [Q22](22-term-sets.md) proposes a second, opt-in `fast` mode that keeps the API's search for membership and uses the mirror only for records; live retrieval stays the default.
 
 ## How a request is fetched
 
