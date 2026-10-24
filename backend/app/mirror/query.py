@@ -51,6 +51,8 @@ def _area(field: str, term: Node) -> ColumnElement[bool]:
     if field not in FIELDS:
         raise NotInMirror(f"the mirror doesn't evaluate {field}")
     path, is_list = FIELDS[field]
+    if field == "Sex" and term == Code("ALL"):
+        return true()  # measured: the API's AREA[Sex]ALL matches every trial, whatever its sex
     match term:
         case Code(value) if is_list:
             return MirrorTrial.record[path].contains([value])
