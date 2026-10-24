@@ -2,7 +2,7 @@
 
 A backend service that turns a natural-language question about clinical trials into a structured visualization spec, backed by live data from the [ClinicalTrials.gov API](https://clinicaltrials.gov/data-api/api), with citations for every data point.
 
-> **Status: in progress.** Done: M0 (skeleton, settings, health, Compose, CI, acceptance tests) and M1a (registry, request and plan schemas, query compiler, ClinicalTrials.gov client). See [the implementation plan](docs/implementation-plan.md).
+> **Status: in progress.** Done: M0 (skeleton, settings, health, Compose, CI, acceptance tests), M1a (registry, schemas, query compiler, ClinicalTrials.gov client) and M1b (extraction, aggregation, chart specs, citations, a debug endpoint that runs a plan without AI). See [the implementation plan](docs/implementation-plan.md).
 
 ## Quick start
 
@@ -15,6 +15,14 @@ curl localhost:8000/health
 ```
 
 API docs: http://localhost:8000/docs
+
+Until the AI stages land (M2), a hand-written plan can be run directly:
+
+```bash
+curl -s -X POST localhost:8000/v1/debug/plan -H 'Content-Type: application/json' -d '{
+  "plan": {"scope": "in_scope", "intent": "distribution", "chart_type": "bar_chart",
+           "filters": {"conditions": ["breast cancer"]}, "dimension": "phase"}}'
+```
 
 ## Development
 
