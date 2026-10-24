@@ -131,8 +131,8 @@ def test_hidden_unknowns_are_still_counted_as_excluded() -> None:
 
 def test_top_n_limit_is_explained() -> None:
     result = chart(plan(intent="geographic", dimension="country", options={"top_n": 2}))
-    assert series(result, "country") == [("United States", 4), ("China", 2)]
-    assert "Showing the top 2 of 6 countries." in result.meta.notes
+    assert series(result, "country") == [("United States", 4), ("China", 2), ("Not reported", 1)]
+    assert "Showing the top 2 of 5 countries." in result.meta.notes
 
 
 def test_enrollment_measures() -> None:
