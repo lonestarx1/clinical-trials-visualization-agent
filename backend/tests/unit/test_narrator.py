@@ -35,6 +35,12 @@ def test_fact_sheet_for_a_bar_chart() -> None:
     assert facts["dimension"] == "phase"
     assert facts["scope"] == "breast cancer"
     assert facts["share_of_max"] == "25%"
+    # runners-up exclude the leader (a live summary said "China leads, followed by China")
+    assert (
+        facts["next_items"]
+        == "No phase (observational / expanded access), Phase 1, Phase 1/Phase 2"
+    )
+    assert "top_items" not in facts
 
 
 def test_fact_sheet_for_a_time_series() -> None:
