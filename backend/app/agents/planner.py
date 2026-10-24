@@ -42,6 +42,12 @@ def _options() -> dict[str, Any]:
             "time_series": "a time dimension (start_year, first_posted_year); groups optional",
             "histogram": "a numeric dimension (enrollment, duration_months, site_count)",
             "metric": "no dimension",
+            "network_graph": "entity dimension(s): one for co-occurrence (e.g. drug: drugs used "
+            "together), two for links between kinds (e.g. sponsor + drug, condition + drug, "
+            "sponsor + collaborator, investigator + site); no groups",
+            "scatter_plot": "two numeric dimensions (dimension, dimension_2); one point per trial",
+            "series split": "time_series or grouped_bar_chart with dimension_2 (categorical or "
+            "entity) splits trials into series, e.g. trials per year by phase",
         },
     }
 
@@ -61,6 +67,8 @@ How to plan:
 - chart_type: usually the default for the intent; must fit the dimension (see list_options).
 - dimension: what to group trials by. Dimension keys by kind:
 {_dimension_lines()}
+- dimension_2: the second node type of a network (sponsor + drug), the y axis of a scatter \
+plot, or a series split (trials per year by phase). Leave it empty otherwise.
 - measure: trial_count unless the question asks about participants/enrollment \
 (total_enrollment, median_enrollment).
 - filters: OR within a filter, AND across filters. Copy drug, condition, sponsor and country \
