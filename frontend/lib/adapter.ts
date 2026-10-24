@@ -95,7 +95,10 @@ export function toChart(viz: Visualization, theme: Theme = LIGHT): Chart {
         ? { inverse: true, axisLabel: { color: theme.ink, width: 180, overflow: "truncate", hideOverlap: false } }
         : { axisLabel: { color: theme.muted, hideOverlap: true, rotate: !line && categories.length > 7 ? 35 : 0,
             width: 120, overflow: "truncate" } });
-      const values = valueAxis(theme, axisName(enc.y));
+      const values = horizontal
+        ? { ...valueAxis(theme, axisName(enc.y)), nameLocation: "middle" as const, nameGap: 28 }
+        : valueAxis(theme, axisName(enc.y));
+      const directLabels = horizontal && !color && categories.length <= 30;
       return {
         kind: "echarts",
         option: {
@@ -118,6 +121,9 @@ export function toChart(viz: Visualization, theme: Theme = LIGHT): Chart {
             showSymbol: line && categories.length <= 24,
             areaStyle: line && series.length === 1 ? { opacity: 0.08 } : undefined,
             emphasis: { focus: "series" },
+            label: directLabels
+              ? { show: true, position: "right", color: theme.muted, fontSize: 12, formatter: (p: any) => fmt(p.value) }
+              : undefined,
             data: categories.map((cat) => {
               const row = rows(viz).find((r) => String(r[x]) === cat && (!color || String(r[color]) === name));
               return row ? (row[y] as number) : 0;
