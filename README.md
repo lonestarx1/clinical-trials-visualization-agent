@@ -7,7 +7,20 @@ POST /v1/query  {"query": "How are breast cancer trials distributed across phase
 -> 200 {"status": "ok", "visualization": {"type": "bar_chart", "title": ..., "encoding": ..., "data": [...]}, "meta": {...}}
 ```
 
-> **Status:** milestones M0-M5 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations and an AI-written, checked title; stored results with **full citation lists**, plan and result caches with revalidation, background jobs for broad questions, LLM cost tracking with a daily cap. **All 9 appendix questions pass end to end.** Includes a web UI. **Deployed (M6):** https://trials.cheiron.engineeradriel.com (web) and https://api.cheiron.engineeradriel.com (API). Next: evaluation and final docs (M7). See [the implementation plan](docs/implementation-plan.md).
+**Live:** web app at **https://trials.cheiron.engineeradriel.com**, API at **https://api.cheiron.engineeradriel.com** ([interactive reference](https://api.cheiron.engineeradriel.com/docs)).
+
+> **Status:** milestones M0-M6 done.
+> - **Pipeline:** question → validated plan → live data → chart spec, with citations and an AI-written, checked title.
+> - **Charts:** 7 types, including **network graphs**.
+> - **Measures:** trial counts, enrollment, and **distinct sponsors, drugs, countries and more, with an optional minimum number of trials**.
+> - **Honesty:** the AI can't swap in a different measure. A question asking for something we can't compute gets a clear refusal and a suggestion.
+> - **Storage:** stored results with **full citation lists**, and plan and result caches with revalidation.
+> - **Speed:** background jobs for broad questions, and per-year counts without downloading.
+> - **Cost:** AI cost tracking with a daily cap.
+> - **Results:** **all 9 appendix questions pass end to end**.
+> - **Deployed** on Kubernetes (k3s) with Terraform.
+>
+> Next: evaluation (M7). See [the implementation plan](docs/implementation-plan.md).
 
 ## Quick start
 
@@ -23,23 +36,29 @@ curl -s localhost:8000/v1/query -H 'Content-Type: application/json' \
 - Web UI: http://localhost:3000 (questions can be shared as `?q=...` links)
 - Interactive API docs (OpenAPI): http://localhost:8000/docs
 
-![An answer: lung cancer trials by country](docs/screenshots/answer.png)
+![An answer: the question stays at the top, the chart below it, every bar traceable to its trials](docs/screenshots/answer.png)
 
 ## Web UI
 
 A Next.js + Apache ECharts app in [`frontend/`](frontend/), built for people who need to trust the numbers:
 
 - **Ask in plain words**, or refine with filters (drug, condition, sponsor, country, phase, status, years, chart type) shown as removable chips. Grouped example questions and your recent questions on the home screen.
+- **The question stays with its answer.** On submit, the search box glides up and becomes the page's heading, in your own words. Click it or press `/` to edit it in place, and `Esc` to cancel.
 - **Every chart traces back to the trials.** Click any bar, point, node or link: a drawer lists the trials behind it, each with the exact record lines that put it there, highlighted (field path on hover), and pages through all of them.
 - **Readable charts:** a colour-blind-safe palette validated for light and dark surfaces, horizontal bars for names, direct value labels, networks with clusters named after their largest entity, and a **table view** of every value.
 - **Plain-language method notes:** what was counted, how the question was read, what was not counted, and links to the exact ClinicalTrials.gov queries. Technical details and the raw JSON fold away.
-- **Smooth to use:** progress while answers are computed (real page progress for background jobs), light and dark themes, shareable links to an answer (`?q=`) and to one data point's trials (`&d=`), PNG download, keyboard and screen-reader support, phone layouts.
+- **10 colour themes** (5 light, 5 dark, including high contrast) plus "Automatic"; Clinical light is the default. Every theme passes contrast checks in CI (text ≥ 12:1, secondary text ≥ 7:1).
+- **Smooth to use:** progress while answers are computed (real page progress for background jobs), shareable links to an answer (`?q=`) and to one data point's trials (`&d=`), PNG download, keyboard and screen-reader support, phone layouts.
 
 The charts are drawn **only from the response's `encoding`** ([`lib/adapter.ts`](frontend/lib/adapter.ts), tested against the example JSONs), which shows the schema renders without guessing. The app proxies `/api/*` to the backend, so the API address is a runtime setting (`API_BASE_URL`).
 
-| Evidence for one bar | Drug network | Phone |
+| Home | Evidence for one bar | Drug network |
 |---|---|---|
-| ![Evidence drawer](docs/screenshots/evidence.png) | ![Network](docs/screenshots/network.png) | ![Phone](docs/screenshots/phone.png) |
+| ![Home screen with example questions](docs/screenshots/home.png) | ![Evidence drawer: the trials behind "China", with the matching record line highlighted](docs/screenshots/evidence.png) | ![Melanoma drug co-occurrence network with named clusters](docs/screenshots/network.png) |
+
+| Theme picker | Midnight theme | Phone |
+|---|---|---|
+| ![The theme dropdown with 10 themes](docs/screenshots/themes.png) | ![An answer in the Midnight dark theme](docs/screenshots/dark.png) | ![An answer on a phone](docs/screenshots/phone.png) |
 
 ## How it works
 
@@ -52,9 +71,9 @@ request ─► validate (422) ─┬─► guard (AI, fail closed) ────�
 |---|---|---|
 | Guard | AI (`gpt-5.4-nano`) | Flags clearly malicious requests (prompt injection, misuse). Runs in parallel with planning. If it can't answer, the request is refused (503): **fail closed**. |
 | Planner | AI agent (`gpt-5.4-mini`, LangGraph) | Turns words into **choices from fixed lists**: intent, chart type, dimension, measure, filters, comparison groups. Tools: `list_options`, `count_trials` (a real API count), `check_plan`, `submit_plan`. Bounded to 6 steps. |
-| Gate | Code | Re-checks every plan: schema, chart compatibility, **entity grounding** (every drug/condition/sponsor must come from the user's words), unrequested filters need a stated reason. Structured request fields override the AI. |
-| Compile, retrieve | Code | Plan -> Essie query tree (user text can only ever be a quoted phrase) -> ClinicalTrials.gov, with a global rate limiter, retries and a circuit breaker. |
-| Aggregate, chart | Code | Every number. Explicit counting rules for multi-valued fields, nothing silently dropped (`meta.excluded`). |
+| Gate | Code | Re-checks every plan: schema, chart compatibility, **entity grounding** (every drug/condition/sponsor must come from the user's words), unrequested filters need a stated reason, and **the plan must count what the question counts** ("how many sponsors" can't become a trial count). Structured request fields override the AI. |
+| Compile, retrieve | Code | Plan -> Essie query tree (user text can only ever be a quoted phrase) -> ClinicalTrials.gov, with a global rate limiter, retries and a circuit breaker. Trials-per-year series are **counted with one call per year** instead of downloading every trial (2010-2020: 412 s → 57 s). |
+| Aggregate, chart | Code | Every number. Measures: trials, total or median enrollment, and **distinct entities** (e.g. lead sponsors with at least 3 trials per year). Explicit counting rules for multi-valued fields, nothing silently dropped (`meta.excluded`). Runs off the event loop, so a large question doesn't stall other requests. |
 | Verify | Code | Every citation excerpt is compared with the record it came from; a mismatch fails the request. |
 | Narrate | AI (`gpt-5.4-nano`) | Writes the chart title **with placeholders** filled from a fact sheet, so numbers are correct by construction. Checked for invented numbers, names not in the chart, evaluative claims, length and repeated phrases; one retry, then a template title. No free-text summary: it was removed as hallucination-prone and not required ([decision](docs/design/04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)). |
 
@@ -143,10 +162,11 @@ AI cost per question: about $0.003 (measured, `meta.usage`).
 
 ## Key design decisions
 
-The full reasoning, alternatives and requirement links are in [docs/design](docs/design/README.md) (20 decisions). The main ones:
+The full reasoning, alternatives and requirement links are in [docs/design](docs/design/README.md) (21 decisions). The main ones:
 
 - **AI chooses, code computes.** The planner picks from registry lists; all numbers and citations come from deterministic code. The AI writes only the chart title, with placeholders; there is no free-text summary.
-- **Live API, exact answers.** Every chart is computed from ClinicalTrials.gov at request time, never sampled. A local mirror was seriously considered and rejected (legal uncertainty about bulk copying, operational weight).
+- **Live API, exact answers.** Every chart is computed from ClinicalTrials.gov at request time, never sampled. A local mirror was designed twice and not built. The deciding reason is accuracy: the API resolves drug and condition synonyms, and a plain local match misses about 20% of "lung cancer" trials ([Q21](docs/design/21-local-mirror-revisited.md)).
+- **Refuse rather than substitute.** If no measure computes what was asked (e.g. an average duration), the answer says so and suggests the closest question that can be answered, instead of quietly charting something else.
 - **Strict matching by default.** Drugs match intervention names (with the API's own synonym expansion: "Keytruda" finds pembrolizumab trials); conditions are quoted phrases; "sponsor" means lead sponsor. `match_mode` / `sponsor_role` widen it. Measured in the [live probe](docs/api/live-probe.md).
 - **Explicit counting rules.** 17% of trials have two phases, and trials list many drugs, conditions and countries. Every chart states its rule, whether bars add up (`meta.additive`) and how many distinct trials it covers.
 - **Defence in depth.** Request validation, an AI guard, a strict plan schema, entity grounding, and an expression tree that makes query injection impossible. Verified live: an injection attempt matched under 100 trials, not all ~600k.
@@ -160,17 +180,18 @@ Written test-first (each `test:` commit fails before the `feat:` commit that fol
 
 | Suite | Command | What |
 |---|---|---|
-| Offline (CI) | `make test` | ~315 unit, contract and integration tests: compiler strings written by hand, chart numbers worked out by hand from 8 recorded real trials, scripted fake models for the agents |
-| Database | `make test-db` | Against Postgres: repositories, stored results and citation paging, plan and result caches, background jobs run by the worker, the daily budget |
-| Live API | `make test-live` | Query syntax against the real API, and a **cross-check**: our aggregated counts equal the API's own counts exactly |
-| End to end | `make test-e2e` | The 9 appendix questions through the running stack, real models and live data: **all 9 pass** |
+| Offline (CI) | `make test` | 369 unit, contract and integration tests: compiler strings written by hand, chart numbers worked out by hand from recorded real trials and small fixtures, scripted fake models for the agents |
+| Database | `make test-db` | 18 tests against Postgres (its own `ctviz_test` database): repositories, stored results and citation paging, plan and result caches, background jobs (heartbeats, requeue after a restart), the daily budget |
+| Live API | `make test-live` | 18 checks: query syntax against the real API, and **cross-checks**. Our aggregated counts equal the API's own counts exactly, and the sponsor counts and per-year counts equal an independent tally of the raw records |
+| End to end | `make test-e2e` | 11 questions through the running stack, real models and live data: **the 9 appendix questions all pass**, plus a sponsor-count question and a refused "average duration" |
+| Web | `make test-web` | 49 tests: the chart adapter against the example responses, theme contrast gates, the question and evidence helpers |
 
 ## Limitations (current)
 
-- Very broad questions (100k+ trials needing per-trial data) take minutes, as background jobs. A local mirror would make them instant but was rejected (see design Q6).
+- Very broad questions that need per-trial data (e.g. sponsors per year across 273k trials) still take minutes, as background jobs. Plain trials-per-year counts are fast (one call per year). A local mirror would make the rest instant, but can't match the API's synonym search yet ([Q21](docs/design/21-local-mirror-revisited.md)).
+- Shares and percentages are not a measure: "what share of trials have results, by phase" shows counts with and without results side by side, not a percentage.
 - Not built from the database design: the page-level API cache (L1) and the `traces` table (traces live in logs and `meta`).
 - Sponsor names are not merged across spellings ("Merck Sharp & Dohme LLC" vs "Merck & Co."). MeSH grouping inherits MeSH quirks: "aldesleukin" and "Interleukin-2" can be separate drug nodes.
-
 - The ClinicalTrials.gov rate limiter, the per-client limit and the job workers are in-process (one instance); several instances would need a shared store such as Redis.
 
 ## Deployment
@@ -197,6 +218,7 @@ The reasons and alternatives are in [design Q19](docs/design/19-deployment-ui.md
 | `make test` / `make test-db` / `make test-live` / `make test-e2e` | See above |
 | `make test-web` | Frontend type check + adapter tests (Vitest) |
 | `make lint` | ruff, formatting check, mypy (strict) |
+| `make infra-plan` / `make infra-apply` / `make deploy` / `make infra-destroy` | Terraform and the k3s rollout ([`infra/README.md`](infra/README.md)) |
 
 `POST /v1/debug/plan` runs a hand-written QueryPlan without the AI stages (disable with `ENABLE_DEBUG_ENDPOINTS=false`).
 
@@ -208,5 +230,10 @@ All settings come from environment variables (or `.env`); only `OPENAI_API_KEY` 
 
 - [Assignment and requirements](docs/parts/README.md)
 - [ClinicalTrials.gov API research](docs/api/contract.md) and [live probe findings](docs/api/live-probe.md)
-- [System design (Q1-Q20)](docs/design/README.md)
+- [System design (Q1-Q21)](docs/design/README.md)
+- [Infrastructure and deployment](infra/README.md)
 - [Implementation plan](docs/implementation-plan.md)
+
+---
+
+Built by [Adriel](https://engineeradriel.com).
