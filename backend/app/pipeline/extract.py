@@ -320,6 +320,32 @@ def _investigators(study: dict[str, Any]) -> list[Value]:
     return _distinct(found)
 
 
+def _at_location(value: Value, loc_path: str) -> Value:
+    """Re-point evidence from a one-location copy (locations[0]) to the real location path."""
+    fixed = tuple(
+        Evidence(e.field.replace(f"{LOCATIONS}[0].", f"{loc_path}.", 1), e.excerpt)
+        for e in value.evidence
+    )
+    return Value(value.key, value.label, fixed, value.estimated)
+
+
+def site_investigator_pairs(study: dict[str, Any]) -> list[tuple[Value, Value]]:
+    """(investigator, site) for every site-level PI or sub-investigator, at that same site.
+
+    Trial-level officials are not linked to sites: that would invent links (design Q13).
+    """
+    pairs = []
+    for loc_path, loc in _items(study, LOCATIONS):
+        one = {"protocolSection": {"contactsLocationsModule": {"locations": [loc]}}}
+        site = _sites(one)
+        if site:
+            pairs += [
+                (_at_location(i, loc_path), _at_location(site[0], loc_path))
+                for i in _investigators(one)
+            ]
+    return pairs
+
+
 # ---------- dispatch ----------
 
 _EXTRACTORS: dict[str, Extractor] = {
