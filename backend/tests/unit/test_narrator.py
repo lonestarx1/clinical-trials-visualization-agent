@@ -173,3 +173,20 @@ def test_fact_sheet_for_a_network() -> None:
 def _check_for(plan: QueryPlan, result: Any, template: str) -> list[str]:
     facts = fact_sheet(plan, result.visualization, result.meta)
     return check_text(template, facts, plan, result.visualization, max_length=200)
+
+
+def test_fact_sheet_for_a_scatter_plot() -> None:
+    plan = QueryPlan.model_validate(
+        {
+            "scope": "in_scope",
+            "intent": "numeric_relationship",
+            "chart_type": "scatter_plot",
+            "dimension": "enrollment",
+            "dimension_2": "duration_months",
+        }
+    )
+    result = build_chart(plan, [(None, STUDIES)], now_year=2026)
+    facts = fact_sheet(plan, result.visualization, result.meta)
+    # enrollments 0, 12, 30, 120, 367, 826, 1301 -> median 120
+    assert (facts["n_points"], facts["median_x"]) == ("7", "120")
+    assert "max_bucket" not in facts
