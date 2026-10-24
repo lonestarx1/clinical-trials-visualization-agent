@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Annotated, Any
 
@@ -6,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.deps import get_sessions, get_settings
 from app.api.openapi import (
+    CANCEL_RESPONSES,
     CITATION_RESPONSES,
     JOB_RESPONSES,
     OPTIONS_RESPONSES,
@@ -16,9 +18,12 @@ from app.ctgov.countries import CANONICAL
 from app.registry import DIMENSIONS, MEASURES, ChartType
 from app.registry.enums import Phase, Status
 from app.store import jobs, results, usage
+from app.store.models import Job, Result
 from app.store.results import NotFound
 
+log = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1")
+JobId = Annotated[uuid.UUID, Path(description="`job_id` from the 202 response.")]
 Sessions = Annotated[async_sessionmaker[AsyncSession] | None, Depends(get_sessions)]
 
 
@@ -73,26 +78,51 @@ async def citations(
     description="Status of the background job started by a broad question (`202` from "
     "`POST /v1/query`). Poll every few seconds: `pending` and `running` report `progress` "
     "in ClinicalTrials.gov pages; `succeeded` carries the normal query response in "
-    "`result`; `failed` carries the shared error body in `error`. A job that crashed is "
-    "retried before it is marked failed. A finished job is kept for 24 hours, like its "
+    "`result`; `failed` carries the shared error body in `error`, and so does `cancelled` "
+    "(code `cancelled`, after `DELETE`). A job that crashed is retried before it is "
+    "marked failed. A finished job is kept for 24 hours, like its "
     "result; after that, polling returns `410 expired`.",
     responses=JOB_RESPONSES,
 )
-async def job_status(
-    job_id: Annotated[uuid.UUID, Path(description="`job_id` from the 202 response.")],
-    sessions: Sessions,
-) -> dict[str, Any]:
+async def job_status(job_id: JobId, sessions: Sessions) -> dict[str, Any]:
     """Poll a background job (design Q6)."""
     async with _need(sessions)() as s:
         job, stored = await jobs.get_live(s, job_id)
-        result = stored.response if stored else None
+    return _job_body(job, stored)
+
+
+@router.delete(
+    "/jobs/{job_id}",
+    response_model=None,  # the body is a dict; JobStatus documents it
+    tags=["jobs"],
+    summary="Cancel a background job",
+    description="Stops a `pending` or `running` job: its status becomes `cancelled` (with "
+    "`error.code` `cancelled`) and the worker stops within about a second, before its next "
+    "ClinicalTrials.gov page. Returns the job as polling would. A job that has already "
+    "finished (`succeeded`, `failed` or `cancelled`) is returned unchanged, so repeating "
+    "the call is safe. Anyone holding the `job_id` can cancel the job, as anyone holding it "
+    "can poll it: the id is a random UUID returned only to the client that asked. Asking "
+    "the same question again afterwards starts a new job.",
+    responses=CANCEL_RESPONSES,
+)
+async def cancel_job(job_id: JobId, sessions: Sessions) -> dict[str, Any]:
+    """Cancel a background job; idempotent (design Q6)."""
+    async with _need(sessions)() as s:
+        if await jobs.cancel(s, job_id):
+            log.info("job %s cancelled by the client", job_id)
+        await s.commit()
+        job, stored = await jobs.get_live(s, job_id)
+    return _job_body(job, stored)
+
+
+def _job_body(job: Job, stored: Result | None) -> dict[str, Any]:
     return {
         "job_id": str(job.job_id),
         "status": job.status,
         "progress": job.progress,
         "estimated_seconds": job.estimated_seconds,
-        "result": result,
-        "error": job.error if job.status == "failed" else None,
+        "result": stored.response if stored else None,
+        "error": job.error if job.status in ("failed", "cancelled") else None,
     }
 
 

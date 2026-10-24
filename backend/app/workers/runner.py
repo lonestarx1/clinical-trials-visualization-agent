@@ -14,7 +14,7 @@ from fastapi import FastAPI
 from app.api.errors import error_body
 from app.ctgov.client import CtgovUnavailable, InconsistentResults
 from app.llm.client import LLMUnavailable, UsageLog
-from app.pipeline.query import run_job
+from app.pipeline.query import JobCancelled, run_job
 from app.store import jobs
 
 log = logging.getLogger(__name__)
@@ -54,8 +54,11 @@ async def _process_one(app: FastAPI, worker_id: str) -> bool:
             llms=llms,
             settings=app.state.settings,
         )
+    except JobCancelled:
+        # DELETE /v1/jobs/{id} already wrote `cancelled`: not failed, not retried.
+        log.info("job %s cancelled; stopped", job.job_id)
+        return True
     except Exception as exc:
-        beat.cancel()
         retry = isinstance(exc, RETRYABLE) and job.attempts < job.max_attempts
         log.exception("job %s failed (attempt %d, retry=%s)", job.job_id, job.attempts, retry)
         error: dict[str, Any] = error_body(exc, str(job.trace_id))
@@ -63,11 +66,13 @@ async def _process_one(app: FastAPI, worker_id: str) -> bool:
             await jobs.fail(s, job.job_id, error=error, retry=retry)
             await s.commit()
         return True
-    beat.cancel()
-    with suppress(asyncio.CancelledError):
-        await beat
+    finally:
+        beat.cancel()
+        with suppress(asyncio.CancelledError):
+            await beat
     async with sessions() as s:
-        await jobs.succeed(s, job.job_id, result_id=result_id)
+        if not await jobs.succeed(s, job.job_id, result_id=result_id):
+            log.info("job %s was cancelled as it finished; its answer is kept", job.job_id)
         await s.commit()
     return True
 

@@ -44,7 +44,8 @@ counted and which ClinicalTrials.gov API queries produced the numbers.
    runs as a background job instead. The body has a `job_id` and a `poll_url`.
 4. **Poll:** `GET /v1/jobs/{job_id}` every few seconds until `status` is `succeeded`
    (the normal response is in `result`) or `failed` (the error body is in `error`).
-   `progress` reports the ClinicalTrials.gov pages fetched so far.
+   `progress` reports the ClinicalTrials.gov pages fetched so far. No longer need the
+   answer? `DELETE /v1/jobs/{job_id}` cancels the job (`status: cancelled`).
 5. **Cite:** each data point has a stable `key`, its full `citation_count` and up to
    `citations_per_datum` citations inline (`citations: "full"` inlines all of them, up to
    2,000 per response). Page through every trial behind one data point
@@ -118,7 +119,7 @@ TAGS: list[dict[str, Any]] = [
     },
     {
         "name": "jobs",
-        "description": "Poll the background job started by a broad question (202).",
+        "description": "Poll or cancel the background job started by a broad question (202).",
     },
     {
         "name": "citations",
@@ -278,6 +279,7 @@ JOB_RESPONSES: dict[int | str, dict[str, Any]] = {
         running=("Running", examples.JOB_RUNNING),
         succeeded=("Succeeded: `result` is the normal response", examples.JOB_SUCCEEDED),
         failed=("Failed: `error` is the shared error body", examples.JOB_FAILED),
+        cancelled=("Cancelled by `DELETE`: `error.code` is `cancelled`", examples.JOB_CANCELLED),
     )
     | {"model": JobStatus},
     404: errors(
@@ -301,6 +303,27 @@ JOB_RESPONSES: dict[int | str, dict[str, Any]] = {
             ),
         ),
     ),
+    **COMMON,
+}
+
+CANCEL_RESPONSES: dict[int | str, dict[str, Any]] = {
+    200: ok(
+        "The job, as polling returns it: now `cancelled` if it was `pending` or `running`, "
+        "otherwise unchanged.",
+        cancelled=("Cancelled", examples.JOB_CANCELLED),
+        already_finished=("Already finished: returned unchanged", examples.JOB_SUCCEEDED),
+    )
+    | {"model": JobStatus},
+    404: errors(
+        "No such job, or this deployment has no database (`not_found`).",
+        not_found=("Unknown job_id", NOT_FOUND),
+    ),
+    410: errors(
+        "The job finished more than 24 hours ago, or its stored result has expired "
+        "(`expired`). There is nothing left to cancel.",
+        expired=("Expired job", _public(JobExpired())),
+    ),
+    422: JOB_RESPONSES[422],
     **COMMON,
 }
 
@@ -409,6 +432,7 @@ def install_openapi(app: FastAPI) -> None:
 DOCUMENTED: dict[tuple[str, str], dict[int | str, dict[str, Any]]] = {
     ("/v1/query", "post"): QUERY_RESPONSES,
     ("/v1/jobs/{job_id}", "get"): JOB_RESPONSES,
+    ("/v1/jobs/{job_id}", "delete"): CANCEL_RESPONSES,
     ("/v1/results/{result_id}/citations", "get"): CITATION_RESPONSES,
     ("/v1/options", "get"): OPTIONS_RESPONSES,
     ("/v1/usage", "get"): USAGE_RESPONSES,

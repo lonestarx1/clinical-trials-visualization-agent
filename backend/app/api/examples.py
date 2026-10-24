@@ -377,6 +377,16 @@ UPSTREAM_ERROR: dict[str, Any] = {
 
 JOB_FAILED: dict[str, Any] = JOB_RUNNING | {"status": "failed", "error": UPSTREAM_ERROR}
 
+JOB_CANCELLED: dict[str, Any] = JOB_RUNNING | {
+    "status": "cancelled",
+    "error": {
+        "code": "cancelled",
+        "message": "This job was cancelled.",
+        "details": None,
+        "trace_id": TRACE_ID,
+    },
+}
+
 CITATION_PAGE: dict[str, Any] = {
     "result_id": RESULT_ID,
     "datum": "PHASE2",
