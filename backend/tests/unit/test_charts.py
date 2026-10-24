@@ -376,3 +376,21 @@ def test_bar_chart_split_into_series_becomes_grouped() -> None:
     )  # combo, future, partial... see table
     # (the observational trial's sponsor is OTHER too)
     assert rows[("Observational", "Other (incl. academic)")] == 1
+
+
+# ---------- full citation lists (stored for GET /v1/results/{id}/citations) ----------
+
+
+def test_full_citation_lists_are_kept_per_data_point() -> None:
+    result = chart(plan(dimension="status"), citations_per_datum=1)
+    completed = result.full_citations["COMPLETED"]
+    assert [c["nct_id"] for c in completed] == ["NCT04975932", "NCT03724851", "NCT02648477"]
+    assert all("_full" not in row for row in result.visualization.data)  # type: ignore[union-attr]
+    assert set(result.full_citations) == {r["key"] for r in result.visualization.data}  # type: ignore[union-attr]
+
+
+def test_full_citation_lists_for_networks() -> None:
+    p = plan(intent="network", chart_type="network_graph", dimension="drug")
+    result = chart(p)
+    assert len(result.full_citations["drug:pembrolizumab"]) == 5
+    assert len(result.full_citations["drug:anastrozole|drug:pembrolizumab"]) == 1
