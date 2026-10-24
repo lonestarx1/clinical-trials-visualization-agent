@@ -161,6 +161,7 @@ export default function Home() {
       <footer className="footer">
         Data from the <a href="https://clinicaltrials.gov/data-api/api" target="_blank" rel="noreferrer">ClinicalTrials.gov API</a>.
         This tool describes trial registrations. It does not say whether a treatment works.
+        <p className="credit">Built by <a href="https://engineeradriel.com" target="_blank" rel="noreferrer">Adriel</a></p>
       </footer>
     </div>
   );
