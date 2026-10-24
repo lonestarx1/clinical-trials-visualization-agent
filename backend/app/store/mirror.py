@@ -113,6 +113,26 @@ async def finish_run(
     await session.execute(update(SyncRun).where(SyncRun.run_id == run_id).values(**values))
 
 
+async def oldest_sync(session: AsyncSession) -> datetime | None:
+    """When the mirror's least recently saved trial was saved; None for an empty mirror."""
+    oldest: datetime | None = await session.scalar(select(func.min(MirrorTrial.synced_at)))
+    return oldest
+
+
+async def close_interrupted(session: AsyncSession) -> int:
+    """Mark runs still `running` as failed: the sync lock is held, so their process stopped."""
+    result = await session.execute(
+        update(SyncRun)
+        .where(SyncRun.status == "running")
+        .values(
+            status="failed",
+            error="interrupted: the process stopped before the run finished",
+            finished_at=datetime.now(UTC),
+        )
+    )
+    return int(result.rowcount or 0)  # type: ignore[attr-defined]
+
+
 async def last_success(session: AsyncSession) -> SyncRun | None:
     """The run that made the mirror current: its data timestamp is the mirror's."""
     return await session.scalar(

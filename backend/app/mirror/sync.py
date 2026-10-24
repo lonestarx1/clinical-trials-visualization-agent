@@ -66,6 +66,7 @@ async def sync(
         since = (last.started_at - OVERLAP).date()
     kind = "update" if since else "load"
     async with sessions() as s:
+        await mirror.close_interrupted(s)
         run_id = await mirror.start_run(
             s, kind=kind, data_timestamp=version.data_timestamp, since=since
         )
@@ -105,12 +106,25 @@ async def _update(
 async def _load(
     ctgov: CtgovClient, sessions: Sessions, run_id: int, data_timestamp: str, now: datetime
 ) -> SyncResult:
-    """Every slice, page by page (one commit per page); then catch up, reconcile and check."""
+    """Every slice, page by page (one commit per page); then catch up, reconcile and check.
+
+    A slice the mirror already holds in full (an interrupted load, or a mirror copied from
+    another database) is kept, after one count call; the catch-up then refetches every trial
+    changed since the oldest one saved, so kept slices end on this data too.
+    """
     gate = asyncio.Semaphore(LOAD_CONCURRENCY)
+    kept: list[YearSlice] = []
+    async with sessions() as s:
+        oldest = await mirror.oldest_sync(s)
 
     async def load_slice(sl: YearSlice) -> int:
         saved = 0
         async with gate:
+            async with sessions() as s:
+                have = await mirror.count_in(s, sl)
+            if have and have == await ctgov.count(sl.search()):
+                kept.append(sl)
+                return 0
             async for studies, _ in ctgov.pages(sl.search(), mirror_fields()):
                 async with sessions() as s:
                     saved += await mirror.upsert_trials(s, studies)
@@ -122,9 +136,14 @@ async def _load(
     upserted = sum(t.result() for t in tasks)
 
     latest = await ctgov.version()
+    catch_up = []
+    if latest.data_timestamp != data_timestamp:  # an update was published during the load
+        catch_up.append((now - OVERLAP).date())
+    if kept and oldest is not None:  # kept slices were saved earlier, maybe from older data
+        catch_up.append((oldest - OVERLAP).date())
     async with sessions() as s:
-        if latest.data_timestamp != data_timestamp:  # an update was published during the load
-            upserted += await _save_pages(ctgov, s, changed_since((now - OVERLAP).date()))
+        if catch_up:
+            upserted += await _save_pages(ctgov, s, changed_since(min(catch_up)))
         removed, repaired = await _reconcile(ctgov, s, now.year)
         await _check_total(ctgov, s)
         await mirror.finish_run(
