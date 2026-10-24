@@ -15,7 +15,7 @@ Status: **Decided** (2026-10-24)
 | `status` | Status enum[] | no | API status values |
 | `start_year`, `end_year` | int | no | 1900 <= year <= current year + 10; `start_year <= end_year` |
 | `compare` | 2-4 x `{label, drug_name? , condition?, sponsor?, country?}` | no | each group needs >= 1 entity; labels unique |
-| `chart_type` | chart enum | no | overrides the AI; compatibility still checked (422 if impossible) |
+| `chart_type` | chart enum | no | overrides the AI; compatibility still checked (200 `could_not_interpret` if impossible: it depends on the dimension the planner picks, [Q3 revision](03-ai-vs-code.md#optional-request-override)) |
 | `top_n` | int | no | 1-50 |
 | `match_mode` | `strict` \| `broad` | no | default `strict` (drug and condition matching); see Q7 |
 | `sponsor_role` | `lead` \| `any` | no | default `lead`; see Q7 |
@@ -49,7 +49,7 @@ Handled in three layers. **We never silently drop or "fix" a user-provided field
 |---|---|---|
 | **1. Invalid input** (shape/type/range) | `start_year: 2030, end_year: 2020`; phase `"Phase 7"`; empty string; 500-char drug name; unknown field | **422** with a per-field error (`loc`, `msg`). Fail fast, no AI call, no API call. |
 | **2. Sanitised input** (valid but needs cleaning) | `"  Pembrolizumab\n"`; Unicode look-alikes; Essie operator characters/keywords inside a term (`"aspirin) OR (ALL"`, `AREA[...]`) | Trim + Unicode-normalise. **Escape/quote every user term** before it goes into an Essie expression, so user text can never change the API query's structure (query-injection protection). The cleaned value is echoed in `meta.filters`. |
-| **3. Valid but unusable** (matches nothing) | `drug_name: "pembrolizumb"` (typo); `drug_name: X` + `condition: Y` with no overlap | Checked with a cheap `count_trials` before the full fetch. Returns **200** with `visualization: null`, `meta.status = "no_matching_trials"`, and per-filter counts (e.g. `drug_name "pembrolizumb": 0 trials`), so the user sees exactly which field caused it. The AI may **not** rewrite a user field. (A "did you mean" suggestion would need a reliable source of names; listed as future work.) |
+| **3. Valid but unusable** (matches nothing) | `drug_name: "pembrolizumb"` (typo); `drug_name: X` + `condition: Y` with no overlap | Checked with a cheap `count_trials` before the full fetch. Returns **200** with `visualization: null`, `status: "no_matching_trials"`, and the count of each search in `meta.details.search_counts` (`[{"group": null, "count": 0}]`, one entry per comparison group). *As built:* per-search, not per-filter, counts; per-filter counts would cost one extra count call per filter and are future work. The AI may **not** rewrite a user field. (A "did you mean" suggestion would need a reliable source of names; listed as future work.) |
 
 Fields that are valid but irrelevant to the question are still applied as filters, with a note in `meta.assumptions`.
 

@@ -61,7 +61,9 @@ The planning stage (pipeline stages 2-3) is an **AI agent with tools**, not a si
 
 ### Optional request override
 
-`chart_type` is an optional request field. If set, it overrides the AI. Code still checks compatibility, and an impossible combination returns 422.
+`chart_type` is an optional request field. If set, it overrides the AI. Code still checks compatibility.
+
+**Revision (2026-10-25):** an impossible combination answers **200 `could_not_interpret`**, not 422. Compatibility depends on the dimension the planner picks (`time_series` needs a time dimension, `metric` none), so it can't be checked when the request arrives: the gate rejects each incompatible plan, the planner retries within its step limit, and if no compatible plan exists the answer is `could_not_interpret` with the gate's errors in `meta.details.errors`. The default-chart fallback (rule 5) never replaces a chart type the user asked for.
 
 ## Why an agent here (tradeoff)
 

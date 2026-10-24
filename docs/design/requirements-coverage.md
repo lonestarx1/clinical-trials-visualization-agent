@@ -1,6 +1,6 @@
-# Requirement Coverage: Assignment -> Design
+# Requirement coverage: assignment -> design
 
-Maps every requirement ID from [`docs/parts/README.md`](../parts/README.md) to the design decisions that cover it. Reviewed 2026-10-24 after all 19 design questions.
+Maps every requirement ID from [`docs/parts/README.md`](../parts/README.md) to the design decisions that cover it. Reviewed 2026-10-24 after the first 19 design questions. The tables below are that design-time review; what was delivered since is in [Revision (2026-10-25): delivery status](#revision-2026-10-25-delivery-status) at the end.
 
 **Coverage status:**
 - **Designed**: fully covered by a decision
@@ -14,12 +14,12 @@ Maps every requirement ID from [`docs/parts/README.md`](../parts/README.md) to t
 |---|---|
 | Designed | 56 |
 | Designed + Planned (README section still to write) | 3 |
-| Designed, pending a live check or user action (O4, O8) | 2 |
+| Designed, pending a live check or a DNS record (O4, O8; both since resolved, see the revision) | 2 |
 | Planned | 11 |
 | Gap | **0** |
 | **Total** | **72** (+ 9 appendix questions, all Designed) |
 
-No requirement is uncovered. The "Planned" items are deliverables (README sections, example runs, submission, demo video) that the implementation plan must schedule explicitly.
+No requirement is uncovered. The "Planned" items are deliverables (README sections, example runs, submission, demo video) that the implementation plan schedules explicitly.
 
 ## Part 0: Preamble
 
@@ -57,7 +57,7 @@ No requirement is uncovered. The "Planned" items are deliverables (README sectio
 | ID | Requirement | Covered by | Status |
 |---|---|---|---|
 | P3-1 | Required `query` string | Q5 | Designed |
-| P3-2 / 3-2a | Optional structured fields | Q5 (PDF names + extras) | Designed |
+| P3-2 / 3-2a | Optional structured fields | Q5 (the brief's suggested names + extras) | Designed |
 | P3-3 | Document request schema (names, types, required, validation) | Q5 table; OpenAPI generated (Q12); README section | Designed + Planned (README) |
 | P3-4 | Example request works | Q5 merge rule 3 ("this drug" -> `drug_name`); Q18 E2E case | Designed |
 | P3-5 | Structured response describing a visualization | Q12 envelope | Designed |
@@ -109,7 +109,7 @@ Count-only strategies (S1/S2) cite the reproducing API query and fetch trial cit
 | P6-7 | Small UI (bonus) | Q19 | Designed |
 | P6-8 | Deployed endpoint (bonus) | Q19 (`api.engineeradriel.com`) | Designed (O8 DNS) |
 | P6-9 | Demo video (bonus) | Q19 (optional) | Planned |
-| P6-10 | Submit before Sun 10/25 15:00 KST via Ashby | Logistics | Planned |
+| P6-10 | Submit within the time box | Implementation plan | Planned |
 | P6-11 | Zip or GitHub link | Q19 (zip + endpoint) | Designed |
 
 ## Part 7: Evaluation criteria
@@ -137,7 +137,7 @@ Count-only strategies (S1/S2) cite the reproducing API query and fetch trial cit
 |---|---|---|---|
 | P8-1 | README: tools used | O7 README outline | Planned |
 | P8-2 | README: how correctness was validated | Q18 (test layers, AI eval, live E2E report, citation exactness), Q16 `traces`/`llm_usage` | Designed + Planned (README) |
-| P8-3 | README: designed vs generated | O7 README outline; `docs/design/` records which decisions the user made | Planned |
+| P8-3 | README: designed vs generated | O7 README outline; `docs/design/` records each decision with its reasons and alternatives | Planned |
 | P8-4 | Evidence of construction, testing, iteration | `docs/` history, git commits, Q18 D18.6 (bug -> regression test) | Designed |
 
 ## Appendix: example questions
@@ -155,3 +155,25 @@ Count-only strategies (S1/S2) cite the reproducing API query and fetch trial cit
 | PA-9 | Drug ↔ drug co-occurrence (unscoped) | `drug` co-occurrence, no scope | network_graph | ~289k candidate trials -> **background job** (Q6); the planner may suggest a scope in `assumptions` |
 
 All 9: **Designed**. They're also the first cases in the live E2E suite (Q18).
+
+## Revision (2026-10-25): delivery status
+
+The service is built and deployed. This updates the rows above that were "Planned" or waiting on an open item. The original statuses are kept above as the design-time record.
+
+| ID | Now | Where |
+|---|---|---|
+| P0-3 | Done | Milestones M0-M6 complete ([implementation plan](../implementation-plan.md)) |
+| P2-3, P5 count-only note | O4 no longer blocks | The service doesn't call `/stats/field/values` when answering a question (it was only used to build the static country list, `backend/app/ctgov/data/location-countries.json`). Exact counts come from one count call per bucket (`backend/app/ctgov/retrieval.py`) |
+| P3-3, P6-3 | Done | README "API" section (request fields table, response example, errors); OpenAPI at `/docs` and `/openapi.json` |
+| P3-12 | Done | README "Response" section, [Q12](12-io-schema.md), and the web app's renderer, which reads only `encoding` |
+| P6-1 | Done | This repository (`backend/`, `frontend/`, `infra/`), runnable with `make up` |
+| P6-2 | Done | README "Quick start" and "Configuration" |
+| P6-4 | Done | README "Key design decisions", plus this folder |
+| P6-5 | Done | README "Limitations (current)" |
+| P6-6 | Done | 5 script-generated outputs in [`../examples/`](../examples), listed in the README "Examples" section |
+| P6-7 | Done | Web app in `frontend/` |
+| P6-8 | Done (O8 resolved) | Live at https://api.cheiron.engineeradriel.com (API) and https://trials.cheiron.engineeradriel.com (web), on k3s on EC2 instead of the first plan of `api.engineeradriel.com`; see [Q19](19-deployment-ui.md), "Revision (2026-10-25)" |
+| P6-9 | Not tracked here | Optional demo video |
+| P8-1, P8-3 | Written | [`../parts/08-integrity-note.md`](../parts/08-integrity-note.md), "Our disclosure" |
+| P8-2 | Done | README "Testing and validation"; [`../parts/08-integrity-note.md`](../parts/08-integrity-note.md) |
+| PA-1..9 | Done | All 9 appendix questions pass end to end (`make test-e2e`) |

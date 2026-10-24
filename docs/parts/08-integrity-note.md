@@ -1,56 +1,70 @@
-# Part 8: Integrity Note (Use AI Tools Freely)
+# Part 8: Integrity note (tool-use disclosure)
 
-## 1. Source text (verbatim)
+## 1. Summary
 
-> You may use AI tools and online resources. We care about your **engineering judgment** and **design reasoning**.
->
-> In your README, briefly describe:
->
-> - which tools you used (if any)
-> - how you validated correctness
-> - what parts you designed/implemented deliberately vs generated and adapted
->
-> We reward submissions that show evidence of thoughtful construction, testing, and iteration.
+AI tools and online resources are allowed. The assessment is about engineering judgment and design reasoning. The README should briefly describe:
+
+- which tools were used, if any;
+- how correctness was validated;
+- which parts were designed or written deliberately, and which were generated and then adapted.
+
+Evidence of careful construction, testing and iteration is rewarded.
 
 ## 2. Atomic requirements
 
-| ID | Level | Requirement | Source phrase |
-|---|---|---|---|
-| P8-0 | MAY | AI tools and online resources are allowed. | "You may use AI tools and online resources." |
-| P8-1 | MUST | README states **which tools** were used. | "which tools you used (if any)" |
-| P8-2 | MUST | README states **how correctness was validated**. | "how you validated correctness" |
-| P8-3 | MUST | README separates **what was designed or implemented deliberately** from **what was generated and adapted**. | "what parts you designed/implemented deliberately vs generated and adapted" |
-| P8-4 | SHOULD | Show **evidence** of thoughtful construction, testing, and **iteration**. | "We reward submissions that show evidence of thoughtful construction, testing, and iteration." |
-| P8-5 | (guidance) | Keep it brief. | "briefly describe" |
+| ID | Level | Requirement |
+|---|---|---|
+| P8-0 | MAY | AI tools and online resources are allowed. |
+| P8-1 | MUST | The README states **which tools** were used. |
+| P8-2 | MUST | The README states **how correctness was validated**. |
+| P8-3 | MUST | The README separates what was **designed or written deliberately** from what was **generated and adapted**. |
+| P8-4 | SHOULD | Show **evidence** of careful construction, testing and **iteration**. |
+| P8-5 | (guidance) | Keep it brief. |
 
-## 3. What it really means
+## 3. What it means
 
-- They expect AI-assisted work and are checking for **judgment and honesty**. An honest, specific account beats a vague or inflated one. Anything claimed in this section can be probed in the technical interviews, so **only claim what is true**.
-- "Evidence of iteration" is easiest to show with:
-  - a **real commit history**: small, meaningful commits, not one giant "initial commit"
-  - a short **decision log** of what we tried, what failed and what we changed
-  - tests added when bugs were found
-- "How you validated correctness" should name concrete checks:
-  - unit tests
-  - schema contract tests
-  - the citation exactness check
-  - comparing our counts against the ClinicalTrials.gov website for a few queries
-  - manual review of the example outputs
+- AI-assisted work is expected. What is checked is **judgment and honesty**: a specific, accurate account beats a vague or inflated one, so the disclosure claims only what is true.
+- Evidence of iteration is easiest to show with:
+  - a **real commit history**: small, meaningful commits, not one large initial commit;
+  - a **decision log** of what was tried, what failed and what changed;
+  - tests added when bugs were found.
+- "How correctness was validated" names concrete checks:
+  - unit tests;
+  - schema contract tests;
+  - the citation exactness check;
+  - comparing our counts with ClinicalTrials.gov's own counts for a few queries;
+  - a manual review of the example outputs.
 
-## 4. Proposed approach
+## 4. Our disclosure
 
-- **Tools to list (fill in at the end, accurately):**
-  - Claude Code as the coding assistant
-  - OpenAI models (with the exact model names used) inside the product
-  - libraries (FastAPI, Pydantic, httpx, ...)
-  - the ClinicalTrials.gov API docs
-- **Keep a running log** in `docs/decisions.md` as we go: decision, alternatives, reason, and the date/time. It's the raw material for the README and for "evidence of iteration".
-- **Designed vs generated:** the user should state which design decisions were theirs. Example: the user decided the architecture and schema, and the AI assistant generated drafts that the user reviewed and adapted. That split must match what actually happened in this session. We'll write it together at the end, from the log.
-- **Commits:** commit at each working step, with clear messages.
+### Tools used
+
+- **Claude Code** (Anthropic) as the coding assistant, for design discussion, code, tests and documentation.
+- **OpenAI models** inside the product, for the guard, planner and title-writing stages. The defaults are `gpt-5.4-nano` (guard and title), `gpt-5.4-mini` (planner) and `gpt-4.1-mini` (fallback); see [design Q20](../design/20-model-selection.md).
+- **Libraries and platforms:** FastAPI, Pydantic, httpx, LangGraph, SQLAlchemy and Alembic on Postgres for the backend; Next.js and Apache ECharts for the web app; Terraform, Kustomize and k3s on AWS for the deployment.
+- **References:** the ClinicalTrials.gov API documentation, checked against the live API ([`../api/contract.md`](../api/contract.md), [`../api/live-probe.md`](../api/live-probe.md)).
+
+### How correctness was validated
+
+- Automated test suites (offline unit, contract and integration tests; database tests; live API checks; end-to-end questions through the running stack; web tests). The README's "Testing and validation" section lists them.
+- **Cross-checks against the API:** our aggregated counts are compared with the API's own counts, and with an independent tally of the raw records.
+- **Citation exactness:** every excerpt is checked against the raw API record at its field path.
+- The example outputs in [`../examples/`](../examples) are generated by the system and validated against the schema.
+
+### Designed deliberately vs generated and adapted
+
+- **Designed deliberately:** the decisions in [`../design/`](../design/README.md) were made one question at a time, each recorded with its reasons, the alternatives considered and the requirements it covers. They include the architecture (the AI chooses, code computes), the plan and response schemas, the counting rules, the citation model and the deployment.
+- **Generated and adapted:** code, tests and documentation were drafted with Claude Code, then reviewed, tested and revised. Changes were made test-first where possible.
+
+### Evidence of iteration
+
+- The git history: small commits, merged through pull requests.
+- The decision log: the design docs and their dated revisions (for example the deployment revision in [design Q19](../design/19-deployment-ui.md) and the mirror revisited in [Q21](../design/21-local-mirror-revisited.md)), plus the [implementation plan](../implementation-plan.md). The separate `docs/decisions.md` first proposed here was not needed, because the design docs serve that purpose.
+- Bugs found during the build get a regression test ([design Q18](../design/18-testing.md), D18.6).
 
 ## 5. Acceptance checks
 
-- [ ] README has a short "AI tools and validation" section that answers all 3 questions.
-- [ ] Every claim in that section is true and can be explained in an interview.
-- [ ] Git history shows step-by-step progress.
-- [ ] `docs/decisions.md` exists and is linked from the README.
+- [ ] The README has a short tools and validation section that answers all three questions, or links to this disclosure.
+- [ ] Every claim in that section is true and can be explained.
+- [ ] The git history shows step-by-step progress.
+- [ ] The decision log is linked from the README.

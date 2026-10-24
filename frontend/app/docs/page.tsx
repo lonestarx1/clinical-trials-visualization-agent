@@ -132,6 +132,13 @@ const ERROR_SAMPLE = `{
   }
 }`;
 
+const CITATIONS_META_SAMPLE = `// asked for full, got full
+{ "requested": "full", "applied": "full", "per_datum": 5, "reason": null }
+
+// asked for full on a broad question: too many to inline
+{ "requested": "full", "applied": "sample", "per_datum": 5,
+  "reason": "2,000 citation limit exceeded (17,450 contributing trial references); page through them with the citations endpoint" }`;
+
 const ACCEPTED_SAMPLE = `HTTP/1.1 202 Accepted
 
 {
@@ -199,7 +206,7 @@ const REQUEST_FIELDS: Row[] = [
   ["top_n", "integer or null", "null", <>Keep only the top N categories (1 to 50).</>],
   ["match_mode", "\"strict\" | \"broad\"", "\"strict\"", <>How drugs and conditions match. <code>strict</code> uses the intervention and condition fields (with synonyms); <code>broad</code> also matches titles, keywords and descriptions.</>],
   ["sponsor_role", "\"lead\" | \"any\"", "\"lead\"", <><code>lead</code>: the lead sponsor only. <code>any</code>: lead sponsor or collaborator.</>],
-  ["citations", "\"sample\" | \"full\"", "\"sample\"", <>Accepted for forward compatibility. Responses currently always carry a sample inline (<code>meta.citations.applied</code> says which); use <a href="#citations">citations paging</a> for every trial.</>],
+  ["citations", "\"sample\" | \"full\"", "\"sample\"", <><code>sample</code>: up to <code>citations_per_datum</code> citations inline per data point. <code>full</code>: every citation inline, as long as the whole response has at most 2,000; above that it falls back to a sample, and <code>meta.citations</code> says so (<a href="#per-datum-citations">details</a>).</>],
   ["citations_per_datum", "integer", "5", <>How many citations each data point carries inline (1 to 50).</>],
   ["phase_mode", "\"combined\" | \"split\"", "\"combined\"", <><code>combined</code>: a Phase 2/3 trial counts once, in a &quot;Phase 2/Phase 3&quot; bucket. <code>split</code>: it counts in both phases.</>],
   ["condition_source", "\"mesh\" | \"raw\"", "\"mesh\"", <>Group conditions by their MeSH terms, or by the text the sponsor registered.</>],
@@ -235,11 +242,11 @@ const META_FIELDS: [string[], React.ReactNode][] = [
   [["excluded"], <>Trials left out and why, e.g. <code>{"{"} &quot;reason&quot;: &quot;start after 2026&quot;, &quot;count&quot;: 7 {"}"}</code>.</>],
   [["notes"], <>Context for the reader, e.g. &quot;Showing the top 10 of 69 countries.&quot;</>],
   [["api_queries"], <>Every ClinicalTrials.gov API v2 query that was run, with its <code>total_count</code> (and <code>group</code> for comparisons). Open the URL to check the numbers yourself.</>],
-  [["sort", "citations"], <>How <code>data</code> is ordered (<code>by</code> x or y, <code>order</code>), and how citations were sampled.</>],
+  [["sort", "citations"], <>How <code>data</code> is ordered (<code>by</code> x or y, <code>order</code>), and which citation mode was <code>requested</code> and <code>applied</code>, with the <code>reason</code> when they differ (<a href="#per-datum-citations">full citations</a>).</>],
   [["group_overlap", "network"], <>Comparisons: trials shared by each pair of groups. Networks: node and edge counts before and after pruning, and the community algorithm.</>],
   [["data_timestamp", "retrieved_at", "cache"], <>The ClinicalTrials.gov data version, when it was read, and whether the plan and result came from cache (<code>hit</code>, <code>miss</code>, <code>revalidated</code>).</>],
   [["details"], <>Status-specific details for non-chart answers (see <a href="#statuses-errors">statuses</a>).</>],
-  [["trace_id", "guard", "planner", "narration", "usage", "timings_ms"], <><code>trace_id</code> identifies the request in our logs. <code>guard</code>, <code>planner</code>, <code>narration</code>, <code>usage</code> and <code>timings_ms</code> describe the AI stages, cost and timings.</>],
+  [["trace_id", "guard", "planner", "narration", "usage", "timings_ms"], <><code>trace_id</code> identifies the request in our logs. <code>guard</code>, <code>planner</code>, <code>narration</code>, <code>usage</code> and <code>timings_ms</code> describe the AI stages, cost and timings. <code>guard.cached: true</code> means a repeat was answered from cache while the daily AI budget was spent, without calling the guard again (see <a href="#limits">limits</a>).</>],
 ];
 
 const STATUSES: [string, React.ReactNode][] = [
@@ -252,13 +259,15 @@ const STATUSES: [string, React.ReactNode][] = [
 const ERRORS: [number, string, React.ReactNode][] = [
   [422, "invalid_request", <>The body failed validation: wrong type, out of range, or an unknown field. <code>details</code> lists each problem as <code>{"{"} loc, msg {"}"}</code>.</>],
   [400, "rejected_by_policy", <>The input safety check rejected the request.</>],
-  [404, "not_found", <>Unknown <code>job_id</code>, <code>result_id</code> or data point <code>key</code>.</>],
-  [410, "expired", <>The result is past its retention (24 hours). Run the query again.</>],
+  [401, "unauthorized", <><code>GET /v1/usage</code> without the admin token.</>],
+  [404, "not_found", <>Unknown <code>job_id</code>, <code>result_id</code> or data point <code>key</code>, or a path that doesn&apos;t exist.</>],
+  [405, "method_not_allowed", <>The path exists but not with this method, e.g. <code>GET /v1/query</code>. The <code>Allow</code> header lists the right one.</>],
+  [410, "expired", <>The result, or the finished job, is past its retention (24 hours). Run the query again.</>],
   [429, "too_many_requests", <>Too many requests from your IP (with a <code>Retry-After</code> header in seconds), or too many background jobs at once.</>],
   [503, "upstream_unavailable", <>ClinicalTrials.gov kept failing after retries, or its data changed mid-read. Retry later.</>],
   [503, "llm_unavailable", <>The AI model kept failing, fallback model included.</>],
   [503, "safety_check_unavailable", <>The input safety check failed; requests are refused rather than let through.</>],
-  [503, "budget_exceeded", <>Today&apos;s AI budget is spent (see <a href="#limits">limits</a>).</>],
+  [503, "budget_exceeded", <>Today&apos;s AI budget is spent and the question needs an AI call. Repeats of answered questions still work (see <a href="#limits">limits</a>).</>],
   [500, "internal_error", <>A bug on our side. Quote the <code>trace_id</code> when you report it.</>],
 ];
 
@@ -368,9 +377,12 @@ export default function DocsPage() {
             <ul>
               <li><code>key</code>: a stable identifier, used to <a href="#citations">page through its citations</a>.</li>
               <li><code>citation_count</code>: how many trials are behind it.</li>
-              <li><code>citations</code>: the first <code>citations_per_datum</code> of them, in a fixed order.</li>
+              <li><code>citations</code>: the first <code>citations_per_datum</code> of them, in a fixed order (most recent start date first, then NCT ID), or all of them with <code>citations: &quot;full&quot;</code>.</li>
               <li><code>citations_truncated</code>: <code>true</code> when there are more than shown.</li>
             </ul>
+            <p><strong>Full citations.</strong> With <code>&quot;citations&quot;: &quot;full&quot;</code>, every data point carries all its citations, as long as the response holds at most 2,000 in total. Above that you get the usual sample instead, and <code>meta.citations</code> says why. Either way, <code>meta.citations</code> reports what you asked for and what you got:</p>
+            <CodeBlock label="meta.citations" code={CITATIONS_META_SAMPLE} />
+            <p>Trials-per-year charts counted year by year only read a sample of each year, so they always answer with a sample (<code>reason</code> starts with <code>counted per year</code>). For any data point, <a href="#citations">citations paging</a> lists every trial.</p>
             <p>Each citation has the trial&apos;s <code>nct_id</code>, <code>url</code> and <code>title</code>, and <code>evidence</code>: the record fields that put the trial in this bucket, as <code>{"{"} field, excerpt {"}"}</code>. <code>field</code> is a path in the ClinicalTrials.gov study record (e.g. <code>protocolSection.designModule.phases[0]</code>) and <code>excerpt</code> is its exact value. The server checks every excerpt against the record it read before answering.</p>
 
             <h3 id="meta">Key meta fields</h3>
@@ -386,7 +398,7 @@ export default function DocsPage() {
             <p>Real errors share one body. It never contains internal details; <code>trace_id</code> links it to our logs.</p>
             <CodeBlock label="Error 422" code={ERROR_SAMPLE} />
             <Table head={["HTTP", "code", "When"]} rows={ERRORS.map(([h, c, w]) => [<span key="h" className="http">{h}</span>, <code key="c">{c}</code>, w])} />
-            <p>Retry 429 after <code>Retry-After</code> seconds and 503 after a short wait; the others won&apos;t succeed unchanged. A path that doesn&apos;t exist gets the web framework&apos;s plain 404, <code>{"{"} &quot;detail&quot;: &quot;Not Found&quot; {"}"}</code>.</p>
+            <p>Retry 429 after <code>Retry-After</code> seconds and 503 after a short wait; the others won&apos;t succeed unchanged. Every error uses this body, including a path that doesn&apos;t exist (404) and a wrong method (405).</p>
           </section>
 
           <section id="jobs" aria-labelledby="jobs-h">
@@ -402,12 +414,12 @@ export default function DocsPage() {
               <li>On <code>succeeded</code>, <code>result</code> is the normal response body, exactly as a 200 would have returned it.</li>
               <li>On <code>failed</code>, <code>error</code> is <code>{"{"} code, message, details, trace_id {"}"}</code>, the same fields as an error body. A job that hits a temporary ClinicalTrials.gov or AI failure is retried, up to 3 attempts, before it fails.</li>
             </ul>
-            <p>Asking the same question again while its job is still running returns the same job.</p>
+            <p>Asking the same question again while its job is still running returns the same job. A finished job is kept for 24 hours, like its result; after that, polling returns <code>410 expired</code>.</p>
           </section>
 
           <section id="citations" aria-labelledby="citations-h">
             <h2 id="citations-h">Citations paging</h2>
-            <p>The response carries a sample of each data point&apos;s trials. This endpoint lists all of them, in the same order:</p>
+            <p>The response usually carries a sample of each data point&apos;s trials. This endpoint lists all of them, in the same order, whatever the citation mode:</p>
             <Endpoint method="GET" path="/v1/results/{result_id}/citations" />
             <Table head={["Parameter", "Meaning"]} rows={[
               [<code key="p">datum</code>, <>Required. The data point&apos;s <code>key</code>, e.g. <code>PHASE1</code>, <code>pembrolizumab|PHASE2</code> or <code>drug:ipilimumab|drug:nivolumab</code>.</>],
@@ -432,10 +444,11 @@ export default function DocsPage() {
             <Table head={["Limit", "Value", "When it's reached"]} rows={[
               ["Requests per client IP", "300 per minute, on every /v1 path", <><code>429 too_many_requests</code> with <code>Retry-After</code>.</>],
               ["Background jobs per client IP", "10 pending or running", <><code>429 too_many_requests</code> on the next broad question.</>],
-              ["Daily AI budget", "100 USD of model spend per UTC day, for everyone", <><code>POST /v1/query</code> returns <code>503 budget_exceeded</code> until midnight UTC. Jobs, citations and options keep working.</>],
+              ["Daily AI budget", "100 USD of model spend per UTC day, for everyone", <>Questions that need an AI call get <code>503 budget_exceeded</code> until midnight UTC. Asking exactly the same question as before still works if its stored answer is valid (<code>meta.cache</code> shows <code>hit</code> or <code>revalidated</code>, with no AI call). Jobs, citations and options keep working.</>],
               ["ClinicalTrials.gov", "40 requests per minute, 2 at a time, shared by all users", <>Requests wait their turn; broad questions become background jobs.</>],
               ["Answer in the request", "60 seconds (estimated)", <>Longer questions become <a href="#jobs">background jobs</a>.</>],
-              ["Result retention", "24 hours", <><code>410 expired</code> from citations paging.</>],
+              ["Result retention", "24 hours", <><code>410 expired</code> from citations paging and job polling.</>],
+              ["Full citations", "2,000 per response", <>Over it, <code>citations: &quot;full&quot;</code> falls back to a sample; <code>meta.citations.reason</code> says so.</>],
             ]} />
           </section>
 
