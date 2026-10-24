@@ -32,7 +32,7 @@ Sponsor ↔ collaborator always uses both sponsor roles (Q7, D7.6). Other sponso
 | Step | Rule (defaults configurable via `options`) |
 |---|---|
 | 1 | Keep the **top N nodes per type** by weight (default **25**). For co-occurrence, top 40 drugs. |
-| 2 | **Minimum edge weight** (default **2**), raised automatically until there are **<= ~150 edges**. |
+| 2 | **Minimum edge weight** (default **1**, revised from 2 during implementation so small scopes keep their links), raised automatically until there are **<= 150 edges**. |
 | 3 | Remove nodes left **without edges**. |
 | 4 | Record in `meta.network`: nodes/edges **before and after** pruning, the final thresholds, and the counts of trials and links that were cut. |
 

@@ -18,6 +18,12 @@ Normalisation changes **how values are grouped**, never **which trials are count
 | D11.6 | **Investigators** | `overallOfficials[].name` (trial level) and `locations[].contacts[].name` with role `PRINCIPAL_INVESTIGATOR` / `SUB_INVESTIGATOR` (site level), with credentials removed ("John Smith, MD, PhD" -> "John Smith"), case-folded | Different people with the same name may merge, and one person may appear with different spellings. Documented. |
 | D11.7 | **Sites** | `facility` + `city` + `country`, each trimmed and case-folded | Facility spellings vary across trials. Documented. |
 
+## Revision during implementation (2026-10-24): anchor MeSH terms to drug interventions
+
+Live data showed that a trial's intervention MeSH list also contains **non-drug terms** (e.g. NCT02506153: "Specimen Handling", "Magnetic Resonance Spectroscopy", "Introns", "CTLA-4 Antigen"). Using every MeSH term as a drug would put them in drug charts and networks.
+
+**New rule:** each `DRUG` / `BIOLOGICAL` intervention takes the MeSH term that shares a word with its **name or other names** (e.g. TEW-7197 -> "vactosertib" through `otherNames`); without a match it keeps its cleaned name. Placebo is skipped. The citation cites both the MeSH term and the intervention name. Remaining limitation: MeSH can name one substance two ways ("aldesleukin", "Interleukin-2"), which then stay separate.
+
 ## Known limitation: MeSH terms are per trial, not per intervention
 
 `interventionBrowseModule.meshes` lists terms for the **trial as a whole**. It doesn't say which intervention entry each term came from. For counting trials per drug this is fine. For an edge such as "sponsor ↔ drug", the citation shows both the MeSH term and the trial's raw intervention names, so a reader can check the link.
