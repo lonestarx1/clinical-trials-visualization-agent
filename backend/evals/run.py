@@ -144,6 +144,8 @@ async def run_planner(
                 result.steps,
                 _ms(start),
                 _cost(llm),
+                plan,
+                [f"{c['tool']}: {'ok' if c['ok'] else 'rejected'}" for c in result.tool_calls],
             )
 
     return list(await asyncio.gather(*(one(c, r) for c in cases for r in range(1, runs + 1))))

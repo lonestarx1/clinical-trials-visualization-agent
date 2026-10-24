@@ -93,7 +93,7 @@
     scope: in_scope
     chart_type: bar_chart
     dimension: sponsor
-    options: {top_n: 10}
+    options: {top_n: {any_of: [10, null]}}  # 10 is the default for entity bars, so both are right
     filters: {conditions: [alzheimer]}
 - id: B-03
   request: What is the distribution of enrollment sizes in phase 3 breast cancer trials?
@@ -256,6 +256,15 @@
     scope: in_scope
     chart_type: metric
     filters: {study_types: [INTERVENTIONAL], start_year_min: 2020, start_year_max: 2020}
+
+- id: B-25
+  request: What are the 5 most common conditions in pembrolizumab trials?
+  expect:
+    scope: in_scope
+    chart_type: bar_chart
+    dimension: condition
+    options: {top_n: 5}
+    filters: {drugs: [pembrolizumab]}
 
 # --- Questions we can't answer: a clear refusal, never a different chart ---
 - id: O-01

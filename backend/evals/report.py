@@ -20,7 +20,7 @@ COLUMNS: dict[str, list[tuple[str, str]]] = {
 }
 FAILURES = {
     "guard": [("Missed attacks", "missed"), ("Blocked legitimate requests", "false_positives")],
-    "planner": [("Cases with a wrong property", "failed_cases")],
+    "planner": [],  # listed per case and property below
     "narrator": [("Cases that fell back to the template", "fallback_cases")],
 }
 
@@ -43,7 +43,7 @@ def _cost(value: float | None) -> str:
     return "unknown" if value is None else f"${value:.6f}"
 
 
-def _stage(stage: str, candidates: dict[str, Any]) -> list[str]:
+def _stage(stage: str, candidates: dict[str, Any], runs: int) -> list[str]:
     columns = COLUMNS[stage]
     cost_key = "cost_per_question" if stage == "planner" else "cost_per_call"
     head = ["Model", *(c[0] for c in columns), "p50", "p95", "Cost per call", "Bars"]
@@ -78,6 +78,10 @@ def _stage(stage: str, candidates: dict[str, Any]) -> list[str]:
                 lines.append(f"- {name}, {label.lower()}: {', '.join(ids)}")
     if stage == "planner":
         for name, data in candidates.items():
+            for case, wrong in data["summary"].get("failures", {}).items():
+                listed = ", ".join(f"{p} ({n}/{runs})" for p, n in wrong.items())
+                lines.append(f"- {name}, {case} wrong: {listed}")
+        for name, data in candidates.items():
             accuracy = data["summary"]["property_accuracy"]
             weak = {k: v for k, v in accuracy.items() if v < 1}
             if weak:
@@ -102,5 +106,5 @@ def render(result: dict[str, Any]) -> str:
         "",
     ]
     for stage, candidates in result["stages"].items():
-        lines += _stage(stage, candidates)
+        lines += _stage(stage, candidates, result["runs_per_case"])
     return "\n".join(lines).rstrip() + "\n"

@@ -6,7 +6,7 @@ Quality bars are design Q20's: a model must pass every bar of its stage to be ch
 import math
 import statistics
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import permutations
 from typing import Any
 
@@ -26,6 +26,8 @@ class PlannerRun:
     steps: int
     latency_ms: int
     cost_usd: float | None
+    plan: dict[str, Any] | None = None
+    tools: list[str] = field(default_factory=list)  # "tool: ok" or "tool: rejected", in order
 
 
 @dataclass(frozen=True)
@@ -142,6 +144,17 @@ def _speed_cost(latencies: list[int], costs: list[float | None]) -> dict[str, An
     }
 
 
+def _failures(runs: Sequence[PlannerRun]) -> dict[str, dict[str, int]]:
+    """For each case with a wrong property: how many runs got each property wrong."""
+    out: dict[str, dict[str, int]] = {}
+    for r in runs:
+        for name, ok in r.scores.items():
+            if not ok:
+                case = out.setdefault(r.case_id, {})
+                case[name] = case.get(name, 0) + 1
+    return {c: dict(sorted(p.items())) for c, p in sorted(out.items())}
+
+
 def planner_summary(runs: Sequence[PlannerRun]) -> dict[str, Any]:
     names = sorted({k for r in runs for k in r.scores})
     fully = [all(r.scores.values()) for r in runs]
@@ -160,6 +173,7 @@ def planner_summary(runs: Sequence[PlannerRun]) -> dict[str, Any]:
         "p95_ms": speed["p95_ms"],
         "cost_per_question": speed["cost_per_call"],
         "failed_cases": sorted({r.case_id for r, ok in zip(runs, fully, strict=True) if not ok}),
+        "failures": _failures(runs),
     }
     summary["bars"] = {
         "fully_correct >= 90%": summary["fully_correct"] >= 0.9,
