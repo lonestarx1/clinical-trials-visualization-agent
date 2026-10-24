@@ -135,6 +135,13 @@ class Prepared:
             return math.ceil(self.counted_calls * SECONDS_PER_CALL)
         return math.ceil(self.pages * SECONDS_PER_PAGE)
 
+    def download_if_quicker(self) -> None:
+        """Count per year (S2) only when that beats downloading the pages (S3)."""
+        if self.span is not None and self.pages * SECONDS_PER_PAGE <= (
+            self.counted_calls * SECONDS_PER_CALL
+        ):
+            self.span = None
+
     @property
     def empty(self) -> bool:
         return not any(self.counts)
@@ -184,7 +191,7 @@ async def prepare(
     )
     meta.data_timestamp = version.data_timestamp
     span = yearly_span(plan, now_year=now.year)
-    return Prepared(
+    prepared = Prepared(
         plan,
         searches,
         list(counts),
@@ -194,6 +201,8 @@ async def prepare(
         started=count_start if started is None else started,
         timings_ms={**(timings_ms or {}), "count": elapsed_ms(count_start)},
     )
+    prepared.download_if_quicker()
+    return prepared
 
 
 async def _counted_years(
