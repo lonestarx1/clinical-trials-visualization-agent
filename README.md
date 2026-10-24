@@ -7,7 +7,7 @@ POST /v1/query  {"query": "How are breast cancer trials distributed across phase
 -> 200 {"status": "ok", "visualization": {"type": "bar_chart", "title": ..., "encoding": ..., "data": [...]}, "meta": {...}}
 ```
 
-> **Status:** milestones M0-M4 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations, plus AI title and summary; stored results with **full citation lists**, plan and result caches with revalidation, background jobs for broad questions, LLM cost tracking with a daily cap. **All 9 appendix questions pass end to end.** Next: UI (M5), deployment (M6). See [the implementation plan](docs/implementation-plan.md).
+> **Status:** milestones M0-M5 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations, plus AI title and summary; stored results with **full citation lists**, plan and result caches with revalidation, background jobs for broad questions, LLM cost tracking with a daily cap. **All 9 appendix questions pass end to end.** Includes a web UI. Next: deployment (M6). See [the implementation plan](docs/implementation-plan.md).
 
 ## Quick start
 
@@ -15,12 +15,23 @@ Requirements: Docker with Compose v2.
 
 ```bash
 cp .env.example .env    # then set OPENAI_API_KEY
-make up                 # builds and starts postgres + api, waits until healthy
+make up                 # builds and starts postgres + api + web, waits until healthy, opens http://localhost:3000
 curl -s localhost:8000/v1/query -H 'Content-Type: application/json' \
   -d '{"query": "Which countries have the most recruiting trials for lung cancer?"}'
 ```
 
-Interactive API docs (OpenAPI): http://localhost:8000/docs
+- Web UI: http://localhost:3000 (questions can be shared as `?q=...` links)
+- Interactive API docs (OpenAPI): http://localhost:8000/docs
+
+![Melanoma drug co-occurrence network](docs/screenshots/network.png)
+
+## Web UI (reference renderer)
+
+A small Next.js + Apache ECharts app in [`frontend/`](frontend/). It renders every chart type **only from the response's `encoding`** ([`lib/adapter.ts`](frontend/lib/adapter.ts), tested against the example JSONs), which shows the schema can be rendered without guessing. Click any bar, point, node or link to see its citations and page through all of them; "How we got this" shows the interpretation, filters, assumptions, exclusions, the exact ClinicalTrials.gov queries, cache status, AI cost and timings; "Raw JSON" shows the response. Broad questions show background-job progress. The app proxies `/api/*` to the backend, so the API address is a runtime setting (`API_BASE_URL`).
+
+| Comparison | Geographic |
+|---|---|
+| ![Grouped bars](docs/screenshots/comparison.png) | ![Countries](docs/screenshots/countries.png) |
 
 ## How it works
 
@@ -159,6 +170,7 @@ Written test-first (each `test:` commit fails before the `feat:` commit that fol
 | Command | What it runs |
 |---|---|
 | `make test` / `make test-db` / `make test-live` / `make test-e2e` | See above |
+| `make test-web` | Frontend type check + adapter tests (Vitest) |
 | `make lint` | ruff, formatting check, mypy (strict) |
 
 `POST /v1/debug/plan` runs a hand-written QueryPlan without the AI stages (disable with `ENABLE_DEBUG_ENDPOINTS=false`).
