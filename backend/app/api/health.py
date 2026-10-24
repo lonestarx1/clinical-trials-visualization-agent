@@ -3,8 +3,9 @@ from functools import partial
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from app.api.openapi import HEALTH_RESPONSES
 from app.ctgov.client import CtgovClient, CtgovError, VersionInfo
 from app.store.db import check_database
 
@@ -15,14 +16,22 @@ DataVersion = Callable[[], Awaitable[VersionInfo]]
 
 
 class HealthChecks(BaseModel):
-    database: Literal["ok", "error"]
-    ctgov: Literal["ok", "error"]
+    database: Literal["ok", "error"] = Field(description="Postgres answers a query.")
+    ctgov: Literal["ok", "error"] = Field(
+        description="ClinicalTrials.gov answers its version endpoint. Reported only: it "
+        "does not change `status`."
+    )
 
 
 class Health(BaseModel):
-    status: Literal["ok", "unavailable"]
-    checks: HealthChecks
-    data_timestamp: str | None  # ClinicalTrials.gov data version (cached /version)
+    status: Literal["ok", "unavailable"] = Field(
+        description="`ok` when the database is reachable, else `unavailable` (with 503)."
+    )
+    checks: HealthChecks = Field(description="Result of each check.")
+    data_timestamp: str | None = Field(  # ClinicalTrials.gov data version (cached /version)
+        description="ClinicalTrials.gov data version; null when it cannot be reached.",
+        examples=["2026-10-23T09:00:04"],
+    )
 
 
 async def _unavailable() -> bool:
@@ -43,7 +52,16 @@ def get_data_version(request: Request) -> DataVersion:
     return ctgov.version if ctgov is not None else _no_version
 
 
-@router.get("/health", response_model=Health, responses={503: {"model": Health}})
+@router.get(
+    "/health",
+    response_model=Health,
+    summary="Liveness and readiness",
+    description="Checks the database and ClinicalTrials.gov and reports the "
+    "ClinicalTrials.gov data version. Only the database decides the status (503 when it is "
+    "unreachable); a ClinicalTrials.gov outage is reported in `checks`, and questions then "
+    "fail with `503 upstream_unavailable`. Not rate limited.",
+    responses={**HEALTH_RESPONSES, 503: HEALTH_RESPONSES[503] | {"model": Health}},
+)
 async def health(
     response: Response,
     database_check: Annotated[DatabaseCheck, Depends(get_database_check)],
