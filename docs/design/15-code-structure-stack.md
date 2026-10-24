@@ -66,6 +66,31 @@ app/
 tests/          unit · contract · integration (recorded API fixtures) · AI eval
 ```
 
+**As built (2026-10-25):**
+
+```
+backend/
+  app/
+    main.py       app factory: limiter, clients, background workers, mirror loop
+    api/          routes (query + jobs, results + citations, health, debug), error handlers, OpenAPI text, per-IP limit
+    schemas/      request, response, plan, endpoint bodies (Pydantic)
+    registry/     dimensions, measures, chart types, enums (declarative)
+    agents/       guard, planner (LangGraph tool loop), narrator
+    llm/          OpenAI client: retries, fallback model, usage records
+    validation/   the plan gate (fact sheet and title checks are in agents/narrator.py, the citation check in pipeline/citations.py)
+    ctgov/        API client (limiter, retries), Essie AST, compiler, country aliases, retrieval strategies
+    pipeline/     extract, aggregate, charts, networks, citations, cache keys, the request flow (query.py, run.py)
+    mirror/       fast mode (Q22): sync, start-year slices, term sets, structured clauses as SQL, the fast path
+    store/        SQLAlchemy models and queries: plans, results, jobs, usage, mirror, term sets
+    workers/      background job runner, mirror sync loop
+    core/         settings, logging, model prices (pricing.yaml)
+  migrations/     Alembic (4 revisions)
+  tests/          unit, contract, integration, db, live, e2e (+ shared support)
+  evals/          the AI evaluation sets and runner (Q18, Q20)
+```
+
+There is no tracing module and no `traces` table (Q16); the trace id goes to logs and `meta.trace_id`.
+
 **Extension principle:** a dimension is **one registry entry** (kind, API fields, extractor, counting rule, order, filter compiler, citation field path). The planner's options, validation, field selection, aggregation and citations all read from the registry. A new dimension = one entry + one test. Chart builders are one class per chart type, registered by name.
 
 ## Packaging and deployment

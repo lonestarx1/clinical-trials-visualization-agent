@@ -13,6 +13,7 @@ Status: **Decided** (2026-10-24)
 | Background jobs | 202 -> progress bar polling `GET /v1/jobs/{id}` (stage, pages done/total) -> renders the result |
 | Raw JSON | Toggle to show the exact response, so reviewers can inspect the structured output (the focus of the assignment) |
 | Errors | Friendly messages per `error.code` / `status`, with the `trace_id` |
+| Live / Fast (added 2026-10-25, [Q22](22-term-sets.md)) | A Live/Fast switch under the search box sends `mode`, with a line from `/health`'s `fast_mode` saying what fast mode does or why it is answering live now. The same switch beside an asked question re-asks it in the other mode. The choice is kept in shared links (`&mode=fast`), and each answer shows its source from `meta.data_source`: "Live from ClinicalTrials.gov" or "Fast: our copy of the <date> data, checked against ClinicalTrials.gov" |
 
 The frontend is a **reference renderer**: it also proves that the response schema can be rendered "without guessing" (P3-12).
 
@@ -45,7 +46,13 @@ Every protective limit **exists, is configurable via environment variables, and 
 | ClinicalTrials.gov count cache | `CTGOV_COUNT_CACHE_SECONDS` | 600 | Count calls repeat; 0 turns it off |
 | Mirror sync ([Q22](22-term-sets.md)) | `MIRROR_SYNC_ENABLED` | false (on in the k3s deployment) | When on, the API process loads and updates the `registry` mirror |
 | Mirror sync rate | `MIRROR_SYNC_RATE_PER_MIN` | 27 | The sync's cap, inside the shared ClinicalTrials.gov limiter: half the budget, so questions keep the rest |
-| Synchronous time budget (estimated duration) | `SYNC_MAX_SECONDS` | 60 s | Becomes a background job |
+| Fast mode ([Q22](22-term-sets.md)) | `FAST_MODE_ENABLED` | false (on in the k3s deployment) | Off: a `mode: "fast"` request is answered live, with a note |
+| Fast mode: new term size | `FAST_NEW_TERM_MAX_TRIALS` | 20,000 | A term with no term set yet that matches more trials is answered live, rather than listed while the user waits |
+| Fast mode: answer size | `FAST_MAX_TRIALS` | 300,000 | Larger questions are answered live (the records are read into memory either way) |
+| Fast mode: shadow sample | `FAST_MODE_SHADOW_RATE` | 0.1 | Share of fast answers recomputed live in the background and compared; differences go to the log |
+| Fast mode: shadow size | `FAST_MODE_SHADOW_MAX_PAGES` | 20 | Only fast answers of at most this many API pages are shadow-run, so shadows don't eat the API budget |
+| Synchronous time budget (estimated duration) | `SYNC_MAX_SECONDS` | 60 s | Becomes a background job (a fast answer never does) |
+| Stored result retention | `RESULT_TTL_HOURS` | 24 | 410 `expired` (Q16). Finished jobs keep a fixed 24 h |
 | Planner step limit | `PLANNER_MAX_STEPS` | 6 | `could_not_interpret` |
 | Citations inline (`full` mode) | `CITATIONS_FULL_MAX` | 2,000 | Falls back to sample mode |
 

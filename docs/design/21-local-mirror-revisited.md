@@ -1,8 +1,8 @@
 # Design Q21: A local mirror, revisited
 
-Status: **Revisited and not built** (2026-10-25). Q6's decision (D6.1, live data only) stands for this submission. This file records why we reopened it, what we designed, and the finding that settled it.
+Status: **Revisited and not built** (2026-10-25), at the time of writing. **Later the same day, the mirror was built under [Q22](22-term-sets.md)**, as the opt-in `fast` mode. This file records why we reopened it, what we designed, and the finding that stopped it then.
 
-**Follow-up (2026-10-25):** [Q22](22-term-sets.md) proposes a way around the synonym finding below: the API resolves search terms to sets of NCT IDs, and the mirror supplies only the records. It is a second, opt-in `fast` mode; live fetching stays the default.
+**Follow-up (2026-10-25), built:** [Q22](22-term-sets.md) gets around the synonym finding below with **term sets**: the API resolves each search term to a set of NCT IDs, so its synonyms and MeSH search stay exact, and the mirror supplies only the records. That removed the reason for not building it. Live fetching stays the default and the fallback; `fast` is on in the deployment as an opt-in.
 
 ## Why we reopened it
 
@@ -30,7 +30,7 @@ The idea: offer **two modes**:
 | `registry.sync_runs` | Each load or daily sync: started, finished, studies upserted and removed, the API's `dataTimestamp` |
 
 **Loading and staying fresh:**
-- **First load:** ~608k studies at 1,000 per request, ~608 requests, about **15-20 minutes** at the rate limit. Only the fields our registry uses, so the database stays a few GB.
+- **First load:** ~608k studies at 1,000 per request, ~608 requests, about **15-20 minutes** at the 40 requests/min limit of the time. (Built later under [Q22](22-term-sets.md#part-1-the-mirror), at half of today's 54-a-minute limit: the measured first load took **23.4 minutes**, and the mirror holds 1.16 GB.) Only the fields our registry uses, so the database stays a few GB.
 - **Daily sync:** `filter.advanced=AREA[LastUpdatePostDate]RANGE[<last sync>,MAX]` fetches only changed studies (a few thousand a day) and upserts them. The API itself refreshes once a day, so a daily sync loses no freshness.
 - **Removals:** a periodic ID-only pass (`fields=NCTId`) finds withdrawn records.
 

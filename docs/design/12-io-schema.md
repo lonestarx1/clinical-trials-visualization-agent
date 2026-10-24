@@ -19,7 +19,7 @@ Status: **Decided** (2026-10-24). The detailed field-level schema is generated f
 | `GET` | `/v1/results/{result_id}/citations` | Full, paginated citation list for one data point (Q14) |
 | `GET` | `/v1/options` | Registry: dimensions, measures, chart types, filter enums + labels, compatibility rules. The frontend builds pickers from it. |
 | `GET` | `/v1/usage` | Today's AI calls and cost per stage and model; needs the admin token (`ADMIN_TOKEN`), otherwise 401 |
-| `GET` | `/health` | Liveness/readiness (DB, ClinicalTrials.gov reachability, data timestamp) |
+| `GET` | `/health` | Liveness/readiness (DB, ClinicalTrials.gov reachability, data timestamp, and since Q22 the `fast_mode` block) |
 | `GET` | `/docs`, `/openapi.json` | Auto-generated API docs and schemas |
 
 The request schema is in Q5 (`05-request-fields.md`).
@@ -44,6 +44,8 @@ The request schema is in Q5 (`05-request-fields.md`).
     "filters": { "drug_name": ["pembrolizumab"], "...": "applied filters, after merging" },
     "assumptions": ["..."],
     "warnings": ["..."],
+    "data_source": "live | fast (Q22)",
+    "notes": ["e.g. why fast mode answered live, histogram bin width"],
     "counting_rule": "Each trial is counted once per country where it has at least one site.",
     "additive": true,
     "unique_trials": 2928,
@@ -53,6 +55,7 @@ The request schema is in Q5 (`05-request-fields.md`).
     "data_timestamp": "2026-10-23T09:00:04",
     "retrieved_at": "2026-10-24T08:12:00Z",
     "source": "clinicaltrials.gov",
+    "guard": "the guard's verdict and model", "planner": "the planner's steps and model",
     "narration": { "model": "...", "attempts": 1, "fallback": false },
     "usage": { "llm_calls": 3, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0, "plan_cache_hit": false },
     "citations": { "requested": "sample | full", "applied": "sample | full", "per_datum": 5, "reason": "null, or why applied differs (Q14)" },
@@ -91,16 +94,17 @@ When `status` isn't `ok`, `visualization` is `null` and `meta.details` explains 
 | `bar_chart` | `x` (nominal/ordinal category), `y` (quantitative measure) | `[{ <x>: "Phase 2", <y>: 1269, "citations": [...] }]` |
 | `grouped_bar_chart` | `x` (category), `y` (measure), `color` (group/series) | `[{ <x>: "Phase 2", <color>: "Pembrolizumab", <y>: 1269, "citations": [...] }]` (long format) |
 | `time_series` | `x` (temporal, `time_unit: "year"`), `y` (measure), optional `color` (series) | `[{ <x>: "2019", <y>: 312, "estimated_count": 0, "citations": [...] }]` (zero-filled) |
-| `histogram` | `x` (bin range of a numeric field), `y` (count) | `[{ "bin_start": 0, "bin_end": 50, "count": 410, "is_overflow": false, "citations": [...] }]` |
-| `scatter_plot` | `x`, `y` (quantitative), `id` (`nct_id`), optional `color` | `[{ "nct_id": "NCT...", <x>: 120, <y>: 36.5, "citations": [...] }]` |
+| `histogram` | `x` (`bin_start`), `y` (`count`) | `[{ "bin_start": 0, "bin_end": 50, "count": 410, "is_overflow": false, "citations": [...] }]`; the overflow bin has `bin_end: null` |
+| `scatter_plot` | `x`, `y` (quantitative), `id` (`nct_id`) | `[{ "nct_id": "NCT...", <x>: 120, <y>: 36.5, "estimated": false, "citations": [...] }]` |
 | `network_graph` | flat channels: `node_id` (`id`), `node_label` (`label`), `node_size` (`weight`), `node_color` (`community` for one entity type, `type` for two), `edge_source` (`source`), `edge_target` (`target`), `edge_width` (`weight`, or `jaccard` with `edge_metric: jaccard`) | `{ "nodes": [{ "key", "id", "label", "type", "weight", "degree", "community", "is_query_entity", "citations"... }], "edges": [{ "key", "source", "target", "weight", "jaccard", "citations"... }] }` |
 | `metric` | `value` (quantitative, with `unit`) | `[{ "value": 2457, "label": "Recruiting breast cancer trials", "citations": [...] }]` |
 
 Notes:
-- Data rows are **flat records** whose keys are named in `encoding` (as in the assignment's example). Exceptions: `network_graph` (nodes/edges) and `histogram` (fixed bin keys, declared in `encoding`).
+- Data rows are **flat records** whose keys are named in `encoding` (as in the assignment's example). Exceptions: `network_graph` (nodes/edges) and `histogram`, whose fixed keys `bin_end` and `is_overflow` are not channels and are documented only here.
 - Every data point (row, node or edge) also has `key` (its stable id, used by the citations endpoint), `citation_count`, `citations` and `citations_truncated` (Q14).
 - Field names are stable snake_case and are listed in `encoding`. The renderer never has to guess a key.
 - Citation format is decided in Q14.
+- **In OpenAPI**, `encoding` is a map from any channel name to a channel descriptor, and `data` is a list of untyped records (or `{nodes, edges}`) (`app/schemas/response.py`). The per-type shapes above are not in the generated schema, so this table is their reference.
 
 ## Versioning
 
@@ -113,11 +117,17 @@ The built responses differed from this design in two places. The code was kept a
 - **Network channels are flat** (`node_id`, `node_size`, `edge_width`...), not nested `node: {...}` / `edge: {...}` objects. Every chart's `encoding` is then the same shape (a map from channel name to one field descriptor), so a renderer reads all of them the same way. Nodes and edges also carry `key`, `degree`, `community`, `is_query_entity` and `jaccard` (Q13). See [`docs/examples/5-drug-network.json`](../examples/5-drug-network.json).
 - **`no_matching_trials` gives per-search counts** (`meta.details.search_counts`), not per-filter counts. The searches are already counted before retrieval, so this costs nothing; per-filter counts would need one more count call per filter and are future work.
 
+## Revision (2026-10-25): as built, other differences
+
+- **Histogram:** `encoding` declares only `x` (`bin_start`) and `y` (`count`). `bin_end` and `is_overflow` are in every row but not in `encoding`, and the bin width is in `meta.notes`.
+- **Scatter plot:** no `color` channel was built. Rows carry `estimated` (true when either value comes from an estimated date).
+- **`result_id`** is the stored answer's id, used by `/v1/results/{result_id}/citations`; it is null for `out_of_scope` and `could_not_interpret`, or when the deployment has no database.
+
 ## Revision (2026-10-25): fast mode
 
 - Request: `mode` (`live` default, or `fast`; [Q22](22-term-sets.md)). It doesn't change the plan or the stored answer.
-- Response: `meta.data_source` (`live` or `fast`). `meta.api_queries` holds the live searches in both modes.
-- `GET /health`: `fast_mode` (`status`, `data_timestamp` of the mirror).
+- Response: `meta.data_source` (`live` or `fast`), and `meta.notes` says why a `fast` request was answered live. `meta.api_queries` holds the live searches in both modes.
+- `GET /health`: `fast_mode.status` (`ready`, `syncing`, `not_loaded`, `off`, or `unknown` when ClinicalTrials.gov can't be reached) and `fast_mode.data_timestamp`, the data version the mirror holds.
 
 ## Requirement links
 
