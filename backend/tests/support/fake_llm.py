@@ -61,4 +61,8 @@ class ScriptedLLM:
     def prompt_text(self, index: int = -1) -> str:
         """Everything sent on one call, as text (instructions + input)."""
         request = self.requests[index]
-        return (request["instructions"] or "") + json.dumps(request["items"])
+        parts = [request["instructions"] or ""]
+        for item in request["items"]:
+            content = item.get("content", item.get("output", ""))
+            parts.append(content if isinstance(content, str) else json.dumps(content))
+        return "\n".join(parts)
