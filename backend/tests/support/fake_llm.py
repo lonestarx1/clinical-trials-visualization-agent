@@ -1,5 +1,6 @@
 """A scripted stand-in for the LLM: replies are given in order; every call is recorded."""
 
+import asyncio
 import json
 from typing import Any
 
@@ -28,8 +29,11 @@ def calls(*tool_calls: tuple[str, dict[str, Any]], model: str = "fake-model") ->
 
 
 class ScriptedLLM:
-    def __init__(self, *replies: LLMReply | Exception, stage: str = "fake") -> None:
+    def __init__(
+        self, *replies: LLMReply | Exception, stage: str = "fake", delay: float = 0.0
+    ) -> None:
         self.replies = list(replies)
+        self.delay = delay  # seconds per call, to make a stage's time measurable
         self.requests: list[dict[str, Any]] = []
         self.usage = UsageLog()
         self.stage = stage
@@ -50,6 +54,8 @@ class ScriptedLLM:
                 "instructions": instructions,
             }
         )
+        if self.delay:
+            await asyncio.sleep(self.delay)
         if not self.replies:
             raise LLMUnavailable("script exhausted")
         reply = self.replies.pop(0)

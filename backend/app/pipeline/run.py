@@ -49,8 +49,9 @@ CitationMode = Literal["sample", "full"]
 CITATIONS_FULL_MAX = 2000  # default for Settings.citations_full_max
 
 
-def _ms(start: float) -> int:
-    return round((time.perf_counter() - start) * 1000)
+def elapsed_ms(start: float) -> int:
+    """Rounded down, so the stages never add up to more than `total`."""
+    return int((time.perf_counter() - start) * 1000)
 
 
 def _mostly_estimated(viz: Visualization, plan: QueryPlan) -> list[str]:
@@ -113,7 +114,8 @@ class Prepared:
     version: VersionInfo
     meta: Meta
     span: tuple[int, int] | None = None  # set when years are counted, not downloaded
-    started: float = field(default_factory=time.perf_counter)
+    started: float = field(default_factory=time.perf_counter)  # `total` counts from here
+    timings_ms: dict[str, int] = field(default_factory=dict)  # stages timed so far
 
     @property
     def pages(self) -> int:
@@ -152,7 +154,12 @@ async def prepare(
     citations_per_datum: int,
     citations: CitationMode = "sample",
     now: datetime | None = None,
+    started: float | None = None,
+    timings_ms: dict[str, int] | None = None,
 ) -> Prepared:
+    """`started` is when the request arrived (default: now), so `total` covers planning;
+    `timings_ms` carries the stages already timed (`plan`)."""
+    count_start = time.perf_counter()
     now = now or datetime.now(UTC)
     searches = compile_plan(plan)
     meta = Meta(
@@ -177,7 +184,16 @@ async def prepare(
     )
     meta.data_timestamp = version.data_timestamp
     span = yearly_span(plan, now_year=now.year)
-    return Prepared(plan, searches, list(counts), version, meta, span)
+    return Prepared(
+        plan,
+        searches,
+        list(counts),
+        version,
+        meta,
+        span,
+        started=count_start if started is None else started,
+        timings_ms={**(timings_ms or {}), "count": elapsed_ms(count_start)},
+    )
 
 
 async def _counted_years(
@@ -230,7 +246,7 @@ async def execute(
     ]
     if prepared.empty:
         meta.details = {"search_counts": [{"group": s.group, "count": 0} for s in searches]}
-        meta.timings_ms = {"total": _ms(prepared.started)}
+        meta.timings_ms = {**prepared.timings_ms, "total": elapsed_ms(prepared.started)}
         return Executed(
             QueryResponse(status="no_matching_trials", visualization=None, meta=meta), None, stored
         )
@@ -251,7 +267,7 @@ async def execute(
             meta.citations.applied = "sample"
             meta.citations.reason = "counted per year: each year cites a sample of its trials"
         meta.notes.append(COUNTED_NOTE)
-        retrieve_ms = _ms(retrieve_start)
+        retrieve_ms = elapsed_ms(retrieve_start)
         aggregate_start = time.perf_counter()
     else:
         chart, studies, retrieve_ms, aggregate_start = await _downloaded(
@@ -320,7 +336,7 @@ async def _downloaded(
         ApiQuery(group=s.group, url=s.url(base_url), total_count=r.total_count)
         for s, r in zip(searches, results, strict=True)
     ]
-    retrieve_ms = _ms(retrieve_start)
+    retrieve_ms = elapsed_ms(retrieve_start)
 
     aggregate_start = time.perf_counter()
 
@@ -362,7 +378,11 @@ async def _finish_chart(
     meta.group_overlap = chart.meta.group_overlap
     meta.network = chart.meta.network
     meta.warnings += _mostly_estimated(chart.visualization, plan)
-    meta.timings_ms = {"retrieve": retrieve_ms, "aggregate": _ms(aggregate_start)}
+    meta.timings_ms = {
+        **prepared.timings_ms,
+        "retrieve": retrieve_ms,
+        "aggregate": elapsed_ms(aggregate_start),
+    }
 
     if narrator is not None:
         narrate_start = time.perf_counter()
@@ -374,8 +394,8 @@ async def _finish_chart(
             "fallback": narration.fallback,
             "errors": narration.errors,
         }
-        meta.timings_ms["narrate"] = _ms(narrate_start)
-    meta.timings_ms["total"] = _ms(prepared.started)
+        meta.timings_ms["narrate"] = elapsed_ms(narrate_start)
+    meta.timings_ms["total"] = elapsed_ms(prepared.started)
     response = QueryResponse(status="ok", visualization=chart.visualization, meta=meta)
     return Executed(response, chart, stored)
 

@@ -7,9 +7,10 @@ questions become background jobs, LLM usage is recorded and capped per day.
 
 import asyncio
 import logging
+import time
 import uuid
 from collections.abc import Awaitable, Callable, Coroutine
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from functools import partial
@@ -26,7 +27,7 @@ from app.ctgov.compiler import Search
 from app.ctgov.essie import Area, Range
 from app.llm.client import LLM, UsageLog
 from app.pipeline.keys import planner_version, request_key, result_key
-from app.pipeline.run import Executed, Prepared, execute, prepare
+from app.pipeline.run import Executed, Prepared, elapsed_ms, execute, prepare
 from app.schemas.plan import QueryPlan
 from app.schemas.request import QueryRequest
 from app.schemas.response import Meta, QueryResponse
@@ -113,6 +114,7 @@ class Context:
     chart_type_source: str
     cache: dict[str, str]
     trace_id: str
+    timings_ms: dict[str, int] = field(default_factory=dict)  # `plan`: guard + planner
 
 
 def _finish(response: QueryResponse, ctx: Context, llms: StageLLMs) -> QueryResponse:
@@ -281,6 +283,7 @@ async def handle_query(
     client_ip: str | None = None,
     price_version: str = "1",
 ) -> QueryResponse | JobAccepted:
+    started = time.perf_counter()
     trace_id = str(uuid.uuid4())
     rkey = request_key(request, settings)
     cached: PlannerResult | None = None
@@ -321,10 +324,14 @@ async def handle_query(
     ctx = _context(
         planned, {"verdict": verdict.verdict, "model": verdict.model}, cached is not None, trace_id
     )
+    ctx.timings_ms["plan"] = elapsed_ms(started)
     if planned.plan is None or planned.plan.scope == "out_of_scope":
         await _record_usage(sessions, llms, trace_id, None, price_version)
         if planned.plan is None:
-            meta = Meta(details={"errors": planned.errors, "best_attempt": planned.best_attempt})
+            meta = Meta(
+                details={"errors": planned.errors, "best_attempt": planned.best_attempt},
+                timings_ms={**ctx.timings_ms, "total": elapsed_ms(started)},
+            )
             return _finish(
                 QueryResponse(status="could_not_interpret", visualization=None, meta=meta),
                 ctx,
@@ -333,7 +340,11 @@ async def handle_query(
         details = {"reason": planned.plan.scope_reason}
         if planned.plan.scope_suggestion:
             details["suggestion"] = planned.plan.scope_suggestion
-        meta = Meta(assumptions=planned.plan.assumptions, details=details)
+        meta = Meta(
+            assumptions=planned.plan.assumptions,
+            details=details,
+            timings_ms={**ctx.timings_ms, "total": elapsed_ms(started)},
+        )
         return _finish(
             QueryResponse(status="out_of_scope", visualization=None, meta=meta), ctx, llms
         )
@@ -370,6 +381,8 @@ async def handle_query(
         ctgov,
         citations_per_datum=request.citations_per_datum,
         citations=request.citations,
+        started=started,
+        timings_ms=ctx.timings_ms,
     )
     if (
         sessions is not None
@@ -450,11 +463,14 @@ async def run_job(
             raise JobCancelled
 
     async def work() -> tuple[Prepared, Executed]:
+        # `total` = the request's planning time + this run; the wait in the queue is left out.
         prepared = await prepare(
             plan,
             ctgov,
             citations_per_datum=request.citations_per_datum,
             citations=request.citations,
+            started=time.perf_counter() - ctx.timings_ms.get("plan", 0) / 1000,
+            timings_ms=ctx.timings_ms,
         )
         executed = await execute(
             prepared,
