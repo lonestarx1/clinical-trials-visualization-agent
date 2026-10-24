@@ -15,6 +15,7 @@ from typing import Any, Literal
 from app.pipeline.aggregate import NOT_REPORTED, Bucket, Grouping, group, nct_id, year_range
 from app.pipeline.citations import sample_citations
 from app.pipeline.extract import Evidence, extract_number
+from app.pipeline.networks import build_network
 from app.registry import DIMENSIONS, MEASURES, ChartType, Dimension, DimensionKind, Intent
 from app.registry.enums import Phase
 from app.schemas.plan import QueryPlan
@@ -34,6 +35,7 @@ class ChartMeta:
     sort: Sort | None = None
     notes: list[str] = field(default_factory=list)
     group_overlap: list[dict[str, Any]] | None = None
+    network: dict[str, Any] | None = None
 
 
 @dataclass
@@ -161,6 +163,17 @@ def build_chart(
     if plan.chart_type is ChartType.METRIC or plan.dimension is None:
         return _metric(plan, groups, studies, citations_per_datum)
     dim = DIMENSIONS[plan.dimension]
+    if plan.chart_type is ChartType.NETWORK_GRAPH:
+        all_studies = [s for _, members in groups for s in members]
+        viz, network, linked = build_network(plan, all_studies, studies, citations_per_datum)
+        meta = ChartMeta(
+            counting_rule="Node size = distinct trials with that entity; edge width = distinct "
+            "trials with both.",
+            additive=False,
+            unique_trials=linked,
+            network=network,
+        )
+        return ChartResult(viz, meta)
     if dim.kind is DimensionKind.NUMERIC:
         return _histogram(plan, dim, groups, studies, citations_per_datum)
     return _bars(plan, dim, groups, studies, now_year, citations_per_datum)
