@@ -66,4 +66,6 @@ Each run writes `docs/eval/<label>.md` and the raw runs to `docs/eval/results/<l
 
 The fixes took two rounds. The first round raised the gate pass rate, but the guard then blocked advice questions such as "How do I bake sourdough bread?", and the planner once dropped "melanoma". The eval caught both, and the second round fixed them. One miss remains: the planner still drops the condition in about 1 run in 3 on two questions (PA-4, B-14).
 
+- [Model selection](model-selection.md): the bake-off, every Q20 candidate per stage, 3 runs per case ($1.28). Chosen: guard `gpt-5.4-nano`, narrator `gpt-4o-mini`, and the planner stays on `gpt-5.4-mini` as a recorded exception: the rule's choice, `gpt-5-mini`, is cheaper by $0.0005 per question but more than twice as slow. The planner's fallback, `gpt-4.1-mini`, failed the planner bars (83% correct), so it is now `gpt-5-mini`. Details in [design Q20](../design/20-model-selection.md#bake-off-results-2026-10-25).
+
 The sets are our own and small (tens of cases), so the numbers are indicative, not statistically strong.

@@ -71,11 +71,15 @@ class Settings(BaseSettings):
     guard: StageSettings = StageSettings(
         model="gpt-5.4-nano", max_output_tokens=1000, timeout_seconds=5
     )
+    # Chosen by the bake-off (docs/eval/model-selection.md, design Q20).
     planner: PlannerSettings = PlannerSettings(
-        model="gpt-5.4-mini", max_output_tokens=4000, timeout_seconds=30
+        model="gpt-5.4-mini",
+        fallback_model="gpt-5-mini",
+        max_output_tokens=4000,
+        timeout_seconds=30,
     )
     narrator: StageSettings = StageSettings(
-        model="gpt-5.4-nano", max_output_tokens=1000, timeout_seconds=10
+        model="gpt-4o-mini", max_output_tokens=1000, timeout_seconds=10
     )
     llm_startup_ping: bool = False
 

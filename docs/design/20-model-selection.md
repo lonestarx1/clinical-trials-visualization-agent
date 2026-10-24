@@ -1,6 +1,6 @@
 # Design Q20 (O2): Selecting the AI model for each task
 
-Status: **Process decided** (2026-10-24). Starting defaults set; final choices come from a measured comparison ("bake-off") once the AI evaluation set exists (Q18).
+Status: **Decided by the bake-off** (2026-10-25). The process was set on 2026-10-24; the measured comparison ran on 2026-10-25 with the AI evaluation set (Q18). Results: [`docs/eval/model-selection.md`](../eval/model-selection.md).
 
 ## Why this needs its own decision
 
@@ -66,16 +66,30 @@ Assumptions:
 
 ~~**Title and summary share one model and one call.**~~ **Superseded 2026-10-24:** the narrator writes only the title ([Q4b revision](04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)): free-text summaries were hallucination-prone, the assignment only requires a title, and dropping it saves output tokens and narrator time. The bake-off scores titles only (check pass rate, readability spot check).
 
-## Starting defaults (until the bake-off runs)
+## Bake-off results (2026-10-25)
 
-**Status (2026-10-25):** the bake-off hasn't run yet, because the AI evaluation set it needs isn't built (Q18). These defaults are what the deployed service uses. The five example runs in [`docs/examples/`](../examples/) cost about $0.002-0.003 each in AI calls (`meta.usage.cost_usd`), well under the estimate above.
+Every candidate ran the evaluation set 3 times per case, after the prompt fixes the evaluation led to ([`docs/eval/`](../eval/README.md)). Total cost: $1.28.
 
-| Stage | Model | Why this as a starting point |
+| Stage | Passing every bar | Rule's choice | In use |
+|---|---|---|---|
+| Guard | gpt-5.4-nano, gpt-4.1-mini (gpt-4o-mini blocked a legitimate question: 6% false positives) | gpt-5.4-nano ($0.00012 per call) | **gpt-5.4-nano** |
+| Planner | gpt-5.4-mini low (98% fully correct) and medium (98%), gpt-5.4 low (100%), gpt-5-mini low (99%). gpt-4.1-mini failed: 83% correct, 93% valid | gpt-5-mini ($0.0009 per question, p50 5.3 s, p95 9.5 s) | **gpt-5.4-mini low** ($0.0014, p50 2.0 s, p95 4.6 s): a recorded exception, below |
+| Narrator | all three | gpt-4o-mini ($0.00007 per call, p95 1.0 s, 97% first time) | **gpt-4o-mini** |
+
+**The planner exception.** The rule ranks cost before speed, and gpt-5-mini is the cheapest planner that passes. But it saves only about $0.0005 per question, and it more than doubles the planner's time (p50 2.0 s to 5.3 s), on every question a user waits for. The 15 s bar is a ceiling, not a target, for an interactive app. So the planner stays on gpt-5.4-mini at low effort. If cost becomes the constraint, gpt-5-mini is the measured next choice.
+
+**Fallbacks.** The planner's fallback was gpt-4.1-mini, which failed the planner bars (83% correct). It is now **gpt-5-mini** (99%). The guard and narrator keep gpt-4.1-mini as their fallback, which passed both stages' bars.
+
+## Models in use
+
+The five example runs in [`docs/examples/`](../examples/) (made with the starting defaults) cost about $0.002-0.003 each in AI calls (`meta.usage.cost_usd`), well under the estimate above.
+
+| Stage | Model | Why |
 |---|---|---|
-| Guard | `gpt-5.4-nano` | Cheapest current-generation model; classification is a narrow task |
-| Planner | `gpt-5.4-mini` | Current generation, reasoning, mid price; tool calling + enum mapping is the hardest task |
-| Narrator (**title**; summary removed 2026-10-24) | `gpt-5.4-nano` | Placeholders + checks make the task simple; cost matters more than nuance |
-| Fallback (all stages) | `gpt-4.1-mini` | Different family (non-reasoning GPT-4.1) from the GPT-5.4 primaries; cheap and fast |
+| Guard | `gpt-5.4-nano` (low effort) | The bake-off's choice: 100% of attacks caught, no false positives, the cheapest that passes |
+| Planner | `gpt-5.4-mini` (low effort) | Passes every bar (98% fully correct) and is the fastest that does; the exception is explained above |
+| Narrator (**title**) | `gpt-4o-mini` | The bake-off's choice: the cheapest and fastest, 97% of titles pass the checks first time (bar: 95%) |
+| Fallback | `gpt-5-mini` (planner), `gpt-4.1-mini` (guard, narrator) | Each passed its stage's bars in the bake-off |
 
 ## Model settings (fully configurable)
 
@@ -87,8 +101,8 @@ The defaults above are only defaults. **Every model choice is a setting.** Chang
 
 | Setting (per stage) | Example env var | Default (guard / planner / narrator) | Notes |
 |---|---|---|---|
-| Model | `PLANNER_MODEL` | `gpt-5.4-nano` / `gpt-5.4-mini` / `gpt-5.4-nano` | Any model enabled on the key |
-| Fallback model | `PLANNER_FALLBACK_MODEL` | `gpt-4.1-mini` (all stages) | Used after the primary's retries fail (Q8). Can be empty to disable (except the guard, which fails closed anyway) |
+| Model | `PLANNER_MODEL` | `gpt-5.4-nano` / `gpt-5.4-mini` / `gpt-4o-mini` | Any model enabled on the key |
+| Fallback model | `PLANNER_FALLBACK_MODEL` | `gpt-4.1-mini` / `gpt-5-mini` / `gpt-4.1-mini` | Used after the primary's retries fail (Q8). Can be empty to disable (except the guard, which fails closed anyway) |
 | Reasoning effort | `PLANNER_REASONING_EFFORT` | `low` / `low` / `low` | Applied only to reasoning models; ignored (with a startup warning) for non-reasoning ones |
 | Temperature | `NARRATOR_TEMPERATURE` | unset | Applied only to models that accept it |
 | Max output tokens | `PLANNER_MAX_OUTPUT_TOKENS` | stage-specific | Caps cost and runaway output |
