@@ -1,0 +1,1 @@
+{"n":67,"question":"Number of trials using placebo in irritable bowel syndrome","status":"out_of_scope","visualization":null,"unique_trials":null,"reason":"This tool can count trials by condition, but it doesn't filter specific intervention names like placebo.","suggestion":"How many irritable bowel syndrome trials are there?"}
