@@ -1,0 +1,460 @@
+{
+ "protocolSection": {
+  "identificationModule": {
+   "nctId": "NCT07886905",
+   "orgStudyIdInfo": {
+    "id": "26-x356"
+   },
+   "organization": {
+    "fullName": "Washington University School of Medicine",
+    "class": "OTHER"
+   },
+   "briefTitle": "Pulsed Stereotactic Ablative Radiotherapy (PULSAR) With Systematic Therapy for Thyroid Cancer",
+   "officialTitle": "Pulsed Stereotactic Ablative Radiotherapy (PULSAR) Combined With Targeted Systemic Therapy for Locally Advanced BRAF-V600E+ Anaplastic Thyroid Cancer"
+  },
+  "statusModule": {
+   "statusVerifiedDate": "2026-10",
+   "overallStatus": "NOT_YET_RECRUITING",
+   "expandedAccessInfo": {
+    "hasExpandedAccess": false
+   },
+   "startDateStruct": {
+    "date": "2026-12-31",
+    "type": "ESTIMATED"
+   },
+   "primaryCompletionDateStruct": {
+    "date": "2029-04-08",
+    "type": "ESTIMATED"
+   },
+   "completionDateStruct": {
+    "date": "2029-05-13",
+    "type": "ESTIMATED"
+   },
+   "studyFirstSubmitDate": "2026-10-14",
+   "studyFirstSubmitQcDate": "2026-10-14",
+   "studyFirstPostDateStruct": {
+    "date": "2026-10-21",
+    "type": "ACTUAL"
+   },
+   "lastUpdateSubmitDate": "2026-10-14",
+   "lastUpdatePostDateStruct": {
+    "date": "2026-10-21",
+    "type": "ACTUAL"
+   }
+  },
+  "sponsorCollaboratorsModule": {
+   "responsibleParty": {
+    "type": "SPONSOR"
+   },
+   "leadSponsor": {
+    "name": "Washington University School of Medicine",
+    "class": "OTHER"
+   },
+   "collaborators": [
+    {
+     "name": "Thyroid Cancer Survivors' Association",
+     "class": "UNKNOWN"
+    }
+   ]
+  },
+  "oversightModule": {
+   "oversightHasDmc": true,
+   "isFdaRegulatedDrug": true,
+   "isFdaRegulatedDevice": true,
+   "isUsExport": true
+  },
+  "descriptionModule": {
+   "briefSummary": "This study is a single institution non-randomized phase 2 trial looking at the effect of Pulsed Stereotactic Ablative Radiotherapy (PULSAR) followed by neoadjuvant chemotherapy dabrafenib and trametinib (DT) with or without pembrolizumab on patients with advanced anaplastic thyroid carcinoma (ATC). Pembrolizumab will be administered per standard of care (SOC) only to patients who are PDL1 positive at screening."
+  },
+  "conditionsModule": {
+   "conditions": [
+    "Anaplastic Thyroid Carcinoma",
+    "Thyroid Cancer",
+    "Thyroid Carcinoma"
+   ],
+   "keywords": [
+    "Radiation Therapy",
+    "PULSAR",
+    "SBRT",
+    "Anaplastic Thyroid Carcinoma",
+    "BRAF"
+   ]
+  },
+  "designModule": {
+   "studyType": "INTERVENTIONAL",
+   "phases": [
+    "PHASE2"
+   ],
+   "designInfo": {
+    "allocation": "NA",
+    "interventionModel": "SINGLE_GROUP",
+    "primaryPurpose": "TREATMENT",
+    "maskingInfo": {
+     "masking": "NONE"
+    }
+   },
+   "enrollmentInfo": {
+    "count": 12,
+    "type": "ESTIMATED"
+   }
+  },
+  "armsInterventionsModule": {
+   "armGroups": [
+    {
+     "label": "PULSAR + DT +/- Pembrolizumab",
+     "type": "EXPERIMENTAL",
+     "description": "All patients will receive 2 pulses of PULSAR spaced 2 weeks apart, followed by restaging scans. Those determined to be resectable will undergo surgery followed by maintenance dabrafenib + trametinib (DT) +/- pembrolizumab (if applicable). Those who have a partial response or stable disease will then undergo a 3rd pulse of PULSAR, followed by two cycles of DT +/- pembrolizumab. Patients will again undergo restaging scans and if they are determined to be resectable, they may undergo one bridging cycle of DT +/- pembrolizumab if possible prior to surgery. After undergoing surgery, patients will undergo maintenance DT +/- pembrolizumab. If they are still unresectable, they will start on palliative DT +/- pembrolizumab. If patients experience disease progression at any of the restaging scans, patients may receive salvage DT +/- pembrolizumab on study or discontinue treatment.",
+     "interventionNames": [
+      "Drug: Dabrafenib",
+      "Drug: Trametinib",
+      "Biological: Pembrolizumab",
+      "Radiation: Pulsed Stereotactic Ablative Radiotherapy",
+      "Device: Ethos"
+     ]
+    }
+   ],
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Dabrafenib",
+     "description": "Dabrafenib is administered as a 150 mg pill that is taken twice daily, 12 hours a part. Dabrafenib is taken as part of a 3 week cycle.",
+     "armGroupLabels": [
+      "PULSAR + DT +/- Pembrolizumab"
+     ],
+     "otherNames": [
+      "Tafinlar"
+     ]
+    },
+    {
+     "type": "DRUG",
+     "name": "Trametinib",
+     "description": "Trametinib is administered as a 2mg pill taken once daily. Trametinib is taken as a part of a 3-week cycle.",
+     "armGroupLabels": [
+      "PULSAR + DT +/- Pembrolizumab"
+     ],
+     "otherNames": [
+      "Mekinist"
+     ]
+    },
+    {
+     "type": "BIOLOGICAL",
+     "name": "Pembrolizumab",
+     "description": "Pembrolizumab is administered intravenously per standard of care on the Day 1 of a 3 week cycle.",
+     "armGroupLabels": [
+      "PULSAR + DT +/- Pembrolizumab"
+     ],
+     "otherNames": [
+      "Keytruda"
+     ]
+    },
+    {
+     "type": "RADIATION",
+     "name": "Pulsed Stereotactic Ablative Radiotherapy",
+     "description": "PULSAR is a radiation treatment (10Gy x 1 fraction) administered up to 3 times in the neoadjuvant setting.",
+     "armGroupLabels": [
+      "PULSAR + DT +/- Pembrolizumab"
+     ],
+     "otherNames": [
+      "PULSAR"
+     ]
+    },
+    {
+     "type": "DEVICE",
+     "name": "Ethos",
+     "description": "Ethos is a unique ring-gantry CT-guided linear accelerator notable for having a dedicated artificial intelligence treatment planning system to allow for online adaptive radiotherapy.",
+     "armGroupLabels": [
+      "PULSAR + DT +/- Pembrolizumab"
+     ]
+    }
+   ]
+  },
+  "outcomesModule": {
+   "primaryOutcomes": [
+    {
+     "measure": "Rate of 30-day mortality",
+     "description": "Defined as death considered possibly, probably, or definitely related to PULSAR-DT +/- pembrolizumab occurring within 30 days after any administered PULSAR fraction. The treatment-related mortality rate will be calculated as the number of participants experiencing a qualifying death divided by the total number of participants in the Safety Analysis Set (all enrolled participants who receive at least one fraction or dose of any treatment, including PULSAR, dabrafenib, trametinib, or pembrolizumab) and will be presented with an exact binomial 95% confidence interval (CI).",
+     "timeFrame": "Within 30 days after any administered PULSAR fraction (up to approximately 9 weeks)"
+    },
+    {
+     "measure": "Objective response rate (ORR) at 1st restaging",
+     "description": "ORR is defined as the proportion of participants achieving a confirmed complete response (CR) or partial response (PR) as assessed by RECIST 1.1.\n\nComplete Response (CR): Disappearance of all target lesions. Any pathological lymph nodes (whether target or non-target) must have reduction in short axis to \\<10 mm. Disappearance of all non-target lesions and normalization of tumor marker level.\n\nPartial Response (PR): At least a 30% decrease in the sum of the diameters of target lesions, taking as reference the baseline sum diameters.",
+     "timeFrame": "At 1st restaging (estimated to be 4 weeks)"
+    },
+    {
+     "measure": "Objective response rate (ORR) at 2nd restaging",
+     "description": "ORR is defined as the proportion of participants achieving a confirmed complete response (CR) or partial response (PR) as assessed by RECIST 1.1.\n\nComplete Response (CR): Disappearance of all target lesions. Any pathological lymph nodes (whether target or non-target) must have reduction in short axis to \\<10 mm. Disappearance of all non-target lesions and normalization of tumor marker level.\n\nPartial Response (PR): At least a 30% decrease in the sum of the diameters of target lesions, taking as reference the baseline sum diameters.",
+     "timeFrame": "At 2nd restaging (estimated to be 13-14 weeks)"
+    }
+   ],
+   "secondaryOutcomes": [
+    {
+     "measure": "Feasibility as measured by the total percentage of participants who are able to undergo surgical resection following completion of neoadjuvant PULSAR-DT +/- pembrolizumab",
+     "description": "Feasibility rate will be calculated as the number of participants who undergo surgical resection divided by the total number of participants in the Feasibility Analysis Set. The rate will be presented with an exact binomial 95% CI.",
+     "timeFrame": "Baseline until completion of surgery (total estimated time 5-19 weeks)"
+    },
+    {
+     "measure": "Pill compliance - dabrafenib",
+     "description": "Dabrafenib pill compliance will be evaluated among participants who receive at least one dose of dabrafenib. For each participant and each agent, pill compliance will be calculated as the number of prescribed doses actually taken divided by the total number of doses prescribed and expressed as a percentage.\n\nCompliance will be calculated for dabrafenib based on pill diaries and returned pill counts.",
+     "timeFrame": "Start of dabrafenib treatment to completion of treatment (total estimated time 9 weeks)"
+    },
+    {
+     "measure": "Pill compliance - trametinib",
+     "description": "Trametinib pill compliance will be evaluated among participants who receive at least one dose of trametinib. For each participant and each agent, pill compliance will be calculated as the number of prescribed doses actually taken divided by the total number of doses prescribed and expressed as a percentage. Compliance will be calculated for trametinib based on pill diaries and returned pill counts.",
+     "timeFrame": "Start of trametinib treatment to completion of treatment (total estimated time 9 weeks)"
+    },
+    {
+     "measure": "Number of planned PULSAR pulses completed by participants",
+     "description": "The number of PULSAR fractions completed will be evaluated among participants who receive at least one PULSAR fraction. The number of completed fractions will be summarized. The proportion of participants who complete all planned PULSAR fractions will also be presented with an exact binomial 95% CI.",
+     "timeFrame": "At completion of PULSAR (estimated to be 5 weeks)"
+    }
+   ]
+  },
+  "eligibilityModule": {
+   "eligibilityCriteria": "Inclusion Criteria:\n\n* Histologically or cytologically confirmed anaplastic thyroid cancer, AJCC 8th Edition Stage IVB-C.\n* Disease must be deemed unresectable, or resectable only with unacceptable functional morbidity (e.g., requiring total laryngectomy, total pharyngectomy, or extensive aerodigestive resection), as determined by multidisciplinary tumor board consensus.\n* BRAF-V600E positive by IHC.\n* Measurable disease per RECIST 1.1.\n* At least 18 years of age.\n* ECOG performance status \u2264 2 (Karnofsky \u2265 60%)\n* Adequate bone marrow and organ function as defined below:\n\n  * Absolute neutrophil count \u2265 1.5 K/cumm\n  * Platelets \u2265 100 K/cumm\n  * Hemoglobin \u2265 9.0 g/dL\n  * Total bilirubin \u2264 1.5 x IULN\n  * AST(SGOT)/ALT(SGPT) \u2264 3.0 x IULN\n  * Creatinine clearance \\> 30 mL/min by Cockcroft-Gault\n* Ability to swallow pills or have percutaneous enteric access (G-tube or J-tube) allowing for administration of dabrafenib-trametinib pills.\n* Dabrafenib and trametinib are known teratogenic agents, and dabrafenib can render hormonal contraceptives ineffective. For this reason, women of childbearing potential and men must agree to use adequate contraception prior to study entry, for the duration of study participation, and for 2 weeks after the last dose of dabrafenib or 4 months after the last dose of trametinib, whichever dose is later. Should a woman become pregnant or suspect she is pregnant while participating in this study or should a man suspect he has fathered a child, s/he must inform the treating physician immediately.\n* Ability to understand and willingness to sign an IRB approved written informed consent document. Legally authorized representatives may sign and give informed consent on behalf of study participants.\n\nExclusion Criteria:\n\n* Prior radiation therapy to the head and neck or spinal cord.\n* Prior systemic therapy for thyroid cancer.\n* Prior immunotherapy for any indication.\n* Prior or concurrent malignancy whose natural history has the potential to interfere with the safety or efficacy assessment of the investigational regimen. Patients with prior or concurrent malignancy that does NOT meet that definition are eligible for this trial\n* Patients with endoluminal (intraluminal/transmural) invasion of the trachea or esophagus by the primary tumor, as determined by cross-sectional imaging or endoscopy, are excluded. Tumor abutment of, or radiographic contact with, the tracheal or esophageal wall without endoluminal extension does not, by itself, meet this exclusion.\n* Currently receiving any other investigational agents.\n* A history of allergic reactions attributed to compounds of similar chemical or biologic composition to dabrafenib, trametinib, pembrolizumab, or other agents used in the study.\n* Use of any strong inhibitors of CYP3A4 or CYP2C8, or sensitive substrates of CYP3A4, CYP2C8, CYP2C9, CYP2C19, or CYP2B6, within 7 days prior to enrollment and during the course of this study.\n* Uncontrolled intercurrent illness including, but not limited to: ongoing or active infection, symptomatic congestive heart failure, unstable angina pectoris, or cardiac arrhythmia. Patients with a known history or current symptoms of cardiac disease, or history of treatment with cardiotoxic agents, should have a clinical risk assessment of cardiac function using the New York Heart Association Function Classification; to be eligible for this trial, patients should be a class 2B or better.\n* Active autoimmune disease that has required systemic treatment in past 2 years (i.e. - with use of disease modifying agents, corticosteroids, or immunosuppressive drugs). Replacement therapy (e.g., thyroxine, insulin, or physiologic corticosteroid replacement therapy for adrenal or pituitary insufficiency) is not considered a form of systemic treatment.\n* Prior allogeneic tissue/solid organ transplant.\n* Use of any immunosuppressive medications within 7 days prior to enrollment.\n* Use of live or live attenuated vaccines within 30 days prior to enrollment.\n* Pregnant and/or breastfeeding. Women of childbearing potential must have a negative serum or urine pregnancy test within 5 days prior to enrollment.\n* HIV-infected if not on effective anti-retroviral therapy with undetectable viral load for 6 months. Patients with HIV who are receiving effective anti-retroviral therapy and have had an undetectable viral load for at least 6 months are eligible. HIV testing not required in the absence of known history of infection.\n* Evidence of chronic hepatitis B virus (HBV) that is detectable on suppressive therapy. Patients with evidence of chronic HBV infection with undetectable HBV viral load on suppressive therapy are eligible. HBV testing not required in the absence of known history of infection.\n* History of hepatitis C virus (HCV) infection that has not been cured or that has a detectable viral load. Patients with a history of HCV that has been treated and cured are eligible. Patients with HCV infection who are currently on treatment and have an undetectable HCV viral load are eligible. HCV testing not required in the absence of known history of infection.",
+   "healthyVolunteers": false,
+   "sex": "ALL",
+   "minimumAge": "18 Years",
+   "stdAges": [
+    "ADULT",
+    "OLDER_ADULT"
+   ]
+  },
+  "contactsLocationsModule": {
+   "centralContacts": [
+    {
+     "name": "Nikhil Rammohan, MD, PhD",
+     "role": "CONTACT",
+     "phone": "314-565-5941",
+     "email": "nikhilr@wustl.edu"
+    }
+   ],
+   "overallOfficials": [
+    {
+     "name": "Nikhil Rammohan, MD, PhD",
+     "affiliation": "Washington University School of Medicine",
+     "role": "PRINCIPAL_INVESTIGATOR"
+    }
+   ],
+   "locations": [
+    {
+     "facility": "Washington University School of Medicine",
+     "city": "St Louis",
+     "state": "Missouri",
+     "zip": "63110",
+     "country": "United States",
+     "contacts": [
+      {
+       "name": "Nikhil Rammohan, MD, PhD",
+       "role": "CONTACT",
+       "phone": "314-565-5941",
+       "email": "nikhilr@wustl.edu"
+      },
+      {
+       "name": "Nikhil Rammohan, MD, PhD",
+       "role": "PRINCIPAL_INVESTIGATOR"
+      },
+      {
+       "name": "Esther Lu, PhD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Anthony Apicelli, MD, PhD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Jennifer De Los Santos, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Sana Karam, MD, PhD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Stephanie Markovina, MD, PhD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Wade Thorstad, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Douglas Adkins, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Christine Auberle, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Brendan Knapp, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Peter Oppelt, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Jesse Zaretsky, MD, PhD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "R Alex Harbison, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Ryan Jackson, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Patrik Pipkorn, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Sidharth Puram, MD, PhD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Jason Rich, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Benjamin Wahle, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Paul Zolkind, MD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Joseph Harms, PhD",
+       "role": "SUB_INVESTIGATOR"
+      },
+      {
+       "name": "Eric Laugeman, MS",
+       "role": "SUB_INVESTIGATOR"
+      }
+     ],
+     "geoPoint": {
+      "lat": 38.62727,
+      "lon": -90.19789
+     }
+    }
+   ]
+  },
+  "referencesModule": {
+   "seeAlsoLinks": [
+    {
+     "label": "Alvin J. Siteman Cancer Center at Barnes-Jewish Hospital and Washington University School of Medicine",
+     "url": "http://siteman.wustl.edu"
+    }
+   ]
+  },
+  "ipdSharingStatementModule": {
+   "ipdSharing": "YES",
+   "description": "De-identified individual participant data (IPD) that underlie the results reported in any publication or presentation arising from this study may be made available to qualified external researchers. All requests for data sharing are subject to prior review \\& written approval by the study Principal Investigator (PI) before any data are released. No individual participant data will be shared without advance consultation with, \\& documented authorization from, the PI.\n\nData will be shared only for scientifically sound proposals that are consistent with the consent provided by study participants, that do not overlap with analyses planned or ongoing by the study team, \\& that comply with all applicable institutional, IRB, privacy (e.g., HIPAA), \\& data-use requirements. All released datasets will be de-identified in accordance with applicable regulations, \\& a data-use agreement (DUA) executed between the requesting institution \\& the sponsoring institution will be required prior to transfer.",
+   "infoTypes": [
+    "STUDY_PROTOCOL",
+    "SAP",
+    "ICF",
+    "CSR",
+    "ANALYTIC_CODE"
+   ],
+   "timeFrame": "Data will be available beginning after publication of the primary study results and will remain available for a defined period thereafter (e.g., up to 36 months after publication, or per institutional policy). Requests outside this window may still be considered at the discretion of the PI and sponsoring institution.",
+   "accessCriteria": "Researchers must submit a formal written request to the PI describing the requesting investigator \\& institution, the specific data elements requested, a detailed research question, analysis plan, \\& the intended use of the data. Each request will be individually reviewed by the PI (in consultation with the study team \\&, where applicable, the sponsoring institution and IRB). Access will be granted only after: (1) the PI's written approval of the specific request; (2) confirmation that the proposed use is consistent with participant consent \\& ethical approvals; \\& (3) execution of a data-use agreement. The PI reserves the right to decline requests that are scientifically unsound, that conflict with ongoing or planned analyses, that risk participant re-identification, or that fall outside the scope of the original consent. Approved data will be transferred through a secure, access-controlled method specified in the executed DUA."
+  }
+ },
+ "derivedSection": {
+  "miscInfoModule": {
+   "versionHolder": "2026-10-23"
+  },
+  "conditionBrowseModule": {
+   "meshes": [
+    {
+     "id": "D065646",
+     "term": "Thyroid Carcinoma, Anaplastic"
+    },
+    {
+     "id": "D013964",
+     "term": "Thyroid Neoplasms"
+    }
+   ],
+   "ancestors": [
+    {
+     "id": "D002277",
+     "term": "Carcinoma"
+    },
+    {
+     "id": "D009375",
+     "term": "Neoplasms, Glandular and Epithelial"
+    },
+    {
+     "id": "D009370",
+     "term": "Neoplasms by Histologic Type"
+    },
+    {
+     "id": "D009369",
+     "term": "Neoplasms"
+    },
+    {
+     "id": "D004701",
+     "term": "Endocrine Gland Neoplasms"
+    },
+    {
+     "id": "D009371",
+     "term": "Neoplasms by Site"
+    },
+    {
+     "id": "D006258",
+     "term": "Head and Neck Neoplasms"
+    },
+    {
+     "id": "D004700",
+     "term": "Endocrine System Diseases"
+    },
+    {
+     "id": "D013959",
+     "term": "Thyroid Diseases"
+    }
+   ]
+  },
+  "interventionBrowseModule": {
+   "meshes": [
+    {
+     "id": "C561627",
+     "term": "dabrafenib"
+    },
+    {
+     "id": "C560077",
+     "term": "trametinib"
+    },
+    {
+     "id": "C582435",
+     "term": "pembrolizumab"
+    },
+    {
+     "id": "D003637",
+     "term": "DEAE-Dextran"
+    }
+   ],
+   "ancestors": [
+    {
+     "id": "D003911",
+     "term": "Dextrans"
+    },
+    {
+     "id": "D005936",
+     "term": "Glucans"
+    },
+    {
+     "id": "D011134",
+     "term": "Polysaccharides"
+    },
+    {
+     "id": "D002241",
+     "term": "Carbohydrates"
+    }
+   ]
+  }
+ },
+ "hasResults": false
+}
