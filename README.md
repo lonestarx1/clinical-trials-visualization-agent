@@ -259,6 +259,8 @@ The service answers in two modes ([why two modes](#why-two-modes) below). To see
 | Faster on | 20 questions | **25 questions** |
 | Answers that ran as background jobs | 5 | **0** |
 
+**Fast mode could be much faster still.** Most of its time goes to calls to ClinicalTrials.gov: listing a new search term's trials and confirming the count. Without those calls, fast answers' own work (planning, building the chart, writing the title) took a **median of 3.4 s** (at most 9.6 s). That is about **7× faster than fast mode today and 17× faster than live**. It is a best case, not a measurement: the read from our copy isn't timed apart from those calls. Removing the calls is the next step ([fast mode without the internet](#with-more-time-fast-mode-without-the-internet)).
+
 **Where fast mode wins:**
 - **Broad questions:** phase 1 trials by country took 24 s against 728 s live, and industry-sponsored trials since 2020 took 30 s against 586 s.
 - **Search terms it already knows:** breast cancer sponsors took 6 s against 201 s, and lung cancer by phase 9 s against 184 s.

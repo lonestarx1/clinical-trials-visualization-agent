@@ -36,3 +36,9 @@ print(f"median live {med_l:.1f}s, median fast {med_f:.1f}s, median speed-up {sta
 print(f"fast slower than live: {sum(1 for x in speed if x < 1)}; jobs live: {sum(r['live']['job'] for r in rows)}, fast: {sum(r['fast']['job'] for r in rows)}")
 for r in rows:
     if r["fast"]["data_source"] != "fast": print("  fell back:", r["question"][:60], r["fast"]["fast_note"][:1], r["fast"].get("error"))
+# Fast answers' own work, without calls to ClinicalTrials.gov (term listing, live count) and
+# without the mirror read, which isn't timed apart from them: a best case for an offline fast mode.
+local = [sum(t.get(k, 0) for k in ("plan", "aggregate", "narrate")) / 1000
+         for r in rows if r["fast"]["data_source"] == "fast" for t in [r["fast"]["timings_ms"] or {}]]
+if local:
+    print(f"fast without network calls: median {statistics.median(local):.1f}s, max {max(local):.1f}s")
