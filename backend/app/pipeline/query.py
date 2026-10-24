@@ -253,9 +253,10 @@ async def handle_query(
                 ctx,
                 llms,
             )
-        meta = Meta(
-            assumptions=planned.plan.assumptions, details={"reason": planned.plan.scope_reason}
-        )
+        details = {"reason": planned.plan.scope_reason}
+        if planned.plan.scope_suggestion:
+            details["suggestion"] = planned.plan.scope_suggestion
+        meta = Meta(assumptions=planned.plan.assumptions, details=details)
         return _finish(
             QueryResponse(status="out_of_scope", visualization=None, meta=meta), ctx, llms
         )

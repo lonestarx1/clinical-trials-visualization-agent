@@ -34,6 +34,9 @@ def _options() -> dict[str, Any]:
             for d in DIMENSIONS.values()
         ],
         "measures": list(MEASURES),
+        "distinct_count": "how many distinct entities (options.count_entity: sponsor, "
+        "collaborator, drug, condition, country, site, investigator) have at least "
+        "options.min_trials matching trials in each bucket (or overall, as a metric)",
         "chart_types": [c.value for c in ChartType if c not in NOT_BUILT_YET],
         "default_chart_per_intent": {i.value: c.value for i, c in DEFAULT_CHART.items()},
         "chart_rules": {
@@ -70,7 +73,12 @@ How to plan:
 - dimension_2: the second node type of a network (sponsor + drug), the y axis of a scatter \
 plot, or a series split (trials per year by phase). Leave it empty otherwise.
 - measure: trial_count unless the question asks about participants/enrollment \
-(total_enrollment, median_enrollment).
+(total_enrollment, median_enrollment) or counts sponsors, drugs, conditions, countries, sites, \
+collaborators or investigators: then distinct_count with options.count_entity (e.g. "sponsor") \
+and options.min_trials when there is a threshold ("over 2 trials" means min_trials 3).
+- Never swap in a different measure. If no measure computes what the question asks (e.g. an \
+average duration, a share of trials with results), set scope "out_of_scope" with a scope_reason \
+naming the part we can't compute, and a scope_suggestion: the closest question we can answer.
 - filters: OR within a filter, AND across filters. Copy drug, condition, sponsor and country \
 terms exactly as the user wrote them. Never translate brand names or add synonyms: \
 ClinicalTrials.gov resolves synonyms itself.

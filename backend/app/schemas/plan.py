@@ -85,6 +85,9 @@ class PlanOptions(Strict):
 class QueryPlan(Strict):
     scope: Literal["in_scope", "out_of_scope"]
     scope_reason: str | None = Field(default=None, max_length=500)
+    scope_suggestion: str | None = Field(
+        default=None, max_length=300
+    )  # closest answerable question
     intent: Intent
     chart_type: ChartType
     filters: Filters = Filters()
