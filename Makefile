@@ -1,4 +1,4 @@
-.PHONY: up down logs test test-db test-live test-e2e test-web lint fmt
+.PHONY: up down logs test test-db test-live test-e2e test-web lint fmt infra-bootstrap infra-plan infra-apply deploy infra-destroy
 
 BACKEND := cd backend &&
 TEST_DB := postgresql+asyncpg://ctviz:ctviz@127.0.0.1:5433/ctviz_test
@@ -37,3 +37,25 @@ lint:
 
 fmt:
 	$(BACKEND) uv run ruff format . && uv run ruff check --fix .
+
+# ---------- deployment (infra/README.md) ----------
+TF := terraform -chdir=infra/terraform
+
+infra-bootstrap: ## One-time: create the S3 bucket for Terraform state
+	terraform -chdir=infra/terraform/bootstrap init -input=false
+	terraform -chdir=infra/terraform/bootstrap apply
+
+infra-plan: ## Show what Terraform would change
+	$(TF) init -input=false -backend-config=backend.hcl
+	$(TF) plan
+
+infra-apply: ## Create or update the node, registry, secret and DNS records
+	$(TF) init -input=false -backend-config=backend.hcl
+	$(TF) apply
+
+deploy: ## Build and push the images, then roll them out on k3s
+	infra/scripts/deploy.sh
+
+infra-destroy: ## Remove everything Terraform created (images included)
+	$(TF) destroy
+

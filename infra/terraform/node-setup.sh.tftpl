@@ -1,0 +1,116 @@
+#!/bin/bash
+# First-boot setup of the single k3s node (rendered by Terraform; bash variables use $NAME,
+# Terraform values use the braced form).
+set -euxo pipefail
+
+# 8 GB of swap for the largest questions. Kubernetes keeps pods off swap by default
+# (NoSwap), so the kubelet is set to LimitedSwap: a Burstable pod gets a share of swap in
+# proportion to its memory request (the API requests 1.5 GiB of 4 GiB, so ~3 GB of swap).
+if [ ! -f /swapfile ]; then
+  fallocate -l 8G /swapfile && chmod 600 /swapfile && mkswap /swapfile
+  echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+swapon /swapfile || true
+mkdir -p /var/lib/rancher/k3s/agent/etc/kubelet.conf.d
+cat > /var/lib/rancher/k3s/agent/etc/kubelet.conf.d/90-swap.conf <<'YAML'
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+failSwapOn: false
+memorySwap:
+  swapBehavior: LimitedSwap
+YAML
+
+# k3s applies anything in this folder at start: cert-manager through k3s's Helm controller,
+# and Traefik set to keep the client IP (the API rate-limits per IP).
+mkdir -p /var/lib/rancher/k3s/server/manifests
+cat > /var/lib/rancher/k3s/server/manifests/cert-manager.yaml <<'YAML'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: cert-manager
+  namespace: kube-system
+spec:
+  repo: https://charts.jetstack.io
+  chart: cert-manager
+  version: ${cert_manager_version}
+  targetNamespace: cert-manager
+  valuesContent: |-
+    crds:
+      enabled: true
+YAML
+cat > /var/lib/rancher/k3s/server/manifests/traefik-config.yaml <<'YAML'
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    service:
+      spec:
+        externalTrafficPolicy: Local
+YAML
+
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="${k3s_version}" sh -s - server \
+  --write-kubeconfig-mode 600 \
+  --kubelet-arg=fail-swap-on=false
+
+# Secrets the cluster needs, refreshed every 6 hours (ECR tokens last 12):
+# - an image pull secret for ECR, from the node's IAM role;
+# - the Postgres password, generated once on the node (never leaves it);
+# - the OpenAI key, read from Secrets Manager.
+cat > /usr/local/bin/cheiron-sync-secrets <<'SCRIPT'
+#!/bin/bash
+set -euo pipefail
+K="/usr/local/bin/k3s kubectl"
+NS=cheiron
+until $K get nodes >/dev/null 2>&1; do sleep 5; done
+$K get namespace $NS >/dev/null 2>&1 || $K create namespace $NS
+
+TOKEN=$(aws ecr get-login-password --region ${region})
+$K -n $NS create secret docker-registry ecr-pull --docker-server=${registry} \
+  --docker-username=AWS --docker-password="$TOKEN" --dry-run=client -o yaml | $K apply -f - >/dev/null
+
+$K -n $NS get secret cheiron-db >/dev/null 2>&1 || \
+  $K -n $NS create secret generic cheiron-db --from-literal=POSTGRES_PASSWORD="$(openssl rand -hex 24)" >/dev/null
+
+KEY=$(aws secretsmanager get-secret-value --region ${region} --secret-id ${secret_id} \
+  --query SecretString --output text 2>/dev/null || true)
+if [ -n "$KEY" ] && [ "$KEY" != "None" ]; then
+  printf %s "$KEY" | $K -n $NS create secret generic cheiron-openai --from-file=OPENAI_API_KEY=/dev/stdin \
+    --dry-run=client -o yaml | $K apply -f - >/dev/null
+  echo "secrets synced"
+else
+  echo "secrets synced; the OpenAI key is not set in Secrets Manager yet" >&2
+fi
+SCRIPT
+chmod 700 /usr/local/bin/cheiron-sync-secrets
+
+cat > /etc/systemd/system/cheiron-sync-secrets.service <<'UNIT'
+[Unit]
+Description=Sync cluster secrets (ECR pull token, database password, OpenAI key)
+After=k3s.service
+Requires=k3s.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/cheiron-sync-secrets
+UNIT
+cat > /etc/systemd/system/cheiron-sync-secrets.timer <<'UNIT'
+[Unit]
+Description=Refresh cluster secrets every 6 hours
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=6h
+
+[Install]
+WantedBy=timers.target
+UNIT
+systemctl daemon-reload
+systemctl enable --now cheiron-sync-secrets.timer
