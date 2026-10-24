@@ -20,8 +20,9 @@ export function DocsTopbar() {
         <Logo /><span className="brand-name">Clinical Trials Explorer</span>
       </Link>
       <div className="topbar-actions">
-        {link("/examples", "Examples")}
+        <Link className="ghost new-question" href="/">New<span className="wide-only"> question</span></Link>
         {link("/docs", <>API<span className="wide-only"> docs</span></>)}
+        {link("/examples", "Examples")}
         <ThemePicker selection={selection} onChoose={choose} />
       </div>
     </header>
