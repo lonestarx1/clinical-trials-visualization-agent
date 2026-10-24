@@ -1,6 +1,7 @@
 // Every theme must stay readable: these gates run in CI, so a new theme can't regress contrast.
 import { describe, expect, it } from "vitest";
 import { THEMES } from "@/lib/themes";
+import { DEFAULT_SELECTION, resolve, themeScript } from "@/lib/themes/runtime";
 
 const lum = (hex: string) => {
   const [r, g, b] = (hex.replace("#", "").match(/../g) ?? []).map((h) => parseInt(h, 16) / 255)
@@ -37,5 +38,26 @@ describe("theme registry", () => {
     for (const hex of [...Object.values(t.ui).filter((v) => v.startsWith("#")), ...t.chart.palette]) {
       expect(hex).toMatch(/^#[0-9a-f]{6}$/);
     }
+  });
+});
+
+describe("default theme", () => {
+  it("is Clinical light, even on a device in dark mode", () => {
+    expect(DEFAULT_SELECTION).toBe("clinical-light");
+    expect(resolve(DEFAULT_SELECTION, true).id).toBe("clinical-light");
+  });
+
+  it("follows the device only when the user picks Automatic", () => {
+    expect(resolve("system", true).id).toBe("clinical-dark");
+    expect(resolve("system", false).id).toBe("clinical-light");
+  });
+
+  it("falls back to the default for an unknown saved theme", () => {
+    expect(resolve("retired-theme", true).id).toBe("clinical-light");
+  });
+
+  it("applies the default before first paint when nothing is saved", () => {
+    expect(themeScript()).toContain('T[s==="system"?');
+    expect(themeScript()).toContain('"clinical-light"');
   });
 });
