@@ -1,0 +1,705 @@
+{
+  "label": "narrator-25",
+  "date": "2026-10-25",
+  "runs_per_case": 3,
+  "cases": {
+    "narrator": 25
+  },
+  "stages": {
+    "narrator": {
+      "gpt-4o-mini:low": {
+        "summary": {
+          "runs": 75,
+          "first_attempt": 1.0,
+          "fallback": 0.0,
+          "p50_ms": 831,
+          "p95_ms": 1152,
+          "cost_per_call": 6.7e-05,
+          "fallback_cases": [],
+          "bars": {
+            "first attempt >= 95%": true,
+            "p95 <= 3 s": true
+          }
+        },
+        "total_cost_usd": 0.00503,
+        "runs": [
+          {
+            "case_id": "N-01",
+            "run": 1,
+            "title": "Number of Trials by Phase for Pembrolizumab in Melanoma",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 1505,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-01",
+            "run": 2,
+            "title": "Number of Trials for Pembrolizumab in Melanoma by Phase",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 984,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-01",
+            "run": 3,
+            "title": "Number of Trials by Phase for Pembrolizumab in Melanoma",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 932,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-02",
+            "run": 1,
+            "title": "Number of Trials for Nivolumab by Start Year (2015-2024)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 1122,
+            "cost_usd": 6.8e-05
+          },
+          {
+            "case_id": "N-02",
+            "run": 2,
+            "title": "Number of Trials by Start Year for Nivolumab (2015-2024)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 1152,
+            "cost_usd": 6.8e-05
+          },
+          {
+            "case_id": "N-02",
+            "run": 3,
+            "title": "Number of Trials by Start Year for Nivolumab (2015-2024)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 917,
+            "cost_usd": 6.9e-05
+          },
+          {
+            "case_id": "N-03",
+            "run": 1,
+            "title": "Number of Trials by Phase for Pembrolizumab vs Nivolumab",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 782,
+            "cost_usd": 7.9e-05
+          },
+          {
+            "case_id": "N-03",
+            "run": 2,
+            "title": "Number of Trials by Phase for Pembrolizumab vs Nivolumab",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 785,
+            "cost_usd": 7.9e-05
+          },
+          {
+            "case_id": "N-03",
+            "run": 3,
+            "title": "Number of Trials by Phase for Pembrolizumab vs Nivolumab",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 769,
+            "cost_usd": 7.9e-05
+          },
+          {
+            "case_id": "N-04",
+            "run": 1,
+            "title": "Number of Lung Cancer Trials by Country: 2,182 Total Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 908,
+            "cost_usd": 5.8e-05
+          },
+          {
+            "case_id": "N-04",
+            "run": 2,
+            "title": "Number of Trials for Lung Cancer by Country",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 772,
+            "cost_usd": 5.6e-05
+          },
+          {
+            "case_id": "N-04",
+            "run": 3,
+            "title": "Number of Lung Cancer Trials by Country: 2,182 Total Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 694,
+            "cost_usd": 5.8e-05
+          },
+          {
+            "case_id": "N-05",
+            "run": 1,
+            "title": "Number of Trials for Glioblastoma: 325",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 857,
+            "cost_usd": 4.5e-05
+          },
+          {
+            "case_id": "N-05",
+            "run": 2,
+            "title": "Number of Trials for Glioblastoma: 325",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 733,
+            "cost_usd": 4.5e-05
+          },
+          {
+            "case_id": "N-05",
+            "run": 3,
+            "title": "Number of Trials for Glioblastoma: 325 Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 732,
+            "cost_usd": 4.5e-05
+          },
+          {
+            "case_id": "N-06",
+            "run": 1,
+            "title": "Number of Trials by Enrollment in Asthma Studies",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 636,
+            "cost_usd": 5.5e-05
+          },
+          {
+            "case_id": "N-06",
+            "run": 2,
+            "title": "Number of Trials in Asthma by Enrollment Bins",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 755,
+            "cost_usd": 5.5e-05
+          },
+          {
+            "case_id": "N-06",
+            "run": 3,
+            "title": "Number of Trials by Enrollment for Asthma (0-500 to 3500+)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 679,
+            "cost_usd": 6e-05
+          },
+          {
+            "case_id": "N-07",
+            "run": 1,
+            "title": "Number of Trials by Lead Sponsor in Multiple Myeloma Research",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 905,
+            "cost_usd": 8.5e-05
+          },
+          {
+            "case_id": "N-07",
+            "run": 2,
+            "title": "Number of Trials by Lead Sponsor in Multiple Myeloma Research",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 702,
+            "cost_usd": 8.5e-05
+          },
+          {
+            "case_id": "N-07",
+            "run": 3,
+            "title": "Number of Trials by Lead Sponsor in Multiple Myeloma Research",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 889,
+            "cost_usd": 8.5e-05
+          },
+          {
+            "case_id": "N-08",
+            "run": 1,
+            "title": "Lead Sponsors with at Least 3 Trials by Start Year (2015-2020)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 956,
+            "cost_usd": 6.9e-05
+          },
+          {
+            "case_id": "N-08",
+            "run": 2,
+            "title": "Lead Sponsors with at Least 3 Trials for Pembrolizumab by Start Year",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 801,
+            "cost_usd": 6.8e-05
+          },
+          {
+            "case_id": "N-08",
+            "run": 3,
+            "title": "Lead Sponsors of Pembrolizumab Trials (2015-2020) by Start Year",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 821,
+            "cost_usd": 6.9e-05
+          },
+          {
+            "case_id": "N-09",
+            "run": 1,
+            "title": "Number of Trials by Overall Status for Semaglutide: 640 Total",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 1241,
+            "cost_usd": 6.3e-05
+          },
+          {
+            "case_id": "N-09",
+            "run": 2,
+            "title": "Number of Trials for Semaglutide by Overall Status",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 802,
+            "cost_usd": 6.1e-05
+          },
+          {
+            "case_id": "N-09",
+            "run": 3,
+            "title": "Number of Trials for Semaglutide by Overall Status",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 798,
+            "cost_usd": 6e-05
+          },
+          {
+            "case_id": "N-10",
+            "run": 1,
+            "title": "Total Enrollment by Phase for Sickle Cell Disease Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 648,
+            "cost_usd": 6.3e-05
+          },
+          {
+            "case_id": "N-10",
+            "run": 2,
+            "title": "Total Enrollment by Phase for Sickle Cell Disease Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 678,
+            "cost_usd": 6.3e-05
+          },
+          {
+            "case_id": "N-10",
+            "run": 3,
+            "title": "Total Enrollment by Phase for Sickle Cell Disease Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 658,
+            "cost_usd": 6.3e-05
+          },
+          {
+            "case_id": "N-11",
+            "run": 1,
+            "title": "Number of Trials by Number of Sites for Psoriasis Studies",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 893,
+            "cost_usd": 6.4e-05
+          },
+          {
+            "case_id": "N-11",
+            "run": 2,
+            "title": "Number of Trials vs. Number of Sites in Psoriasis Research",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 838,
+            "cost_usd": 6.5e-05
+          },
+          {
+            "case_id": "N-11",
+            "run": 3,
+            "title": "Number of Trials by Number of Sites in Psoriasis Studies",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 796,
+            "cost_usd": 6.4e-05
+          },
+          {
+            "case_id": "N-12",
+            "run": 1,
+            "title": "Number of Trials per Drug for Trastuzumab in Breast Cancer Context",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 859,
+            "cost_usd": 8.6e-05
+          },
+          {
+            "case_id": "N-12",
+            "run": 2,
+            "title": "Number of Trials by Drug for Trastuzumab in Breast Cancer (Total: 718)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 1034,
+            "cost_usd": 8.9e-05
+          },
+          {
+            "case_id": "N-12",
+            "run": 3,
+            "title": "Number of Trials for Breast Cancer Drugs Including Trastuzumab",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 754,
+            "cost_usd": 8.5e-05
+          },
+          {
+            "case_id": "N-13",
+            "run": 1,
+            "title": "Number of Trials for Lupus-Related Conditions in Clinical Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 814,
+            "cost_usd": 9.2e-05
+          },
+          {
+            "case_id": "N-13",
+            "run": 2,
+            "title": "Number of Trials by Condition for Lupus Related Studies",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 884,
+            "cost_usd": 9.1e-05
+          },
+          {
+            "case_id": "N-13",
+            "run": 3,
+            "title": "Number of Trials for Conditions Related to Lupus (Total: 356)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 903,
+            "cost_usd": 9.4e-05
+          },
+          {
+            "case_id": "N-14",
+            "run": 1,
+            "title": "Distribution of Number of Trials by Duration (Months) in Cystic Fibrosis",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 794,
+            "cost_usd": 5.9e-05
+          },
+          {
+            "case_id": "N-14",
+            "run": 2,
+            "title": "Number of Trials by Duration (Months) for Cystic Fibrosis",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 822,
+            "cost_usd": 5.8e-05
+          },
+          {
+            "case_id": "N-14",
+            "run": 3,
+            "title": "Number of Trials by Duration (Months) for Cystic Fibrosis",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 677,
+            "cost_usd": 5.7e-05
+          },
+          {
+            "case_id": "N-15",
+            "run": 1,
+            "title": "Total Number of Lead Sponsors for Ustekinumab: 203",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 811,
+            "cost_usd": 4.9e-05
+          },
+          {
+            "case_id": "N-15",
+            "run": 2,
+            "title": "Number of Lead Sponsors for Ustekinumab: 203",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 670,
+            "cost_usd": 4.8e-05
+          },
+          {
+            "case_id": "N-15",
+            "run": 3,
+            "title": "Number of Lead Sponsors for Ustekinumab: 203 Sponsors",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 768,
+            "cost_usd": 4.9e-05
+          },
+          {
+            "case_id": "N-16",
+            "run": 1,
+            "title": "Median Enrollment by Phase in Psoriatic Arthritis Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 806,
+            "cost_usd": 6.3e-05
+          },
+          {
+            "case_id": "N-16",
+            "run": 2,
+            "title": "Median Enrollment by Phase in Psoriatic Arthritis Trials (Total: 622)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 932,
+            "cost_usd": 6.7e-05
+          },
+          {
+            "case_id": "N-16",
+            "run": 3,
+            "title": "Median Enrollment by Phase for Psoriatic Arthritis Trials: 622 Entries",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 797,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-17",
+            "run": 1,
+            "title": "Number of Trials by Lead Sponsor Type for Duchenne vs Spinal Muscular Dystrophy",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 900,
+            "cost_usd": 7.1e-05
+          },
+          {
+            "case_id": "N-17",
+            "run": 2,
+            "title": "Number of Trials by Lead Sponsor Type for Duchenne vs Spinal Muscular Dystrophy",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 902,
+            "cost_usd": 7.1e-05
+          },
+          {
+            "case_id": "N-17",
+            "run": 3,
+            "title": "Number of Trials by Lead Sponsor Type for Duchenne vs Spinal Muscular Dystrophy",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 889,
+            "cost_usd": 7.1e-05
+          },
+          {
+            "case_id": "N-18",
+            "run": 1,
+            "title": "Number of Trials by Intervention Type for Fibromyalgia (Total: 1,507)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 1121,
+            "cost_usd": 5.8e-05
+          },
+          {
+            "case_id": "N-18",
+            "run": 2,
+            "title": "Number of Trials by Intervention Type for Fibromyalgia",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 886,
+            "cost_usd": 5.4e-05
+          },
+          {
+            "case_id": "N-18",
+            "run": 3,
+            "title": "Number of Trials by Intervention Type in Fibromyalgia (1,507)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 679,
+            "cost_usd": 5.6e-05
+          },
+          {
+            "case_id": "N-19",
+            "run": 1,
+            "title": "Number of Countries with Trials Starting Each Year for Adalimumab",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 799,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-19",
+            "run": 2,
+            "title": "Number of Countries Running Adalimumab Trials by Start Year (2010-2020)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 849,
+            "cost_usd": 7e-05
+          },
+          {
+            "case_id": "N-19",
+            "run": 3,
+            "title": "Number of Countries by Start Year for Adalimumab Trials (2010-2020)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 844,
+            "cost_usd": 7e-05
+          },
+          {
+            "case_id": "N-20",
+            "run": 1,
+            "title": "Number of Trials by Phase for Psoriasis: Novartis",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 765,
+            "cost_usd": 6.3e-05
+          },
+          {
+            "case_id": "N-20",
+            "run": 2,
+            "title": "Number of Trials by Phase in Psoriasis (Novartis): 111 Total Trials",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 831,
+            "cost_usd": 6.7e-05
+          },
+          {
+            "case_id": "N-20",
+            "run": 3,
+            "title": "Number of Trials by Phase for Psoriasis Treatments from Novartis",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 1038,
+            "cost_usd": 6.4e-05
+          },
+          {
+            "case_id": "N-21",
+            "run": 1,
+            "title": "Number of Trials by Drug for Type 2 Diabetes (Total: 834)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 968,
+            "cost_usd": 6.7e-05
+          },
+          {
+            "case_id": "N-21",
+            "run": 2,
+            "title": "Number of Trials by Drug for Type 2 Diabetes (Total: 834)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 898,
+            "cost_usd": 6.7e-05
+          },
+          {
+            "case_id": "N-21",
+            "run": 3,
+            "title": "Number of Trials by Drug for Type 2 Diabetes Treatments",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 900,
+            "cost_usd": 6.4e-05
+          },
+          {
+            "case_id": "N-22",
+            "run": 1,
+            "title": "Number of Trials by Lead Sponsor in Chronic Inflammatory Demyelinating Polyneuropathy",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 967,
+            "cost_usd": 7.2e-05
+          },
+          {
+            "case_id": "N-22",
+            "run": 2,
+            "title": "Number of Trials per Lead Sponsor in Chronic Inflammatory Demyelinating Polyneuropathy",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 884,
+            "cost_usd": 7.2e-05
+          },
+          {
+            "case_id": "N-22",
+            "run": 3,
+            "title": "Number of Trials by Lead Sponsor in Chronic Inflammatory Demyelinating Polyneuropathy",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 825,
+            "cost_usd": 7.2e-05
+          },
+          {
+            "case_id": "N-23",
+            "run": 1,
+            "title": "Number of Trials by Start Year for CAR-T (2018-2027)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 774,
+            "cost_usd": 6.7e-05
+          },
+          {
+            "case_id": "N-23",
+            "run": 2,
+            "title": "Number of CAR-T Trials by Start Year (2018-2027)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 733,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-23",
+            "run": 3,
+            "title": "Number of CAR-T Trials by Start Year (2018-2027)",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 620,
+            "cost_usd": 6.7e-05
+          },
+          {
+            "case_id": "N-24",
+            "run": 1,
+            "title": "Number of Trials by Phase for HER2-Positive Breast Cancer in China",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 1210,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-24",
+            "run": 2,
+            "title": "Number of Trials by Phase for HER2-Positive Breast Cancer in China",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 910,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-24",
+            "run": 3,
+            "title": "Number of Trials by Phase for HER2-positive Breast Cancer in China",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 834,
+            "cost_usd": 6.6e-05
+          },
+          {
+            "case_id": "N-25",
+            "run": 1,
+            "title": "Number of Trials by Phase in Non-small Cell vs Small Cell Lung Cancer",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 856,
+            "cost_usd": 8e-05
+          },
+          {
+            "case_id": "N-25",
+            "run": 2,
+            "title": "Number of Trials by Phase for Non-small Cell vs Small Cell Lung Cancer",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 873,
+            "cost_usd": 8e-05
+          },
+          {
+            "case_id": "N-25",
+            "run": 3,
+            "title": "Number of Trials by Phase for Non-small vs Small Cell Lung Cancer",
+            "attempts": 1,
+            "fallback": false,
+            "latency_ms": 793,
+            "cost_usd": 8e-05
+          }
+        ]
+      }
+    }
+  }
+}

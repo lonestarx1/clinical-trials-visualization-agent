@@ -68,4 +68,10 @@ The fixes took two rounds. The first round raised the gate pass rate, but the gu
 
 - [Model selection](model-selection.md): the bake-off, every Q20 candidate per stage, 3 runs per case ($1.28). Chosen: guard `gpt-5.4-nano`, narrator `gpt-4o-mini`, and the planner stays on `gpt-5.4-mini` as a recorded exception: the rule's choice, `gpt-5-mini`, is cheaper by $0.0005 per question but more than twice as slow. The planner's fallback, `gpt-4.1-mini`, failed the planner bars (83% correct), so it is now `gpt-5-mini`. Details in [design Q20](../design/20-model-selection.md#bake-off-results-2026-10-25).
 
+- [All 25 narrator cases](narrator-25.md) (2026-10-25, 3 runs per case, $0.005): `gpt-4o-mini` passes every check first time on all 75 titles, with no template fallbacks and a p95 of 1.15 s. **Reading the titles shows what the checks miss:**
+  - **A wrong name:** N-17 calls spinal muscular *atrophy* "Spinal Muscular Dystrophy" in all 3 runs. The names check doesn't catch an entity name that is partly right.
+  - **A wrong chart description:** the scatter plot (N-11) is titled "Number of Trials by Number of Sites", but each point is one trial's sites and enrollment. The sponsor-drug network (N-07) is titled as if it were a sponsor bar chart, and the condition-drug network (N-13) never mentions drugs.
+
+  The checks catch invented numbers and names, but not misnamed entities or a title that misdescribes its chart. Two checks would close these gaps: compare every name in the title with the chart's names exactly, and require the title to name every dimension. Both are future work.
+
 The sets are our own and small (tens of cases), so the numbers are indicative, not statistically strong.
