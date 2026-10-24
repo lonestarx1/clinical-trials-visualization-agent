@@ -49,6 +49,32 @@ async def test_limiter_spaces_request_starts() -> None:
     assert starts == [0.0, 1.0, 2.0]
 
 
+async def test_limiter_lets_a_burst_start_at_once_then_keeps_the_rate() -> None:
+    """ClinicalTrials.gov counts requests per ~10 s window, so a burst needn't be spaced out."""
+    clock = FakeClock()
+    limiter = RateLimiter(per_minute=60, concurrency=10, clock=clock, burst=3)
+    starts = []
+    for _ in range(7):
+        async with limiter:
+            starts.append(clock.now)
+    # At most 3 starts in any 3 s window: 60 a minute on average.
+    assert starts == [0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 6.0]
+
+
+async def test_limiter_burst_refills_after_a_quiet_spell() -> None:
+    clock = FakeClock()
+    limiter = RateLimiter(per_minute=60, concurrency=10, clock=clock, burst=3)
+    for _ in range(3):
+        async with limiter:
+            pass
+    clock.now += 2.5
+    starts = []
+    for _ in range(3):
+        async with limiter:
+            starts.append(clock.now)
+    assert starts == [3.0, 3.0, 3.0]
+
+
 async def test_limiter_caps_concurrency() -> None:
     limiter = RateLimiter(per_minute=60_000, concurrency=2)
     in_flight = peak = 0
