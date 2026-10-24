@@ -8,6 +8,8 @@ Postgres is the only datastore (Q8, Q15). It holds the API response cache, plan 
 
 Built: `data_versions`, `plan_cache`, `results`, `result_datums`, `result_citations`, `jobs`, `llm_usage` (migration `6ebfd3b4b50c`). Not built (cut line 4 in the implementation plan): `api_searches` / `api_pages` (L1 page cache) and `traces`. Consequences: `results.searches` stores each search's params and total count as JSON (used for revalidation) instead of keys into `api_searches`, and `llm_usage.trace_id` has no foreign key.
 
+**Revision (2026-10-25): the mirror's tables.** Migration `b3e1c0a7d222` adds the `registry` schema for the mirror behind `fast` mode ([Q22](22-term-sets.md)): `registry.trials` and `registry.sync_runs` (section 11). They are filled only when `MIRROR_SYNC_ENABLED` is on.
+
 ## Conventions
 
 | Topic | Rule |
@@ -249,6 +251,35 @@ Indexes: `(created_at)`, `(model, created_at)`, `(trace_id)`.
 **Daily spending cap:** a configurable USD budget per day, checked against `SUM(cost_usd)` for the current day (UTC). When exceeded, new requests that need LLM calls get **503** `budget_exceeded` (cached results are still served). This protects the API key on the public endpoint.
 
 *As built (2026-10-25):* "cached" means a stored plan for this exact request (`plan_cache`) **and** a stored result for that plan and citation options that is still valid or revalidates (Q8). Such a request makes no model call at all: not even the guard, because a plan is cached only after the guard passed that request (the plan-cache key covers the question and every field except the two citation options). Everything else, including a cached plan whose result would need a new narration, gets 503. Under the budget the guard still runs on every request.
+
+## 11. `registry.trials` and `registry.sync_runs`: the mirror (Q22)
+
+A copy of ClinicalTrials.gov for `fast` mode, in its own schema so it stays apart from the app's tables. The daily update and the first load are described in [Q22](22-term-sets.md#the-daily-update).
+
+`registry.trials`, one row per study:
+
+| Column | Type | Notes |
+|---|---|---|
+| `nct_id` | text | **PK** |
+| `record` | jsonb | The study as the API returns it, limited to the fields the registry reads plus `LastUpdatePostDate` (no email fields) |
+| `start_year` | integer | From `StartDate`; null when the trial has none. Indexed: the start-year slices of the load and the reconcile step |
+| `last_update_post_date` | date | From `LastUpdatePostDate` |
+| `synced_at` | timestamptz | When this row was last saved |
+
+`registry.sync_runs`, one row per load or update:
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | integer | **PK** |
+| `kind` | text | `CHECK in ('load','update')` |
+| `status` | text | `CHECK in ('running','succeeded','failed')`. **The last `succeeded` run's `data_timestamp` is the mirror's**: `fast` mode compares it with the API's current one |
+| `data_timestamp` | timestamptz | The API's data the run brought the mirror to |
+| `since` | date | Updates: the `LastUpdatePostDate` they fetched from |
+| `upserted`, `removed` | integer | Trials saved and deleted |
+| `error` | text | Why a failed run failed |
+| `started_at`, `finished_at` | timestamptz | `started_at` minus three days is where the next update starts |
+
+Index: `(status, finished_at)`. One sync at a time is enforced by a Postgres advisory lock, not a table.
 
 ## Retention and cleanup (periodic task)
 
