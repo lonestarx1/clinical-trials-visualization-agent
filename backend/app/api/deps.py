@@ -1,5 +1,6 @@
 from fastapi import Request
 from openai import AsyncOpenAI
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.config import Settings
 from app.core.pricing import Pricing
@@ -18,11 +19,13 @@ def get_settings(request: Request) -> Settings:
     return settings
 
 
-def get_llm_factory(request: Request) -> LLMFactory:
+def get_sessions(request: Request) -> async_sessionmaker[AsyncSession] | None:
+    """None when the app runs without a database (offline tests)."""
+    return getattr(request.app.state, "sessions", None)
+
+
+def openai_factory(client: AsyncOpenAI, settings: Settings, pricing: Pricing) -> LLMFactory:
     """Builds the three stage models for one request, sharing one usage log."""
-    client: AsyncOpenAI = request.app.state.openai
-    settings: Settings = request.app.state.settings
-    pricing: Pricing = request.app.state.pricing
 
     def build(usage: UsageLog) -> StageLLMs:
         def stage(name: str) -> OpenAILLM:
@@ -33,3 +36,15 @@ def get_llm_factory(request: Request) -> LLMFactory:
         return StageLLMs(stage("guard"), stage("planner"), stage("narrator"))
 
     return build
+
+
+def get_llm_factory(request: Request) -> LLMFactory:
+    factory: LLMFactory = request.app.state.llm_factory
+    return factory
+
+
+def client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:  # behind the reverse proxy (Caddy)
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"

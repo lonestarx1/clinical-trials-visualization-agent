@@ -12,9 +12,57 @@ from app.agents.guard import SafetyCheckUnavailable
 from app.ctgov.client import CtgovBadRequest, CtgovUnavailable, InconsistentResults
 from app.llm.client import LLMUnavailable
 from app.pipeline.citations import CitationMismatch
-from app.pipeline.query import RejectedByPolicy
+from app.pipeline.query import BudgetExceeded, RejectedByPolicy, TooManyJobs
+from app.store.results import Expired, NotFound
 
 log = logging.getLogger(__name__)
+
+
+# Exception -> (HTTP status, code, public message). Never includes internal details.
+_PUBLIC: list[tuple[type[Exception], int, str, str]] = [
+    (RequestValidationError, 422, "invalid_request", "The request is not valid."),
+    (RejectedByPolicy, 400, "rejected_by_policy", "Request rejected by input policy."),
+    (NotFound, 404, "not_found", "Not found."),
+    (Expired, 410, "expired", "This result has expired; please run the query again."),
+    (TooManyJobs, 429, "too_many_requests", "Too many background jobs for this client."),
+    (
+        CtgovUnavailable,
+        503,
+        "upstream_unavailable",
+        "ClinicalTrials.gov is not responding. Please retry later.",
+    ),
+    (
+        InconsistentResults,
+        503,
+        "upstream_unavailable",
+        "ClinicalTrials.gov data changed while reading it. Please retry.",
+    ),
+    (LLMUnavailable, 503, "llm_unavailable", "The AI service is not responding. Please retry."),
+    (
+        SafetyCheckUnavailable,
+        503,
+        "safety_check_unavailable",
+        "Safety check unavailable, please retry later.",
+    ),
+    (
+        BudgetExceeded,
+        503,
+        "budget_exceeded",
+        "Today's AI budget is used up; cached answers are still available.",
+    ),
+]
+
+
+def classify(exc: Exception) -> tuple[int, str, str]:
+    for kind, status, code, message in _PUBLIC:
+        if isinstance(exc, kind):
+            return status, code, message
+    return 500, "internal_error", "Something went wrong on our side."
+
+
+def error_body(exc: Exception, trace_id: str) -> dict[str, Any]:
+    _, code, message = classify(exc)
+    return {"code": code, "message": message, "details": None, "trace_id": trace_id}
 
 
 def error_response(
@@ -60,7 +108,16 @@ async def _internal(request: Request, exc: Exception) -> JSONResponse:
     return response
 
 
+async def _known(request: Request, exc: Exception) -> JSONResponse:
+    status, code, message = classify(exc)
+    if status >= 500:
+        log.error("%s: %s", code, exc)
+    return error_response(status, code, message)
+
+
 def install_error_handlers(app: FastAPI) -> None:
+    for kind in (NotFound, Expired, TooManyJobs, BudgetExceeded):
+        app.add_exception_handler(kind, _known)
     app.add_exception_handler(RequestValidationError, _invalid)
     app.add_exception_handler(CtgovUnavailable, _upstream)
     app.add_exception_handler(InconsistentResults, _upstream)
