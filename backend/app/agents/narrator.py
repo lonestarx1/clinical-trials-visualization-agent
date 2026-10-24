@@ -65,8 +65,10 @@ INSTRUCTIONS = f"""You write the title and a one-sentence summary for a chart of
 ClinicalTrials.gov data.
 
 Rules:
-- Use {{placeholders}} from the fact sheet for every number and count. Never type a number \
-yourself, except years that appear in the facts.
+- Use {{placeholders}} for every number and count, written exactly as {{fact_name}} with a \
+name from "facts" (e.g. {{total}}, {{max_value}}). Never type a number yourself.
+- Summarise the main pattern (e.g. the largest category, or the trend); don't list every \
+category.
 - Only mention categories that appear in the chart labels or the facts.
 - Describe what the chart shows. No judgements about drugs, treatments or sponsors, and no \
 medical conclusions (never words like "effective", "safe", "best", "promising").
@@ -188,6 +190,8 @@ def check_text(
     if unknown:
         return [f"unknown placeholder {{{n}}}" for n in unknown]
     text = render(template, facts)
+    if "{" in text or "}" in text:
+        return [f"malformed placeholder in {template!r}: use {{name}} with a fact name only"]
     errors = []
     if len(text) > max_length:
         errors.append(f"too long ({len(text)} > {max_length} characters)")
