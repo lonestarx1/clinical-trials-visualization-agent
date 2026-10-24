@@ -1,10 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Answer } from "@/components/Answer";
 import { datumLabel, EvidenceDrawer } from "@/components/EvidenceDrawer";
+import { Logo } from "@/components/Logo";
 import { Notice } from "@/components/Notice";
 import { Progress } from "@/components/Progress";
+import { Question } from "@/components/Question";
 import { SearchBar } from "@/components/SearchBar";
 import { ThemePicker } from "@/components/ThemePicker";
 import { getJob, getOptions, type Options, postQuery } from "@/lib/api";
@@ -28,10 +31,16 @@ export default function Home() {
   const [recent, setRecent] = useState<string[]>([]);
   const { theme, selection, choose } = useTheme();
   const run = useRef(0);
+  const onHome = useRef(true);
+  useEffect(() => { onHome.current = view.kind === "home"; }, [view.kind]);
 
   const submit = useCallback(async (a: Ask) => {
     const id = ++run.current;
-    setAsked(a); setSelected(null); setView({ kind: "working", job: null });
+    const start = () => { setAsked(a); setSelected(null); setView({ kind: "working", job: null }); };
+    // The search box glides into place as the question header (where the browser supports it).
+    if (onHome.current && document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.startViewTransition(() => flushSync(start));
+    } else start();
     setRecent(rememberQuestion(a.query.trim()));
     const keep = new URLSearchParams(window.location.search);
     const d = keep.get("q") === a.query.trim() ? keep.get("d") : null;
@@ -99,14 +108,12 @@ export default function Home() {
     <div className="app">
       <header className="topbar">
         <button className="brand" onClick={goHome} aria-label="Clinical Trials Explorer, start over">
-          <span className="brand-mark" aria-hidden />Clinical Trials Explorer
+          <Logo />Clinical Trials Explorer
         </button>
-        {view.kind !== "home" && (
-          <div className="topbar-search">
-            <SearchBar value={ask} onChange={setAsk} onSubmit={submit} busy={busy} options={options} size="compact" />
-          </div>
-        )}
-        <div className="theme-slot"><ThemePicker selection={selection} onChoose={choose} /></div>
+        <div className="topbar-actions">
+          {view.kind !== "home" && <button className="ghost new-question" onClick={goHome}>New<span className="wide-only"> question</span></button>}
+          <ThemePicker selection={selection} onChoose={choose} />
+        </div>
       </header>
 
       {view.kind === "home" && (
@@ -134,27 +141,20 @@ export default function Home() {
         </main>
       )}
 
-      {view.kind === "working" && (
+      {view.kind !== "home" && asked && (
         <main className="page">
-          <p className="asked">{asked?.query}</p>
-          <Progress key={asked?.query} job={view.job} />
-          <div className="skeleton" aria-hidden><span /><span /><span /></div>
-        </main>
-      )}
-
-      {view.kind === "notice" && (
-        <main className="page">
-          <p className="asked">{asked?.query}</p>
-          <Notice response={view.response} error={view.error} onRetry={() => asked && submit(asked)} />
-        </main>
-      )}
-
-      {view.kind === "answer" && (
-        <main className="page">
-          <Answer response={view.response} theme={theme} onSelect={select}
-            onCopyLink={() => navigator.clipboard?.writeText(window.location.href)} />
-          <EvidenceDrawer datum={selected} resultId={view.response.result_id}
-            title={selected ? datumLabel(selected, labels) : ""} onClose={() => select(null)} />
+          <Question asked={asked} draft={ask} onDraft={setAsk} onSubmit={submit} busy={busy} options={options} />
+          {view.kind === "working" && <>
+            <Progress key={asked.query} job={view.job} />
+            <div className="skeleton" aria-hidden><span /><span /><span /></div>
+          </>}
+          {view.kind === "notice" && <Notice response={view.response} error={view.error} onRetry={() => submit(asked)} />}
+          {view.kind === "answer" && <>
+            <Answer response={view.response} theme={theme} onSelect={select}
+              onCopyLink={() => navigator.clipboard?.writeText(window.location.href)} />
+            <EvidenceDrawer datum={selected} resultId={view.response.result_id}
+              title={selected ? datumLabel(selected, labels) : ""} onClose={() => select(null)} />
+          </>}
         </main>
       )}
 
