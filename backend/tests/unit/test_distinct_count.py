@@ -124,3 +124,11 @@ def test_plan_needs_an_entity_to_count() -> None:
 def test_min_trials_is_bounded() -> None:
     with pytest.raises(ValidationError):
         plan(0)
+
+
+def test_narrator_facts_name_the_counted_entity() -> None:
+    from app.agents.narrator import fact_sheet
+
+    result = chart(plan(3))
+    facts = fact_sheet(plan(3), result.visualization, result.meta)
+    assert facts["measure"] == "lead sponsors with at least 3 trials"
