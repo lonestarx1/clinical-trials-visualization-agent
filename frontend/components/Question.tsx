@@ -42,7 +42,7 @@ export function Question({ asked, draft, onDraft, onSubmit, busy, options, fastS
       </div>
     );
   }
-  const filters = [...activeFilters(asked), ...(asked.mode === "fast" ? [{ key: "mode", label: "Fast mode" }] : [])];
+  const filters = activeFilters(asked);
   return (
     <div className="question">
       <button className="question-text" onClick={edit} title="Edit the question (press /)">
@@ -50,6 +50,13 @@ export function Question({ asked, draft, onDraft, onSubmit, busy, options, fastS
       </button>
       <div className="question-foot">
         {filters.length > 0 && <ul className="question-filters" aria-label="Filters applied">{filters.map((f) => <li key={f.key}>{f.label}</li>)}</ul>}
+        <div className="segmented question-mode" role="radiogroup" aria-label="Answer this question live or fast">
+          {(["live", "fast"] as const).map((m) => (
+            <button key={m} type="button" role="radio" aria-checked={asked.mode === m} className={asked.mode === m ? "on" : ""}
+              disabled={busy} title={m === "fast" ? "Ask again from our daily copy of ClinicalTrials.gov" : "Ask again straight from ClinicalTrials.gov"}
+              onClick={() => { if (asked.mode !== m) onSubmit({ ...asked, mode: m }); }}>{m === "live" ? "Live" : "Fast"}</button>
+          ))}
+        </div>
         <button className="ghost small-button" onClick={edit}>Edit question<kbd>/</kbd></button>
       </div>
     </div>
