@@ -216,25 +216,60 @@ def clean_drug_name(name: str) -> str:
     return normalise_name(name)
 
 
+_GENERIC = {
+    "therapy",
+    "drug",
+    "drugs",
+    "cell",
+    "cells",
+    "vaccine",
+    "plus",
+    "with",
+    "dose",
+    "recombinant",
+    "hydrochloride",
+    "sodium",
+    "injection",
+    "tablet",
+    "tablets",
+    "oral",
+}
+
+
+def _tokens(text: str) -> set[str]:
+    return {t for t in re.findall(r"[a-z0-9]+", text.lower()) if len(t) >= 4 and t not in _GENERIC}
+
+
 def _drugs(study: dict[str, Any]) -> list[Value]:
-    drug_entries = [
-        (path, item)
-        for path, item in _items(study, INTERVENTIONS)
-        if isinstance(item, dict) and item.get("type") in DRUG_TYPES
+    """One value per DRUG/BIOLOGICAL intervention (placebo skipped).
+
+    MeSH terms are listed per trial, not per intervention, and include non-drugs
+    (e.g. "Specimen Handling"). So each intervention takes the MeSH term that
+    shares a word with its name or other names; without one, its cleaned name.
+    """
+    mesh = [
+        (f"{path}.term", item["term"])
+        for path, item in _items(study, "derivedSection.interventionBrowseModule.meshes")
+        if isinstance(item, dict) and isinstance(item.get("term"), str)
     ]
-    if not drug_entries:
-        return []
-    mesh = _names("derivedSection.interventionBrowseModule.meshes", "term")(study)
-    if mesh:
-        return mesh
     found = []
-    for path, item in drug_entries:
-        name = item.get("name")
-        if not isinstance(name, str) or _PLACEBO.search(name):
+    for path, item in _items(study, INTERVENTIONS):
+        name = item.get("name") if isinstance(item, dict) else None
+        if item.get("type") not in DRUG_TYPES or not isinstance(name, str) or _PLACEBO.search(name):
             continue
-        key = clean_drug_name(name)
-        if key:
-            found.append(Value(key, " ".join(name.split()), (Evidence(f"{path}.name", name),)))
+        names = _tokens(" ".join([name, *(item.get("otherNames") or [])]))
+        overlap, term_path, term = max(
+            ((len(_tokens(t) & names), p, t) for p, t in mesh),
+            default=(0, "", ""),
+            key=lambda x: x[0],
+        )
+        name_evidence = Evidence(f"{path}.name", name)
+        if overlap:
+            found.append(
+                Value(normalise_name(term), term, (Evidence(term_path, term), name_evidence))
+            )
+        elif key := clean_drug_name(name):
+            found.append(Value(key, " ".join(name.split()), (name_evidence,)))
     return _distinct(found)
 
 
