@@ -13,8 +13,8 @@ const COPY: Record<string, { title: string; body: string }> = {
   invalid_request: { title: "Some filters aren't valid", body: "Check the years and filter values." },
 };
 
-export function Notice({ response, error, onRetry }: {
-  response?: QueryResponse | null; error?: ApiError["error"] | null; onRetry: () => void;
+export function Notice({ response, error, onRetry, onAsk }: {
+  response?: QueryResponse | null; error?: ApiError["error"] | null; onRetry: () => void; onAsk?: (q: string) => void;
 }) {
   const code = error?.code ?? response?.status ?? "";
   const copy = COPY[code] ?? { title: error?.message ?? "Something went wrong", body: "Ask again, or try one of the examples." };
@@ -27,7 +27,9 @@ export function Notice({ response, error, onRetry }: {
         <p className="muted small">Searches run: {details.search_counts.map((s: any) => `${s.group ?? "all"}: ${s.count}`).join(", ")}</p>
       )}
       <div className="notice-actions">
-        <button className="secondary" onClick={onRetry}>Ask again</button>
+        {details?.suggestion && onAsk
+          ? <button className="primary" onClick={() => onAsk(details.suggestion)}>Ask instead: {details.suggestion}</button>
+          : <button className="secondary" onClick={onRetry}>Ask again</button>}
         {error?.trace_id && <span className="muted small">Reference: <code>{error.trace_id}</code></span>}
       </div>
     </div>

@@ -19,6 +19,7 @@ def test_options_list_the_registry_with_labels() -> None:
         "trial_count",
         "total_enrollment",
         "median_enrollment",
+        "distinct_count",
     }
     assert {c["key"] for c in body["chart_types"]} >= {"bar_chart", "network_graph", "scatter_plot"}
     assert {"value": "RECRUITING", "label": "Recruiting"} in body["filters"]["status"]

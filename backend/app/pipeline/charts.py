@@ -12,9 +12,10 @@ from dataclasses import dataclass, field
 from itertools import combinations
 from typing import Any, Literal
 
+from app.ctgov.retrieval import YearCounts
 from app.pipeline.aggregate import NOT_REPORTED, Bucket, Grouping, group, nct_id, year_range
-from app.pipeline.citations import sample_citations
-from app.pipeline.extract import Evidence, extract_number
+from app.pipeline.citations import citation, ordered_trials, sample_citations
+from app.pipeline.extract import Evidence, extract, extract_number
 from app.pipeline.networks import build_network
 from app.registry import DIMENSIONS, MEASURES, ChartType, Dimension, DimensionKind, Intent
 from app.registry.enums import Phase
@@ -55,9 +56,47 @@ class Measured:
     evidence: dict[str, tuple[Evidence, ...]]  # contributing trials -> evidence
 
 
-def _measure(bucket: Bucket, measure: str, studies: dict[str, dict[str, Any]]) -> Measured:
+ENROLLMENT_MEASURES = {"total_enrollment", "median_enrollment"}
+
+
+def measure_text(plan: QueryPlan) -> tuple[str, str]:
+    """(label, unit) of the plan's measure; distinct_count names its entity and threshold."""
+    entity = plan.options.count_entity
+    if plan.measure != "distinct_count" or entity is None:
+        m = MEASURES[plan.measure]
+        return m.label, m.unit
+    plural = _plural(DIMENSIONS[entity]).lower()
+    least = plan.options.min_trials or 1
+    if least == 1:
+        return f"Number of {plural}", plural
+    return f"{plural[:1].upper()}{plural[1:]} with at least {least} trials", plural
+
+
+def _distinct(bucket: Bucket, plan: QueryPlan, studies: dict[str, dict[str, Any]]) -> Measured:
+    """Entities with at least min_trials of the bucket's trials; evidence = those trials."""
+    entity, least = plan.options.count_entity or "", plan.options.min_trials or 1
+    trials_of: dict[str, dict[str, tuple[Evidence, ...]]] = {}
+    for i, evidence in bucket.trials.items():
+        for value in extract(
+            studies[i], entity, condition_source=plan.options.condition_source or "mesh"
+        ):
+            trials_of.setdefault(value.key, {})[i] = evidence + value.evidence
+    kept = [trials for trials in trials_of.values() if len(trials) >= least]
+    evidence_by_trial: dict[str, tuple[Evidence, ...]] = {}
+    for trials in kept:
+        for i, evidence in trials.items():
+            evidence_by_trial[i] = evidence_by_trial.get(i, ()) + tuple(
+                e for e in evidence if e not in evidence_by_trial.get(i, ())
+            )
+    return Measured(len(kept), evidence_by_trial)
+
+
+def _measure(bucket: Bucket, plan: QueryPlan, studies: dict[str, dict[str, Any]]) -> Measured:
+    measure = plan.measure
     if measure == "trial_count":
         return Measured(len(bucket.trials), dict(bucket.trials))
+    if measure == "distinct_count":
+        return _distinct(bucket, plan, studies)
     numbers = {i: extract_number(studies[i], "enrollment") for i in bucket.trials}
     known = {i: n for i, n in numbers.items() if n is not None}
     values = [n.value for n in known.values()]
@@ -146,9 +185,9 @@ def _x_channel(dim: Dimension, sort: Sort) -> Channel:
     return Channel(field=dim.key, type=kind, label=dim.label, sort=order)
 
 
-def _y_channel(measure: str) -> Channel:
-    m = MEASURES[measure]
-    return Channel(field=m.key, type="quantitative", label=m.label, unit=m.unit)
+def _y_channel(plan: QueryPlan) -> Channel:
+    label, unit = measure_text(plan)
+    return Channel(field=plan.measure, type="quantitative", label=label, unit=unit)
 
 
 # ---------- builders ----------
@@ -248,7 +287,7 @@ def _bars(
         (label, group(members, dim, plan, years=years)) for label, members in groups
     ]
     measured = {
-        (label, key): _measure(bucket, measure, studies)
+        (label, key): _measure(bucket, plan, studies)
         for label, g in groupings
         for key, bucket in g.buckets.items()
     }
@@ -280,12 +319,12 @@ def _bars(
     excluded: Counter[str] = Counter()
     for _, g in groupings:
         excluded.update(g.excluded)
-    if measure != "trial_count":
+    if measure in ENROLLMENT_MEASURES:
         missing = _no_enrollment(placed, studies)
         if missing:
             excluded["no enrollment reported"] += missing
 
-    encoding = {"x": _x_channel(dim, sort), "y": _y_channel(measure)}
+    encoding = {"x": _x_channel(dim, sort), "y": _y_channel(plan)}
     if comparison:
         encoding["color"] = Channel(
             field=color_field, type="nominal", label=series.label if series else "Group"
@@ -311,8 +350,10 @@ def _bars(
         data=rows,
     )
     meta = ChartMeta(
-        counting_rule=dim.counting_rule,
-        additive=not dim.multi_valued and plan.options.phase_mode != "split",
+        counting_rule=_distinct_rule(plan, f"each {dim.label.lower()}") or dim.counting_rule,
+        additive=not dim.multi_valued
+        and plan.options.phase_mode != "split"
+        and plan.measure != "distinct_count",
         unique_trials=len(placed),
         excluded=[Excluded(reason=r, count=c) for r, c in excluded.items()],
         sort=sort,
@@ -320,6 +361,62 @@ def _bars(
         group_overlap=overlap,
     )
     return ChartResult(viz, meta)
+
+
+def counted_time_series(
+    plan: QueryPlan,
+    counts: YearCounts,
+    samples: dict[int, list[dict[str, Any]]],
+    limit: int,
+    search_urls: dict[int, str] | None = None,
+) -> ChartResult:
+    """Trials per year from count calls; each year cites a sample of its most recent trials.
+
+    `search_urls` (year -> API search) lets a reader open every trial of a year.
+    """
+    assert plan.dimension is not None
+    dim = DIMENSIONS[plan.dimension]
+    totals = {str(y): float(n) for y, n in counts.years.items()}
+    keys, sort, notes = _sorted_keys(dim, plan, totals, {k: k for k in totals})
+    result_citations: dict[str, list[dict[str, Any]]] = {}
+    rows = []
+    for key in keys:
+        year, n = int(key), counts.years[int(key)]
+        by_id = {nct_id(s): s for s in samples.get(year, [])}
+        evidence = {
+            i: values[0].evidence
+            for i, s in by_id.items()
+            if (values := extract(s, dim.key)) and values[0].key == key
+        }
+        cited = [citation(by_id[i], evidence[i]) for i in ordered_trials(evidence, by_id)][:limit]
+        result_citations[key] = cited
+        rows.append(
+            {
+                "key": key,
+                dim.key: key,
+                "trial_count": n,
+                "estimated_count": counts.estimated[year],
+                "citation_count": n,
+                "citations": cited,
+                "citations_truncated": n > len(cited),
+            }
+            | ({"search_url": search_urls[year]} if search_urls else {})
+        )
+    viz = Visualization(
+        type=ChartType.TIME_SERIES,
+        title=_title(plan, dim),
+        summary=_summary(rows, dim, "trial_count", counts.within),
+        encoding={"x": _x_channel(dim, sort), "y": _y_channel(plan)},
+        data=rows,
+    )
+    meta = ChartMeta(
+        counting_rule=dim.counting_rule,
+        additive=True,
+        unique_trials=counts.within,
+        sort=sort,
+        notes=notes,
+    )
+    return ChartResult(viz, meta, result_citations)
 
 
 def _nice_width(raw: float) -> float:
@@ -447,34 +544,29 @@ def _metric(
     every = Bucket("all", "Matching trials")
     for i, study in studies.items():
         every.trials[i] = (Evidence("protocolSection.identificationModule.nctId", nct_id(study)),)
-    m = _measure(every, plan.measure, studies)
-    measure = MEASURES[plan.measure]
-    row = {"key": "all", "value": m.value, "label": measure.label} | sample_citations(
+    m = _measure(every, plan, studies)
+    label, unit = measure_text(plan)
+    row = {"key": "all", "value": m.value, "label": label} | sample_citations(
         m.evidence, studies, limit
     )
     excluded = []
-    if plan.measure != "trial_count":
+    if plan.measure in ENROLLMENT_MEASURES:
         missing = _no_enrollment(set(studies), studies)
         if missing:
             excluded.append(Excluded(reason="no enrollment reported", count=missing))
     viz = Visualization(
         type=ChartType.METRIC,
-        title=measure.label + " in matching trials"
-        if plan.measure != "trial_count"
-        else "Matching trials",
-        summary=f"{m.value:g} {measure.unit}.",
-        encoding={
-            "value": Channel(
-                field="value", type="quantitative", label=measure.label, unit=measure.unit
-            )
-        },
+        title=label + " in matching trials" if plan.measure != "trial_count" else "Matching trials",
+        summary=f"{m.value:g} {unit}.",
+        encoding={"value": Channel(field="value", type="quantitative", label=label, unit=unit)},
         data=[row],
     )
     return ChartResult(
         viz,
         ChartMeta(
-            counting_rule="Each matching trial is counted once.",
-            additive=True,
+            counting_rule=_distinct_rule(plan, "the matching trials")
+            or "Each matching trial is counted once.",
+            additive=plan.measure != "distinct_count",
             unique_trials=len(studies),
             excluded=excluded,
         ),
@@ -484,8 +576,19 @@ def _metric(
 # ---------- templates (narrator fallback) ----------
 
 
+def _distinct_rule(plan: QueryPlan, where: str) -> str | None:
+    if plan.measure != "distinct_count" or plan.options.count_entity is None:
+        return None
+    _, plural = measure_text(plan)
+    least = plan.options.min_trials or 1
+    return (
+        f"Each value is the number of distinct {plural} with at least {least} matching "
+        f"trial{'s' if least > 1 else ''} in {where}; their trials are the citations."
+    )
+
+
 def _title(plan: QueryPlan, dim: Dimension) -> str:
-    measure = MEASURES[plan.measure].label
+    measure = measure_text(plan)[0]
     if dim.kind is DimensionKind.TIME:
         title = f"{measure} per {dim.label.lower()}"
     else:

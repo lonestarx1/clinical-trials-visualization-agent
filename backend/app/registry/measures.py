@@ -25,5 +25,8 @@ MEASURES: dict[str, Measure] = {
             "participants",
             ("EnrollmentCount", "EnrollmentType"),
         ),
+        # Distinct entities (options.count_entity) with at least options.min_trials trials.
+        # Its fields are the counted entity's fields.
+        Measure("distinct_count", "Number of distinct entities", "entities", ()),
     ]
 }

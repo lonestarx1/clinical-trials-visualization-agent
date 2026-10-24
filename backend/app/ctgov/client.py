@@ -181,6 +181,16 @@ class CtgovClient:
             )
         return FetchResult(list(studies.values()), total)
 
+    async def first_page(
+        self, search: Search, fields: Sequence[str], size: int, sort: str | None = None
+    ) -> list[dict[str, Any]]:
+        """The first `size` matching studies (sample citations), optionally sorted."""
+        params = search.params | {"fields": ",".join(fields), "pageSize": str(size)}
+        if sort:
+            params["sort"] = sort
+        body = await self._get("/studies", params)
+        return list(body.get("studies", []))
+
     async def version(self) -> VersionInfo:
         """API version and data timestamp, cached for `version_ttl` seconds."""
         now = self._clock.monotonic()

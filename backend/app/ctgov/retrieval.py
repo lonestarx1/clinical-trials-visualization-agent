@@ -6,8 +6,8 @@ from typing import Protocol
 
 from app.ctgov.client import InconsistentResults
 from app.ctgov.compiler import Search
-from app.ctgov.essie import Area, Code, Missing
-from app.registry import BASE_FIELDS, DIMENSIONS, MEASURES, Dimension
+from app.ctgov.essie import Area, Code, Missing, Range
+from app.registry import BASE_FIELDS, DIMENSIONS, MEASURES, Dimension, DimensionKind
 from app.schemas.plan import QueryPlan
 
 
@@ -22,6 +22,8 @@ def fields_for(plan: QueryPlan) -> list[str]:
         if key:
             pieces += DIMENSIONS[key].fields
     pieces += MEASURES[plan.measure].fields
+    if plan.options.count_entity:
+        pieces += DIMENSIONS[plan.options.count_entity].fields
     return list(dict.fromkeys(pieces))
 
 
@@ -56,3 +58,47 @@ async def count_per_bucket(counter: Counter, search: Search, dimension: Dimensio
             f"but the total is {total}"
         )
     return BucketCounts(total, buckets, missing)
+
+
+# Date fields whose value can be an estimate, by time dimension.
+DATE_TYPE_PIECE = {"start_year": "StartDateType"}
+
+
+@dataclass(frozen=True)
+class YearCounts:
+    within: int  # trials dated anywhere in the span
+    years: dict[int, int]  # year -> trials dated that year
+    estimated: dict[int, int]  # year -> of those, trials whose date is an estimate
+
+
+def _years(lo: int, hi: int) -> Range:
+    return Range(f"{lo}-01-01", f"{hi}-12-31")
+
+
+async def count_per_year(
+    counter: Counter, search: Search, dimension: Dimension, span: tuple[int, int]
+) -> YearCounts:
+    """Strategy S2 for a time dimension: one count per year (and per year with an estimated date).
+
+    Exact without downloading trials. The years must add up to the count for the whole span.
+    """
+    if dimension.kind is not DimensionKind.TIME or dimension.filter_piece is None:
+        raise ValueError(f"{dimension.key} is not a time dimension")
+    piece, (lo, hi) = dimension.filter_piece, span
+    years = list(range(lo, hi + 1))
+    per_year = [search.narrow(Area(piece, _years(y, y))) for y in years]
+    type_piece = DATE_TYPE_PIECE.get(dimension.key)
+    estimated_searches = (
+        [s.narrow(Area(type_piece, Code("ESTIMATED"))) for s in per_year] if type_piece else []
+    )
+    within, *counts = await asyncio.gather(
+        counter.count(search.narrow(Area(piece, _years(lo, hi)))),
+        *(counter.count(s) for s in [*per_year, *estimated_searches]),
+    )
+    by_year = dict(zip(years, counts[: len(years)], strict=True))
+    estimated = dict(zip(years, counts[len(years) :] or [0] * len(years), strict=True))
+    if sum(by_year.values()) != within:
+        raise InconsistentResults(
+            f"{dimension.key} years add up to {sum(by_year.values())}, but the span has {within}"
+        )
+    return YearCounts(within, by_year, estimated)

@@ -18,8 +18,8 @@ from pydantic import BaseModel, ValidationError
 from app.ctgov.countries import CANONICAL as COUNTRIES
 from app.llm.client import LLM, LLMUnavailable
 from app.pipeline.aggregate import NOT_REPORTED_LABEL
-from app.pipeline.charts import ChartMeta
-from app.registry import DIMENSIONS, MEASURES, ChartType
+from app.pipeline.charts import ChartMeta, measure_text
+from app.registry import DIMENSIONS, ChartType
 from app.registry.enums import Phase, Status
 from app.schemas.plan import QueryPlan
 from app.schemas.response import Visualization
@@ -136,10 +136,13 @@ def _without_source(title: str) -> str:
 def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str, str]:
     facts = {
         "total": _fmt(meta.unique_trials),
-        "measure": MEASURES[plan.measure].label.lower(),
+        "measure": measure_text(plan)[0].lower(),
         "dimension": DIMENSIONS[plan.dimension].label.lower() if plan.dimension else "",
         "scope": _scope(plan),
     }
+    if plan.measure == "distinct_count":
+        facts["entity"] = measure_text(plan)[1]
+        facts["min_trials"] = str(plan.options.min_trials or 1)
     if isinstance(viz.data, dict):  # network
         nodes, edges = viz.data["nodes"], viz.data["edges"]
         names = {n["id"]: n["label"] for n in nodes}
@@ -267,6 +270,14 @@ def check_text(
             errors.append(f"number {number} is not a fact; use a placeholder")
 
     errors += [f"banned word '{m.lower()}'" for m in _BANNED.findall(text)]  # V8
+    words = re.findall(r"\w+", text.lower())
+    seen: set[tuple[str, ...]] = set()
+    for i in range(len(words) - 2):  # e.g. a placeholder wrapped in its own words
+        trigram = tuple(words[i : i + 3])
+        if trigram in seen:
+            errors.append(f"repeats '{' '.join(trigram)}': check how placeholders read")
+            break
+        seen.add(trigram)
     return errors
 
 

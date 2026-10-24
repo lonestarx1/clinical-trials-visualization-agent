@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getCitations } from "@/lib/api";
+import { fullListUrl } from "@/lib/evidence";
 import type { Citation, Datum } from "@/lib/types";
 
 export function datumLabel(d: Datum, labels: Map<string, string>): string {
@@ -45,7 +46,8 @@ export function EvidenceDrawer({ datum, title, resultId, onClose }: {
 
   if (!datum) return null;
   const total = datum.citation_count;
-  const more = loadedAll ? cursor !== null : datum.citations_truncated;
+  const searchUrl = fullListUrl(datum);
+  const more = !searchUrl && (loadedAll ? cursor !== null : datum.citations_truncated);
 
   async function load() {
     if (!resultId || !datum) return;
@@ -102,6 +104,12 @@ export function EvidenceDrawer({ datum, title, resultId, onClose }: {
           <button className="secondary wide" onClick={load} disabled={loading}>
             {loading ? "Loading…" : loadedAll ? "Load more" : `Show all ${total.toLocaleString()} trials`}
           </button>
+        )}
+        {searchUrl && (
+          <p className="muted">
+            Showing the {datum.citations.length} most recent of {total.toLocaleString()} trials.{" "}
+            <a href={searchUrl} target="_blank" rel="noreferrer">See all of them in the ClinicalTrials.gov API</a>.
+          </p>
         )}
         {error && <p className="error-text">{error}</p>}
         <p className="muted small drawer-foot">

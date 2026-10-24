@@ -148,7 +148,7 @@ export default function Home() {
             <Progress key={asked.query} job={view.job} />
             <div className="skeleton" aria-hidden><span /><span /><span /></div>
           </>}
-          {view.kind === "notice" && <Notice response={view.response} error={view.error} onRetry={() => submit(asked)} />}
+          {view.kind === "notice" && <Notice response={view.response} error={view.error} onRetry={() => submit(asked)} onAsk={pick} />}
           {view.kind === "answer" && <>
             <Answer response={view.response} theme={theme} onSelect={select}
               onCopyLink={() => navigator.clipboard?.writeText(window.location.href)} />
