@@ -86,9 +86,11 @@ Quote the `trace_id` when reporting a problem.
   (`MAX_ACTIVE_JOBS_PER_IP`); another broad question gets `429 too_many_requests`.
   Asking the same question again while its job is active returns the same job.
 - **Daily AI budget:** every guard, planner and narrator call is costed. Once today's spend
-  (UTC day) reaches the cap (USD 100 by default, `LLM_DAILY_BUDGET_USD`), `POST /v1/query`
-  returns `503 budget_exceeded` until midnight UTC. Stored results stay readable through
-  the jobs and citations endpoints. `meta.usage` reports each answer's calls and cost.
+  (UTC day) reaches the cap (USD 100 by default, `LLM_DAILY_BUDGET_USD`), a question that
+  needs a model call gets `503 budget_exceeded` until midnight UTC. An exact repeat of a
+  question whose stored answer is still valid is still answered, with no model call (not
+  even the guard: it passed the first time). Jobs, citations and options keep working.
+  `meta.usage` reports each answer's calls and cost.
 - **ClinicalTrials.gov:** the API calls it at most about 40 times per minute for all users
   together, which is why broad questions run as background jobs.
 
@@ -256,7 +258,7 @@ QUERY_RESPONSES: dict[int | str, dict[str, Any]] = {
     500: INTERNAL,
     503: errors(
         "A dependency or the daily budget stops the answer. Retry later; `budget_exceeded` "
-        "lasts until midnight UTC.",
+        "lasts until midnight UTC, but cached answers are still served meanwhile.",
         budget_exceeded=("Today's AI budget is used up", _public(BudgetExceeded())),
         **UPSTREAM,
         llm_unavailable=("The AI model and its fallback are failing", _public(LLMUnavailable())),

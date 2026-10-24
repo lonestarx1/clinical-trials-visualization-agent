@@ -192,6 +192,50 @@ async def _record_usage(
         await s.commit()
 
 
+def _context(
+    planned: PlannerResult, guard: dict[str, Any], plan_hit: bool, trace_id: str
+) -> Context:
+    return Context(
+        guard=guard,
+        planner={"steps": planned.steps, "tool_calls": planned.tool_calls, "model": planned.model},
+        warnings=planned.warnings,
+        chart_type_source=planned.chart_type_source,
+        cache={"plan": "hit" if plan_hit else "miss"},
+        trace_id=trace_id,
+    )
+
+
+async def _answer_without_models(
+    request: QueryRequest,
+    cached: PlannerResult | None,
+    ctgov: CtgovClient,
+    llms: StageLLMs,
+    settings: Settings,
+    sessions: Sessions,
+) -> QueryResponse:
+    """Today's AI budget is spent: answer only what needs no model call, else 503 (Q16).
+
+    That is a stored plan plus a stored result that is still valid or revalidates (Q8).
+    The guard is not called either. This is safe: a plan is cached only after the guard
+    passed the request, and the plan-cache key covers the question and every field except
+    `citations` and `citations_per_datum` (a choice and a number, which can't carry an
+    attack). So an exact repeat of a guarded request is all that can get through here.
+    Anything else (a new question, or a result that would have to be narrated again)
+    needs a model and is refused.
+    """
+    if cached is None or cached.plan is None:
+        raise BudgetExceeded
+    key = result_key(cached.plan, request.citations_per_datum, request.citations)
+    reused = await _reuse(sessions, key, ctgov, settings)
+    if reused is None:
+        raise BudgetExceeded
+    stored, how = reused
+    guard = {"verdict": "ok", "model": None, "cached": True}
+    ctx = _context(cached, guard, True, str(uuid.uuid4()))
+    ctx.cache["result"] = how
+    return _finish(QueryResponse.model_validate(stored), ctx, llms)
+
+
 async def handle_query(
     request: QueryRequest,
     *,
@@ -205,14 +249,17 @@ async def handle_query(
     trace_id = str(uuid.uuid4())
     rkey = request_key(request, settings)
     cached: PlannerResult | None = None
+    over_budget = False
     if sessions is not None:
         async with sessions() as s:
-            if await usage.spent_today(s) >= Decimal(str(settings.llm_daily_budget_usd)):
-                raise BudgetExceeded
+            over_budget = await usage.spent_today(s) >= Decimal(str(settings.llm_daily_budget_usd))
             row = await plans.get(s, rkey)
             await s.commit()
         if row is not None:
             cached = PlannerResult(plan=QueryPlan.model_validate(row.plan), **row.planner_trace)
+    if over_budget:
+        assert sessions is not None
+        return await _answer_without_models(request, cached, ctgov, llms, settings, sessions)
 
     guard_task = asyncio.create_task(check_request(llms.guard, request))
     plan_task = (
@@ -236,13 +283,8 @@ async def handle_query(
         raise RejectedByPolicy
     planned = cached or await plan_task  # type: ignore[misc]
 
-    ctx = Context(
-        guard={"verdict": verdict.verdict, "model": verdict.model},
-        planner={"steps": planned.steps, "tool_calls": planned.tool_calls, "model": planned.model},
-        warnings=planned.warnings,
-        chart_type_source=planned.chart_type_source,
-        cache={"plan": "hit" if cached else "miss"},
-        trace_id=trace_id,
+    ctx = _context(
+        planned, {"verdict": verdict.verdict, "model": verdict.model}, cached is not None, trace_id
     )
     if planned.plan is None or planned.plan.scope == "out_of_scope":
         await _record_usage(sessions, llms, trace_id, None, price_version)

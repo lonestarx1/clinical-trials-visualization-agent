@@ -191,5 +191,7 @@ class UsageSummary(BaseModel):
         examples=[{"gpt-5.4-nano": {"calls": 260, "cost_usd": 0.104}}],
     )
     budget_usd: float = Field(
-        description="Daily budget; at it, questions get 503 `budget_exceeded`.", examples=[100.0]
+        description="Daily budget; at it, questions that need a model call get 503 "
+        "`budget_exceeded` (cached answers are still served).",
+        examples=[100.0],
     )

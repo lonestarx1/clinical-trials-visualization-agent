@@ -252,7 +252,9 @@ class Meta(BaseModel):
     source: str = Field(default="clinicaltrials.gov", description="Data source.")
     guard: dict[str, Any] | None = Field(
         default=None,
-        description="Input guard verdict and model.",
+        description="Input guard verdict and model. `cached: true` (model null) when the "
+        "daily AI budget is spent and an exact repeat of an already-guarded request was "
+        "answered from cache without calling the guard.",
         examples=[{"verdict": "ok", "model": "gpt-5.4-nano"}],
     )
     planner: dict[str, Any] | None = Field(
