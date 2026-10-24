@@ -1,10 +1,16 @@
 import uuid
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.deps import get_sessions, get_settings
+from app.api.openapi import (
+    CITATION_RESPONSES,
+    JOB_RESPONSES,
+    OPTIONS_RESPONSES,
+    USAGE_RESPONSES,
+)
 from app.core.config import Settings
 from app.ctgov.countries import CANONICAL
 from app.registry import DIMENSIONS, MEASURES, ChartType
@@ -13,7 +19,7 @@ from app.store import jobs, results, usage
 from app.store.models import Result
 from app.store.results import NotFound
 
-router = APIRouter(prefix="/v1", tags=["results"])
+router = APIRouter(prefix="/v1")
 Sessions = Annotated[async_sessionmaker[AsyncSession] | None, Depends(get_sessions)]
 
 
@@ -23,15 +29,29 @@ def _need(sessions: async_sessionmaker[AsyncSession] | None) -> async_sessionmak
     return sessions
 
 
-@router.get("/results/{result_id}/citations")
+@router.get(
+    "/results/{result_id}/citations",
+    response_model=None,  # the body is a dict; CitationPage documents it
+    tags=["citations"],
+    summary="List every trial behind one data point",
+    description="Every trial that contributes to one data point (bar, bucket, node, edge...) "
+    "of a stored result, in the same order as its inline citations, keyset-paginated. Use "
+    "the response's `result_id` and the data point's `key`; follow `next_cursor` until it "
+    "is null. Each citation has the `evidence`: the trial record fields that place it in "
+    "the data point. Results are kept for 24 hours.",
+    responses=CITATION_RESPONSES,
+)
 async def citations(
-    result_id: uuid.UUID,
+    result_id: Annotated[uuid.UUID, Path(description="`result_id` from the query response.")],
     sessions: Sessions,
-    datum: Annotated[str, Query(description="The data point's `key`")],
+    datum: Annotated[
+        str, Query(description="The data point's `key`, e.g. `PHASE2` or `drug:nivolumab`.")
+    ],
     cursor: Annotated[
-        int | None, Query(ge=0, description="`next_cursor` from the previous page")
+        int | None,
+        Query(ge=0, description="`next_cursor` from the previous page; omit for the first."),
     ] = None,
-    page_size: Annotated[int, Query(ge=1, le=100)] = 50,
+    page_size: Annotated[int, Query(ge=1, le=100, description="Citations per page.")] = 50,
 ) -> dict[str, Any]:
     """Every trial behind one data point, in citation order, paginated (design Q14)."""
     async with _need(sessions)() as s:
@@ -46,8 +66,22 @@ async def citations(
     }
 
 
-@router.get("/jobs/{job_id}")
-async def job_status(job_id: uuid.UUID, sessions: Sessions) -> dict[str, Any]:
+@router.get(
+    "/jobs/{job_id}",
+    response_model=None,  # the body is a dict; JobStatus documents it
+    tags=["jobs"],
+    summary="Poll a background job",
+    description="Status of the background job started by a broad question (`202` from "
+    "`POST /v1/query`). Poll every few seconds: `pending` and `running` report `progress` "
+    "in ClinicalTrials.gov pages; `succeeded` carries the normal query response in "
+    "`result`; `failed` carries the shared error body in `error`. A job that crashed is "
+    "retried before it is marked failed.",
+    responses=JOB_RESPONSES,
+)
+async def job_status(
+    job_id: Annotated[uuid.UUID, Path(description="`job_id` from the 202 response.")],
+    sessions: Sessions,
+) -> dict[str, Any]:
     """Poll a background job (design Q6)."""
     async with _need(sessions)() as s:
         job = await jobs.get(s, job_id)
@@ -67,7 +101,17 @@ async def job_status(job_id: uuid.UUID, sessions: Sessions) -> dict[str, Any]:
     }
 
 
-@router.get("/options")
+@router.get(
+    "/options",
+    response_model=None,  # the body is a dict; Options documents it
+    tags=["options"],
+    summary="List dimensions, measures, chart types and filter values",
+    description="The registry the planner works from, so a client can build pickers: "
+    "dimensions (what data can be grouped by, with their counting rules and, for "
+    "categorical ones, their values and labels), measures, chart types, and the values the "
+    "`trial_phase`, `status` and `country` fields accept.",
+    responses=OPTIONS_RESPONSES,
+)
 async def options() -> dict[str, Any]:
     """The registry, so a frontend can build pickers: dimensions, measures, chart types, filters."""
     return {
@@ -94,11 +138,20 @@ async def options() -> dict[str, Any]:
     }
 
 
-@router.get("/usage")
+@router.get(
+    "/usage",
+    response_model=None,  # the body is a dict; UsageSummary documents it
+    tags=["admin"],
+    summary="Today's AI usage and cost",
+    description="AI calls and cost so far today (UTC day), per model, with the daily budget. "
+    "Needs `Authorization: Bearer <ADMIN_TOKEN>`; without `ADMIN_TOKEN` configured the "
+    "endpoint always answers 401.",
+    responses=USAGE_RESPONSES,
+)
 async def usage_today(
     sessions: Sessions,
     settings: Annotated[Settings, Depends(get_settings)],
-    authorization: Annotated[str | None, Header()] = None,
+    authorization: Annotated[str | None, Header(description="`Bearer <ADMIN_TOKEN>`.")] = None,
 ) -> dict[str, Any]:
     """Today's LLM calls and cost (admin token required)."""
     token = settings.admin_token.get_secret_value() if settings.admin_token else None

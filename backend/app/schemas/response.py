@@ -81,12 +81,14 @@ class Visualization(BaseModel):
                     "citation_count": 3546,
                     "citations": [
                         {
-                            "nct_id": "NCT04430595",
-                            "url": "https://clinicaltrials.gov/study/NCT04430595",
-                            "title": "Multi-4SCAR-T Therapy Targeting Breast Cancer",
+                            "nct_id": "NCT07729046",
+                            "url": "https://clinicaltrials.gov/study/NCT07729046",
+                            "title": "Neu Direction: Testing the Efficacy of Adding HER "
+                            "Inhibition to Standard of Care in Metastatic MLH1-low "
+                            "Endocrine-resistant ER+/HER2- Breast Cancer",
                             "evidence": [
                                 {
-                                    "field": "protocolSection.designModule.phases[1]",
+                                    "field": "protocolSection.designModule.phases[0]",
                                     "excerpt": "PHASE2",
                                 }
                             ],

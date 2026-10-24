@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, Field
 
+from app.api.openapi import HEALTH_RESPONSES
 from app.ctgov.client import CtgovClient, CtgovError, VersionInfo
 from app.store.db import check_database
 
@@ -51,7 +52,16 @@ def get_data_version(request: Request) -> DataVersion:
     return ctgov.version if ctgov is not None else _no_version
 
 
-@router.get("/health", response_model=Health, responses={503: {"model": Health}})
+@router.get(
+    "/health",
+    response_model=Health,
+    summary="Liveness and readiness",
+    description="Checks the database and ClinicalTrials.gov and reports the "
+    "ClinicalTrials.gov data version. Only the database decides the status (503 when it is "
+    "unreachable); a ClinicalTrials.gov outage is reported in `checks`, and questions then "
+    "fail with `503 upstream_unavailable`. Not rate limited.",
+    responses={**HEALTH_RESPONSES, 503: HEALTH_RESPONSES[503] | {"model": Health}},
+)
 async def health(
     response: Response,
     database_check: Annotated[DatabaseCheck, Depends(get_database_check)],

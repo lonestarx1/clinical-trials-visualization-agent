@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from app.api import debug, health, query, results
 from app.api.deps import openai_factory
 from app.api.errors import install_error_handlers
-from app.api.openapi import DESCRIPTION, SERVERS, TAGS
+from app.api.openapi import DESCRIPTION, SERVERS, TAGS, install_openapi
 from app.api.ratelimit import RateLimitMiddleware
 from app.core.config import Settings
 from app.core.logging import configure_logging
@@ -84,4 +84,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     if settings.enable_debug_endpoints:
         app.include_router(debug.router)
     install_error_handlers(app)
+    install_openapi(app)
     return app
