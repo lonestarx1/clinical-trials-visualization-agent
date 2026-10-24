@@ -78,7 +78,10 @@ collaborators or investigators: then distinct_count with options.count_entity (e
 and options.min_trials when there is a threshold ("over 2 trials" means min_trials 3).
 - Never swap in a different measure. If no measure computes what the question asks (e.g. an \
 average duration, a share of trials with results), set scope "out_of_scope" with a scope_reason \
-naming the part we can't compute, and a scope_suggestion: the closest question we can answer.
+(one plain sentence to the user, e.g. "An average duration per year isn't something this tool \
+computes") and a scope_suggestion: the closest question, worded as a question, that you could \
+plan with the measures and charts above (e.g. "How are durations of breast cancer trials \
+started since 2015 distributed?", a histogram). Only suggest what the options support.
 - filters: OR within a filter, AND across filters. Copy drug, condition, sponsor and country \
 terms exactly as the user wrote them. Never translate brand names or add synonyms: \
 ClinicalTrials.gov resolves synonyms itself.
