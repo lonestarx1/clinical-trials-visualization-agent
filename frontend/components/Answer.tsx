@@ -5,6 +5,7 @@ import { Chart, type ChartHandle } from "@/components/Chart";
 import { DataTable } from "@/components/DataTable";
 import type { Theme } from "@/lib/theme";
 import type { Datum, QueryResponse } from "@/lib/types";
+import { sourceLabel } from "@/lib/mode";
 
 const n = (v: number) => v.toLocaleString("en-US");
 
@@ -48,7 +49,8 @@ export function Answer({ response, theme, onSelect, onCopyLink }: {
         <h1>{viz.title}</h1>
         <p className="facts">
           <span>{n(m.unique_trials ?? 0)} trials</span>
-          {m.data_timestamp && <span>Registry data of {new Date(m.data_timestamp + "Z").toLocaleDateString("en-US", { dateStyle: "medium" })}</span>}
+          <span className={`source source-${m.data_source ?? "live"}`}>{sourceLabel(m)}</span>
+          {m.data_timestamp && m.data_source !== "fast" && <span>Registry data of {new Date(m.data_timestamp + "Z").toLocaleDateString("en-US", { dateStyle: "medium" })}</span>}
           {m.cache?.result === "hit" && <span>Saved answer, still current</span>}
         </p>
       </header>

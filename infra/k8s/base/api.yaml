@@ -68,6 +68,9 @@ spec:
             # sync runs in this pod under the shared ClinicalTrials.gov limiter, at half its budget.
             - name: MIRROR_SYNC_ENABLED
               value: "true"
+            # Fast mode: `mode: "fast"` answers from the mirror once its checks pass, else live.
+            - name: FAST_MODE_ENABLED
+              value: "true"
           readinessProbe:
             httpGet:
               path: /health

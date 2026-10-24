@@ -1,5 +1,7 @@
 // What the user asked: the question plus optional structured fields (design Q5).
 
+import type { Mode } from "./mode";
+
 export interface Ask {
   query: string;
   drug_name: string;
@@ -11,11 +13,12 @@ export interface Ask {
   start_year: string;
   end_year: string;
   chart_type: string;
+  mode: Mode; // live (default) or fast (design Q22)
 }
 
 export const EMPTY_ASK: Ask = {
   query: "", drug_name: "", condition: "", sponsor: "", country: "", trial_phase: [], status: [],
-  start_year: "", end_year: "", chart_type: "",
+  start_year: "", end_year: "", chart_type: "", mode: "live",
 };
 
 export const CITATIONS_INLINE = 5;
@@ -33,6 +36,7 @@ export function toRequestBody(a: Ask): Record<string, unknown> {
   if (a.start_year) body.start_year = Number(a.start_year);
   if (a.end_year) body.end_year = Number(a.end_year);
   if (a.chart_type) body.chart_type = a.chart_type;
+  if (a.mode === "fast") body.mode = "fast";
   return body;
 }
 

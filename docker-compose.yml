@@ -25,6 +25,9 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://ctviz:${POSTGRES_PASSWORD:-ctviz}@postgres:5432/ctviz
       SYNC_MAX_SECONDS: ${SYNC_MAX_SECONDS:-60}
+      # Fast mode (design Q22): the mirror's first load takes about 25 minutes. Off by default.
+      MIRROR_SYNC_ENABLED: ${MIRROR_SYNC_ENABLED:-false}
+      FAST_MODE_ENABLED: ${FAST_MODE_ENABLED:-false}
     depends_on:
       postgres:
         condition: service_healthy
