@@ -2,6 +2,8 @@
 
 Status: **Revisited and not built** (2026-10-25). Q6's decision (D6.1, live data only) stands for this submission. This file records why we reopened it, what we designed, and the finding that settled it.
 
+**Follow-up (2026-10-25):** [Q22](22-term-sets.md) proposes a way around the synonym finding below: the API resolves search terms to sets of NCT IDs, and the mirror supplies only the records. It is a second, opt-in `fast` mode; live fetching stays the default.
+
 ## Why we reopened it
 
 Q6 rejected a local mirror and named two triggers for revisiting it (see [06-retrieval.md](06-retrieval.md), "When to revisit"). Live testing hit the second one:
