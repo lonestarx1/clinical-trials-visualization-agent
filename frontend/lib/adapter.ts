@@ -117,7 +117,9 @@ export function toChart(viz: Visualization): Chart {
     case "network_graph": {
       const { nodes, edges } = viz.data as NetworkData;
       const colorBy = enc.node_color.field;
-      const groups = [...new Set(nodes.map((n) => String(n[colorBy])))];
+      const groups = [...new Set(nodes.map((n) => String(n[colorBy])))].sort((a, b) =>
+        colorBy === "community" ? Number(a) - Number(b) : a.localeCompare(b),
+      );
       const maxWeight = Math.max(1, ...nodes.map((n) => Number(n[enc.node_size.field])));
       const maxEdge = Math.max(1, ...edges.map((e) => Number(e[enc.edge_width.field])));
       return {
