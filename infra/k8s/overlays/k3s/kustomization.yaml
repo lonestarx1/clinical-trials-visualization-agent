@@ -1,0 +1,15 @@
+# The deployed overlay: k3s's built-in Traefik ingress and local-path storage (the default
+# storage class), with cert-manager issuing Let's Encrypt certificates.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - cluster-issuer.yaml
+patches:
+  - target:
+      kind: Ingress
+      name: cheiron
+    patch: |-
+      - op: add
+        path: /spec/ingressClassName
+        value: traefik

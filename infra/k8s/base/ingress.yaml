@@ -1,0 +1,34 @@
+# Both hostnames on one Ingress; cert-manager gets one Let's Encrypt certificate for both.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cheiron
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+    - hosts:
+        - trials.cheiron.engineeradriel.com
+        - api.cheiron.engineeradriel.com
+      secretName: cheiron-tls
+  rules:
+    - host: trials.cheiron.engineeradriel.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 3000
+    - host: api.cheiron.engineeradriel.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 8000
