@@ -1,9 +1,10 @@
-# ClinicalTrials.gov API v2: The Official Contract
+# ClinicalTrials.gov API v2: what the documentation says
 
-What the **official documentation** says, read on 2026-10-24 (KST).
-- Nothing here has been tested against the live API yet. That is step 2 (`docs/api/live-probe.md`).
+This is the first half of our research on the ClinicalTrials.gov API: what the **official documentation** says, read on 2026-10-24 (KST). The second half, [`live-probe.md`](live-probe.md), tests these statements against the live API. Where the probe answered a question raised here, this file links to the answer.
+
 - Statements marked **[docs]** are quoted or closely paraphrased from official sources.
-- Statements marked **[ours]** are our interpretation or our implications for the design.
+- Statements marked **[ours]** are our interpretation, or what it means for the design.
+- Every source is saved in [`reference/`](reference/), so each claim can be checked against the copy we read.
 
 ## Sources (saved in `docs/api/reference/`)
 
@@ -16,7 +17,7 @@ What the **official documentation** says, read on 2026-10-24 (KST).
 | `studies-enums.json` | `GET /api/v2/studies/enums` | All enum values plus display labels |
 | `essie-search-syntax.txt` | https://clinicaltrials.gov/find-studies/constructing-complex-search-queries | Search syntax reference (page last updated 2026-02-09) |
 
-The prose pages are rendered with JavaScript, so they were rendered with headless Chrome to read them. `/api/v2/version` at read time: `apiVersion 2.0.5`, `dataTimestamp 2026-10-23T09:00:04`.
+The prose pages are rendered with JavaScript, so we rendered them with headless Chrome to read them. `/api/v2/version` at read time: `apiVersion 2.0.5`, `dataTimestamp 2026-10-23T09:00:04`.
 
 ---
 
@@ -36,11 +37,11 @@ Base URL: `https://clinicaltrials.gov/api/v2`. No auth. GET only.
 | `GET /stats/field/sizes` | Sizes of list fields | No |
 | `GET /version` | API version and `dataTimestamp` | Put into `meta.data_version` |
 
-**[ours] Key consequence:** there is **no server-side aggregation for filtered searches**. To count "phases for pembrolizumab trials" we either:
+**[ours] Key consequence:** there is **no server-side aggregation for filtered searches**. To count "phases for pembrolizumab trials", we must either:
 - (a) download the matching studies (only the fields we need) and count them ourselves, or
 - (b) send one `countTotal` query per category bucket.
 
-Step 2 decides which, based on result sizes and speed.
+The choice depends on result sizes and speed, which the live probe measured ([live-probe §1-2 and §6](live-probe.md#6-retrieval-strategy-options-input-to-the-design-step)).
 
 ## 2. `GET /studies` parameters
 
@@ -72,7 +73,7 @@ Two more search areas have **no** `query.*` parameter, but can be used via `AREA
 
 [ours] So sponsor names like "Merck" vs "Merck Sharp & Dohme LLC" and country spellings are **not** matched by the API's synonym logic.
 
-**[ours] Precision warning.** `query.intr=pembrolizumab` also matches trials that only mention pembrolizumab in a **title, keyword, arm description or MeSH ancestor**. That includes comparator mentions. `query.cond=lung cancer` also matches titles and MeSH **ancestor** terms. Both are good for recall but loose for "trials **of** drug X". For strict matching, `AREA[InterventionName]pembrolizumab` (or the `InterventionNameSearch` area, which covers InterventionName 1.0 and InterventionOtherName 0.9) is available through `filter.advanced` / `query.term`. We decide which to use in step 2 by comparing counts.
+**[ours] Precision warning.** `query.intr=pembrolizumab` also matches trials that only mention pembrolizumab in a **title, keyword, arm description or MeSH ancestor**. That includes comparator mentions. `query.cond=lung cancer` also matches titles and MeSH **ancestor** terms. Both are good for recall but loose for "trials **of** drug X". For strict matching, `AREA[InterventionName]pembrolizumab` (or the `InterventionNameSearch` area, which covers InterventionName 1.0 and InterventionOtherName 0.9) is available through `filter.advanced` / `query.term`. The live probe compares the counts ([live-probe §3](live-probe.md#3-search-behaviour-answers-to-the-contracts-open-questions)).
 
 ### Filter parameters (no ranking effect)
 
@@ -139,12 +140,12 @@ Response body: `{ "studies": [...], "nextPageToken"?: str, "totalCount"?: int }`
 - **Lossy:** may drop words.
 
 **[ours]**
-1. **Synonyms are partly handled by the API.** The default expansion includes UMLS synonyms (Concept ⊂ Relaxation), **but only on fields flagged `isSynonyms`**: conditions, interventions, titles, MeSH. So "Keytruda" -> pembrolizumab *may* be covered without the LLM inventing synonyms. Whether UMLS links that brand name to the generic is **unverified** (step 2). **Sponsor and location fields get no synonym expansion**, so sponsor/country normalisation is on us.
-2. **The default Relaxation is loose.** Multi-word conditions can match unrelated studies. We should probably quote phrases (`"lung cancer"`, effectively Concept level) and measure the difference.
-3. **"Recruiting trials in country X"** needs `SEARCH[Location](AREA[LocationCountry]X AND AREA[LocationStatus]Recruiting)` if we mean recruiting **at a site in X**. `filter.overallStatus=RECRUITING` means the trial overall is recruiting. Pick one and document it.
+1. **Synonyms are partly handled by the API.** The default expansion includes UMLS synonyms (Concept ⊂ Relaxation), **but only on fields flagged `isSynonyms`**: conditions, interventions, titles, MeSH. So "Keytruda" -> pembrolizumab *may* be covered without the LLM inventing synonyms. The documentation doesn't say whether UMLS links that brand name to the generic (the live probe found that it does). **Sponsor and location fields get no synonym expansion**, so sponsor/country normalisation is on us.
+2. **The default Relaxation is loose.** Multi-word conditions can match unrelated studies. Quoting phrases (`"lung cancer"`, effectively Concept level) should help; the live probe measures the difference.
+3. **"Recruiting trials in country X"** needs `SEARCH[Location](AREA[LocationCountry]X AND AREA[LocationStatus]Recruiting)` if it means recruiting **at a site in X**. `filter.overallStatus=RECRUITING` means the trial overall is recruiting. The two readings differ, so the design has to pick one and document it.
 4. **Year ranges** work through `filter.advanced=AREA[StartDate]RANGE[2015-01-01,MAX]`. The range excludes studies with no start date, so report that.
 
-## 4. Data model: fields we will likely use
+## 4. Data model: the fields relevant to this project
 
 From `/studies/metadata`. "Piece" is the short name used in `fields=`, `AREA[...]` and `sort=`.
 
@@ -171,7 +172,7 @@ From `/studies/metadata`. "Piece" is the short name used in `fields=`, `AREA[...
 | OverallOfficialName / Affiliation | `...contactsLocationsModule.overallOfficials[].name` / `.affiliation` | text | **yes** |
 | HasResults | `hasResults` | boolean | no |
 
-**Search-only fields** (only returned by `/studies/metadata` when `includeIndexedOnly=true`; usable in `AREA[...]`; [ours] probably absent from study JSON, verify in step 2): `NumPhases`, `NumInterventions`, `NumLocations`, `NumUniqueLocationCountries`, `NumArmGroups`, `NumCollaborators`, `NumConditions`, `LocationCountryCode`, `StudyFirstPostYear`, and others. There is **no** `StartYear`.
+**Search-only fields** (only returned by `/studies/metadata` when `includeIndexedOnly=true`; usable in `AREA[...]`; [ours] probably absent from study JSON, which the live probe confirmed): `NumPhases`, `NumInterventions`, `NumLocations`, `NumUniqueLocationCountries`, `NumArmGroups`, `NumCollaborators`, `NumConditions`, `LocationCountryCode`, `StudyFirstPostYear`, and others. There is **no** `StartYear`.
 
 **[ours] Numeric fields** for histograms and scatter plots:
 - `EnrollmentCount`
@@ -207,13 +208,13 @@ From `/studies/metadata`. "Piece" is the short name used in `fields=`, `AREA[...
 |---|---|---|
 | Data refresh | [docs] | "refreshed daily Monday through Friday, generally by 9 a.m. ET (14:00 UTC)". Check `dataTimestamp` at `/version`. |
 | Auth / API key | [docs] | None needed (the spec has no security scheme). |
-| Rate limit | **Not stated in any official page we read** | Third-party sources disagree: ~50 req/min per IP ([reference doc](https://cdn.jsdelivr.net/npm/@saibolla/ada@0.1.3/skills/clinicaltrials-database/references/api_reference.md)) vs ~3 req/s ([Jentic](https://jentic.com/apis/clinicaltrials.gov/clinicaltrials)). One analysis ([IntuitionLabs](https://intuitionlabs.ai/pdfs/clinicaltrials-gov-api-v2-pipeline.pdf)) notes no formal value is published. **[ours]** Design for limits we can't see in advance: bounded concurrency, exponential backoff with jitter on 429/5xx, caching. Measure gently in step 2. |
+| Rate limit | **Not stated in any official page we read** | Third-party sources disagree: ~50 req/min per IP ([reference doc](https://cdn.jsdelivr.net/npm/@saibolla/ada@0.1.3/skills/clinicaltrials-database/references/api_reference.md)) vs ~3 req/s ([Jentic](https://jentic.com/apis/clinicaltrials.gov/clinicaltrials)). One analysis ([IntuitionLabs](https://intuitionlabs.ai/pdfs/clinicaltrials-gov-api-v2-pipeline.pdf)) notes no formal value is published. **[ours]** Design for limits we can't see in advance: bounded concurrency, exponential backoff with jitter on 429/5xx, caching. The live probe deliberately did not test the limit ([live-probe §8](live-probe.md#8-rate-limits-educated-guess-not-tested-on-purpose)). |
 | Data ingest change | [docs] | Since 2025-08-26 modernised ingest: some markup formats differ; "Locations and geopoint data are now pulling from a different database for geographic data." [ours, speculation] Country/city spellings may differ from older third-party write-ups; check live values. |
 
 ## 7. Implications for our design (summary, [ours])
 
 1. **Retrieval = `/studies` with field projection plus pagination.** No filtered aggregation endpoint exists, so the aggregation engine is ours. That is exactly where the deep citations come from.
-2. **Two count strategies** are available; step 2 decides between them:
+2. **Two count strategies** are available; the live probe measures what each costs:
    - fetch the minimal fields for all matches (needed anyway for citations, networks and histograms)
    - `countTotal` per bucket (exact totals for big categorical questions, but no citations)
 3. **Search precision is a real design choice:** `query.intr` (broad) vs `AREA[InterventionName]` (strict), and phrase quoting. Report which was used in `meta`.
@@ -223,9 +224,9 @@ From `/studies/metadata`. "Piece" is the short name used in `fields=`, `AREA[...
 7. **Results are unordered by default.** Sort explicitly so outputs and citations are the same on every run.
 8. **Display labels** come from `/studies/enums` `legacyValue`, plus our own labels for AgencyClass.
 
-## 8. Open questions for step 2 (live probe)
+## 8. Questions the documentation leaves open
 
-**All answered in [`live-probe.md`](live-probe.md)** (2026-10-24), except the rate-limit test, which was deliberately postponed. Summary:
+**All are answered in [`live-probe.md`](live-probe.md)** (2026-10-24), except the rate limit, which was deliberately not tested. Summary:
 - [x] Result sizes: drug ~2-3k, broad condition ~12-17k, unscoped multi-intervention ~289k
 - [x] Latency: count ~0.35 s; 1,000 studies 1.1-2.2 s depending on fields
 - [x] Keytruda / MK-3475 = pembrolizumab: **yes**, identical counts
@@ -235,15 +236,15 @@ From `/studies/metadata`. "Piece" is the short name used in `fields=`, `AREA[...
 - [x] `pageSize=0` falls back to 10 (use `pageSize=1` for counts)
 - [x] Country names: clean English ("South Korea", "Turkey (Türkiye)")
 - [x] Error format: 400/404 `text/plain` with a clear message
-- [ ] Rate limit: **postponed** (risk of being blocked). Educated guess and design in live-probe §8
+- [ ] Rate limit: **not tested** (risk of being blocked). Educated guess and design in live-probe §8
 - [x] `AREA[Phase]PHASE3` = `AREA[Phase]"Phase 3"`; `AREA[StartDate]RANGE[...]` (both date formats); `AREA[LeadSponsorClass]INDUSTRY`: all work
 - [x] Search-only fields: accepted in `fields` but returned empty
 - [x] Observational studies: `phases` key absent (not `NA`)
 - [x] Estimated future start dates exist (46 of 2,993, all ESTIMATED)
 
-## 9. Review log (2026-10-24, second pass)
+## 9. Corrections from a second review (2026-10-24)
 
-Each claim was re-checked against the saved source files. Corrections made:
+A second pass re-checked each claim against the saved source files. It made these corrections:
 
 | # | Was | Now | Evidence |
 |---|---|---|---|
