@@ -12,8 +12,9 @@ from dataclasses import dataclass, field
 from itertools import combinations
 from typing import Any, Literal
 
+from app.ctgov.retrieval import YearCounts
 from app.pipeline.aggregate import NOT_REPORTED, Bucket, Grouping, group, nct_id, year_range
-from app.pipeline.citations import sample_citations
+from app.pipeline.citations import citation, ordered_trials, sample_citations
 from app.pipeline.extract import Evidence, extract, extract_number
 from app.pipeline.networks import build_network
 from app.registry import DIMENSIONS, MEASURES, ChartType, Dimension, DimensionKind, Intent
@@ -360,6 +361,62 @@ def _bars(
         group_overlap=overlap,
     )
     return ChartResult(viz, meta)
+
+
+def counted_time_series(
+    plan: QueryPlan,
+    counts: YearCounts,
+    samples: dict[int, list[dict[str, Any]]],
+    limit: int,
+    search_urls: dict[int, str] | None = None,
+) -> ChartResult:
+    """Trials per year from count calls; each year cites a sample of its most recent trials.
+
+    `search_urls` (year -> API search) lets a reader open every trial of a year.
+    """
+    assert plan.dimension is not None
+    dim = DIMENSIONS[plan.dimension]
+    totals = {str(y): float(n) for y, n in counts.years.items()}
+    keys, sort, notes = _sorted_keys(dim, plan, totals, {k: k for k in totals})
+    result_citations: dict[str, list[dict[str, Any]]] = {}
+    rows = []
+    for key in keys:
+        year, n = int(key), counts.years[int(key)]
+        by_id = {nct_id(s): s for s in samples.get(year, [])}
+        evidence = {
+            i: values[0].evidence
+            for i, s in by_id.items()
+            if (values := extract(s, dim.key)) and values[0].key == key
+        }
+        cited = [citation(by_id[i], evidence[i]) for i in ordered_trials(evidence, by_id)][:limit]
+        result_citations[key] = cited
+        rows.append(
+            {
+                "key": key,
+                dim.key: key,
+                "trial_count": n,
+                "estimated_count": counts.estimated[year],
+                "citation_count": n,
+                "citations": cited,
+                "citations_truncated": n > len(cited),
+            }
+            | ({"search_url": search_urls[year]} if search_urls else {})
+        )
+    viz = Visualization(
+        type=ChartType.TIME_SERIES,
+        title=_title(plan, dim),
+        summary=_summary(rows, dim, "trial_count", counts.within),
+        encoding={"x": _x_channel(dim, sort), "y": _y_channel(plan)},
+        data=rows,
+    )
+    meta = ChartMeta(
+        counting_rule=dim.counting_rule,
+        additive=True,
+        unique_trials=counts.within,
+        sort=sort,
+        notes=notes,
+    )
+    return ChartResult(viz, meta, result_citations)
 
 
 def _nice_width(raw: float) -> float:
