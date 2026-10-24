@@ -134,10 +134,13 @@ def test_error_examples_use_the_real_codes_and_the_shared_body(spec: dict[str, A
     real = {(str(status), code) for _, status, code, _ in _PUBLIC} | {
         ("429", "too_many_requests"),  # the rate-limit middleware
         ("500", "internal_error"),
+        ("401", "unauthorized"),  # routing and auth errors (HTTPException)
+        ("404", "not_found"),
+        ("405", "method_not_allowed"),
     }
     for path, method, op in operations(spec):
         for status, response in op["responses"].items():
-            if not status.startswith(("4", "5")) or path == "/health" or status == "401":
+            if not status.startswith(("4", "5")) or path == "/health":
                 continue
             schema = response["content"]["application/json"]["schema"]
             assert resolve(spec, schema).get("title") == "ErrorResponse", (path, status)
@@ -162,6 +165,22 @@ def test_citations_document_not_found_and_expired(spec: dict[str, Any]) -> None:
     responses = spec["paths"]["/v1/results/{result_id}/citations"]["get"]["responses"]
     assert _codes(responses["404"]) == {"not_found"}
     assert _codes(responses["410"]) == {"expired"}
+
+
+def test_jobs_document_not_found_and_expired(spec: dict[str, Any]) -> None:
+    responses = spec["paths"]["/v1/jobs/{job_id}"]["get"]["responses"]
+    assert _codes(responses["404"]) == {"not_found"}
+    assert _codes(responses["410"]) == {"expired"}
+
+
+def test_usage_documents_unauthorized_with_the_shared_body(spec: dict[str, Any]) -> None:
+    responses = spec["paths"]["/v1/usage"]["get"]["responses"]
+    assert _codes(responses["401"]) == {"unauthorized"}
+
+
+def test_the_error_table_lists_routing_and_auth_errors(spec: dict[str, Any]) -> None:
+    for code in ("unauthorized", "method_not_allowed"):
+        assert f"`{code}`" in spec["info"]["description"]
 
 
 def test_every_request_field_has_a_description(spec: dict[str, Any]) -> None:
