@@ -25,7 +25,13 @@ from app.ctgov.client import (
 from app.ctgov.compiler import Search, compile_plan
 from app.ctgov.essie import Area, Range
 from app.ctgov.retrieval import DATE_TYPE_PIECE, count_per_year, fields_for
-from app.pipeline.charts import ChartMeta, ChartResult, build_chart, counted_time_series
+from app.pipeline.charts import (
+    ChartMeta,
+    ChartResult,
+    build_chart,
+    counted_metric,
+    counted_time_series,
+)
 from app.pipeline.citations import verify_citations
 from app.registry import DIMENSIONS, ChartType, DimensionKind
 from app.schemas.plan import QueryPlan
@@ -42,6 +48,11 @@ YEAR_FILTER_NOTE = "The year filter excludes trials without a start date."
 SECONDS_PER_PAGE = 1.6  # measured: ~0.8-2.2 s per 1,000-trial page; pages come one by one
 SECONDS_PER_CALL = 60 / 54  # parallel count calls go at the limiter's 54 requests/min
 MAX_COUNTED_YEARS = 60
+TOTAL_NOTE = (
+    "Counted with ClinicalTrials.gov's own count of the matching trials instead of downloading "
+    "them; the total cites its most recently updated trials."
+)
+TOTAL_SORT = "LastUpdatePostDate:desc"
 COUNTED_NOTE = (
     "Counted with one ClinicalTrials.gov count per year instead of downloading every trial; "
     "each year cites its most recent trials."
@@ -97,6 +108,16 @@ def yearly_span(plan: QueryPlan, *, now_year: int) -> tuple[int, int] | None:
     return lo, hi
 
 
+def plain_total(plan: QueryPlan) -> bool:
+    """A single number of trials, nothing grouped: the API's count call already answers it."""
+    return (
+        plan.chart_type is ChartType.METRIC
+        and plan.measure == "trial_count"
+        and not plan.dimension
+        and not plan.groups
+    )
+
+
 async def gather_or_cancel[T](*work: Awaitable[T]) -> list[T]:
     """asyncio.gather, but when one fails the others are cancelled instead of left running.
 
@@ -128,7 +149,14 @@ class Prepared:
         return sum(math.ceil(n / PAGE_SIZE) for n in self.counts if n)
 
     @property
+    def counted_total(self) -> bool:
+        """Read one sample page instead of every trial (more than one page of them)."""
+        return plain_total(self.plan) and len(self.searches) == 1 and self.pages > 1
+
+    @property
     def counted_calls(self) -> int:
+        if self.counted_total:
+            return 1  # the sample page; the count is already made
         if self.span is None or self.plan.dimension is None:
             return 0
         years = self.span[1] - self.span[0] + 1
@@ -137,7 +165,7 @@ class Prepared:
 
     @property
     def estimated_seconds(self) -> int:
-        if self.span is not None:
+        if self.span is not None or self.counted_total:
             return math.ceil(self.counted_calls * SECONDS_PER_CALL)
         return math.ceil(self.pages * SECONDS_PER_PAGE)
 
@@ -253,6 +281,26 @@ async def _counted_years(
     return chart, studies
 
 
+async def _counted_total(
+    prepared: Prepared, ctgov: CtgovClient, base_url: str, limit: int
+) -> tuple[ChartResult, dict[str, dict[str, Any]]]:
+    """A plain total from the count `prepare` made, plus one small page of sample citations."""
+    plan, search, total = prepared.plan, prepared.searches[0], prepared.counts[0]
+    sample = await ctgov.first_page(search, fields_for(plan), limit, sort=TOTAL_SORT)
+    chart = counted_metric(plan, total, sample, limit, search.url(base_url))
+    if total > len(sample):  # the citations endpoint pages through the rest (design Q14)
+        chart.citation_sources = {
+            "all": {
+                "params": search.params,
+                "fields": fields_for(plan),
+                "sort": TOTAL_SORT,
+                "dimension": None,
+                "count": total,
+            }
+        }
+    return chart, {s["protocolSection"]["identificationModule"]["nctId"]: s for s in sample}
+
+
 async def execute(
     prepared: Prepared,
     ctgov: CtgovClient,
@@ -281,8 +329,15 @@ async def execute(
         )
 
     retrieve_start = time.perf_counter()
-    counted = None
-    if prepared.span is not None and fetched is None:
+    counted, reason, note = (
+        None,
+        "counted per year: each year cites a sample of its trials",
+        COUNTED_NOTE,
+    )
+    if prepared.counted_total and fetched is None:
+        counted = await _counted_total(prepared, ctgov, base_url, citations_per_datum)
+        reason, note = "counted: the total cites a sample of its trials", TOTAL_NOTE
+    elif prepared.span is not None and fetched is None:
         try:
             counted = await _counted_years(prepared, ctgov, base_url, citations_per_datum)
         except InconsistentResults as exc:
@@ -294,8 +349,8 @@ async def execute(
         ]
         if meta.citations is not None:
             meta.citations.applied = "sample"
-            meta.citations.reason = "counted per year: each year cites a sample of its trials"
-        meta.notes.append(COUNTED_NOTE)
+            meta.citations.reason = reason
+        meta.notes.append(note)
         retrieve_ms = elapsed_ms(retrieve_start)
         aggregate_start = time.perf_counter()
     else:

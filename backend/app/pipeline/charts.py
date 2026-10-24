@@ -14,7 +14,7 @@ from typing import Any, Literal
 
 from app.ctgov.retrieval import YearCounts
 from app.pipeline.aggregate import NOT_REPORTED, Bucket, Grouping, group, nct_id, year_range
-from app.pipeline.citations import citation, ordered_trials, sample_citations
+from app.pipeline.citations import citation, id_evidence, ordered_trials, sample_citations
 from app.pipeline.extract import Evidence, extract, extract_number
 from app.pipeline.networks import build_network
 from app.registry import DIMENSIONS, MEASURES, ChartType, Dimension, DimensionKind, Intent
@@ -546,7 +546,7 @@ def _metric(
 ) -> ChartResult:
     every = Bucket("all", "Matching trials")
     for i, study in studies.items():
-        every.trials[i] = (Evidence("protocolSection.identificationModule.nctId", nct_id(study)),)
+        every.trials[i] = (id_evidence(study),)
     m = _measure(every, plan, studies)
     label, unit = measure_text(plan)
     row = {"key": "all", "value": m.value, "label": label} | sample_citations(
@@ -573,6 +573,33 @@ def _metric(
             excluded=excluded,
         ),
     )
+
+
+def counted_metric(
+    plan: QueryPlan, total: int, sample: list[dict[str, Any]], limit: int, search_url: str
+) -> ChartResult:
+    """A plain total from the API's own count; it cites a sample of the matching trials."""
+    cited = [citation(s, (id_evidence(s),)) for s in sample][:limit]
+    label, unit = measure_text(plan)
+    row = {
+        "key": "all",
+        "value": total,
+        "label": label,
+        "citation_count": total,
+        "citations": cited,
+        "citations_truncated": total > len(cited),
+        "search_url": search_url,
+    }
+    viz = Visualization(
+        type=ChartType.METRIC,
+        title="Matching trials",
+        encoding={"value": Channel(field="value", type="quantitative", label=label, unit=unit)},
+        data=[row],
+    )
+    meta = ChartMeta(
+        counting_rule="Each matching trial is counted once.", additive=True, unique_trials=total
+    )
+    return ChartResult(viz, meta, {"all": cited})
 
 
 # ---------- templates (narrator fallback) ----------

@@ -55,6 +55,8 @@ async def fetch_from_mirror(
     max_trials: int,
 ) -> list[FetchResult]:
     """Each search's matching trials, read from the mirror once every check has passed."""
+    if prepared.counted_total:  # checked first: the count is already made, the copy can't beat it
+        raise FastUnavailable("ClinicalTrials.gov's own count answers a plain total quicker")
     data_timestamp = prepared.version.data_timestamp
     status, _ = await mirror_status(sessions, data_timestamp)
     if status == "not_loaded":

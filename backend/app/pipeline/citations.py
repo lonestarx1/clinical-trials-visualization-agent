@@ -96,6 +96,8 @@ def source_pages(ctgov: CtgovClient) -> FetchPage:
         studies, next_token = await ctgov.page(
             source["params"], source["fields"], SOURCE_PAGE_SIZE, source["sort"], token
         )
+        if source["dimension"] is None:  # a plain total: every trial of the search counts
+            return [citation(s, (id_evidence(s),)) for s in studies], next_token
         cited = [
             citation(study, values[0].evidence)
             for study in studies
@@ -104,3 +106,9 @@ def source_pages(ctgov: CtgovClient) -> FetchPage:
         return cited, next_token
 
     return fetch
+
+
+def id_evidence(study: dict[str, Any]) -> Evidence:
+    """A trial cited for being in the search at all (a total), by its NCT ID."""
+    nct = study["protocolSection"]["identificationModule"]["nctId"]
+    return Evidence("protocolSection.identificationModule.nctId", nct)
