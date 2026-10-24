@@ -4,6 +4,10 @@ Status: **Decided** (2026-10-24, approved by the user; `llm_usage` added on the 
 
 Postgres is the only datastore (Q8, Q15). It holds the API response cache, plan cache, results + citations, background jobs, traces, and data versions. The exact DDL is generated from SQLAlchemy models + Alembic migrations during implementation and must match this design.
 
+## Implementation status (2026-10-24)
+
+Built: `data_versions`, `plan_cache`, `results`, `result_datums`, `result_citations`, `jobs`, `llm_usage` (migration `6ebfd3b4b50c`). Not built (cut line 4 in the implementation plan): `api_searches` / `api_pages` (L1 page cache) and `traces`. Consequences: `results.searches` stores each search's params and total count as JSON (used for revalidation) instead of keys into `api_searches`, and `llm_usage.trace_id` has no foreign key.
+
 ## Conventions
 
 | Topic | Rule |
