@@ -11,7 +11,8 @@ def test_phrase_is_quoted() -> None:
 
 def test_phrase_is_cleaned() -> None:
     assert to_essie(Phrase("  Pembrolizumab\n\t ")) == '"Pembrolizumab"'
-    assert to_essie(Phrase("ｐｅｍｂｒｏ")) == '"pembro"'  # full-width letters (NFKC)
+    full_width = "\uff50\uff45\uff4d\uff42\uff52\uff4f"  # NFKC turns these into "pembro"
+    assert to_essie(Phrase(full_width)) == '"pembro"'
 
 
 @pytest.mark.parametrize(
