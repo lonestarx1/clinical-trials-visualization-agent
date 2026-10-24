@@ -450,6 +450,12 @@
   "title": null
  },
  {
+  "n": 76,
+  "question": "Show me trials",
+  "status": "out_of_scope",
+  "title": null
+ },
+ {
   "n": 77,
   "question": "How many trials for Xyloquintrix syndrome?",
   "status": "no_matching_trials",
@@ -498,6 +504,12 @@
   "title": "Number of Trials by Lead Sponsor in Diabetes Research"
  },
  {
+  "n": 85,
+  "question": "Number of sponsors with over 2 trials per year in cystic fibrosis from 2015 to 2020",
+  "status": "ok",
+  "title": "Lead Sponsors with at Least 3 Trials for Cystic Fibrosis by Start Year"
+ },
+ {
   "n": 86,
   "question": "How many distinct drugs are tested in glioblastoma trials?",
   "status": "ok",
@@ -544,6 +556,12 @@
   "question": "Sponsor network for hepatitis B trials",
   "status": "ok",
   "title": "Number of Hepatitis B Trials by Lead Sponsor (Total: 571)"
+ },
+ {
+  "n": 94,
+  "question": "How many trials are there in total on ClinicalTrials.gov?",
+  "status": "ok",
+  "title": "Total Number of Clinical Trials: 608,415 Trials"
  },
  {
   "n": 95,
