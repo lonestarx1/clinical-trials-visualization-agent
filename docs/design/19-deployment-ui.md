@@ -16,23 +16,23 @@ Status: **Decided** (2026-10-24)
 
 The frontend is a **reference renderer**: it also proves that the response schema can be rendered "without guessing" (P3-12).
 
-## Backend hosting (AWS)
+## Backend hosting: original plan (superseded)
 
-> **Superseded on 2026-10-25** by the revision below ("What was actually deployed"). Kept for the record.
+> **Superseded on 2026-10-25.** This was the plan on 2026-10-24: Docker Compose on one EC2 instance behind Caddy, with the frontend on Vercel. It was not built. What runs today is described in [Revision (2026-10-25): what was actually deployed](#revision-2026-10-25-what-was-actually-deployed). The plan is kept so the reasoning in the revision's comparison table makes sense.
 
 | Item | Decision |
 |---|---|
 | Compute | One small EC2 instance running the Docker Compose stack (`api` + `postgres`). The `web` service isn't needed there (frontend on Vercel). |
 | HTTPS | **Caddy** reverse proxy with automatic Let's Encrypt certificates for **`api.engineeradriel.com`** |
-| DNS | An `A` record `api.engineeradriel.com` -> the instance's Elastic IP, added in the user's DNS provider (the user confirms the provider/record before it's created) |
-| Infrastructure as code | CloudFormation or AWS CDK stack (per the user's AWS guidelines): security group (80/443 only, SSH restricted or SSM Session Manager instead), EC2 instance + Elastic IP, IAM role for reading the secret, CloudWatch logs (optional) |
+| DNS | An `A` record `api.engineeradriel.com` -> the instance's Elastic IP, at the domain's DNS provider |
+| Infrastructure as code | CloudFormation or AWS CDK stack: security group (80/443 only, SSH restricted or SSM Session Manager instead), EC2 instance + Elastic IP, IAM role for reading the secret, CloudWatch logs (optional) |
 | Secrets | OpenAI key stored in **AWS Secrets Manager**, read at container start through the instance role. Never in the repo, the AMI, or a plain file on disk. |
 | Public protection | Per-IP rate limit (our 429), daily LLM spending cap (`budget_exceeded`), CORS allows only the Vercel domain (+ localhost for dev), guard + all validation (Q5, Q5b) |
 | Frontend | Vercel project from `frontend/`. Env var for the API base URL (`https://api.engineeradriel.com`), used by the Next.js server-side proxy |
 
-## Configurable limits (decided with the user, O3)
+## Configurable limits (open item O3)
 
-Every protective limit **exists, is configurable via environment variables, and is documented in the README**. Defaults are deliberately **high**: the point is to show the controls are there, not to restrict realistic use. Operators can tighten them at any time.
+Every protective limit **exists, is configurable via environment variables, and is documented in the README**. All of them are implemented as settings in [`backend/app/core/config.py`](../../backend/app/core/config.py). Defaults are deliberately **high**: the point is to show the controls are there, not to restrict realistic use. Operators can tighten them at any time.
 
 | Limit | Env var | Default | Effect when hit |
 |---|---|---|---|
@@ -49,7 +49,7 @@ Every protective limit **exists, is configurable via environment variables, and 
 
 | Item | Deployed |
 |---|---|
-| Where | **Kubernetes (k3s) on one EC2 t3.medium** in Seoul (ap-northeast-2), in the user's personal AWS account |
+| Where | **Kubernetes (k3s) on one EC2 t3.medium** in Seoul (ap-northeast-2), in a personal AWS account |
 | Infrastructure as code | **Terraform** (S3 state with native locking) for the network, node, IAM, ECR, Secrets Manager and DNS; **Kustomize** manifests for the cluster (`infra/`) |
 | App | Web app, API and Postgres all in the cluster. One Ingress (Traefik, built into k3s) serves both hosts. cert-manager provides Let's Encrypt certificates, and HTTP redirects to HTTPS |
 | URLs | **https://trials.cheiron.engineeradriel.com** (web) and **https://api.cheiron.engineeradriel.com** (API), two A records in the existing Route 53 zone |
@@ -62,11 +62,11 @@ Details: [`infra/README.md`](../../infra/README.md).
 
 ### Why this setup (time and cost)
 
-The deployment had two hard constraints: the **submission deadline** (15:00 KST the same day) and **cost**, since it's paid personally and runs for a few days. Within those, the user wanted to **show Kubernetes**.
+The deployment had two hard constraints: the **submission deadline** (15:00 KST the same day) and **cost**, since it's paid personally and runs for a few days. Within those, we wanted the deployment to **show Kubernetes**.
 
 | Option | Per day | Why not chosen |
 |---|---|---|
-| EC2 + Docker Compose + Caddy, CDK (the original plan above) | ~$1.50 | Cheapest and simplest, but shows no orchestration |
+| EC2 + Docker Compose + Caddy, CDK ([the original plan above](#backend-hosting-original-plan-superseded)) | ~$1.50 | Cheapest and simplest, but shows no orchestration |
 | Frontend on Vercel + API on EC2 | ~$1.50 | Two platforms, CORS and two sets of settings, for a demo that runs a few days. Dropped to keep one deployment path |
 | Amazon ECS on one EC2 | ~$2 | Shows AWS's own orchestrator, not Kubernetes |
 | Amazon EKS, 1 node + ALB | ~$4.70 | Managed Kubernetes, but the $2.40/day control plane alone costs more than the whole k3s node, and it takes more setup time before the deadline |

@@ -13,15 +13,17 @@ Status: **Decided** (2026-10-24)
 | D6.5 | **Background jobs** for requests estimated to take **over ~60 s**: the API returns a job ID immediately; the client polls for the result. Job state is stored in the database. |
 | D6.6 | Retrieval sits behind a **data-source interface**, so a local mirror with incremental sync could be added later without changing other stages (documented as future work). |
 
-## Why live (reasons for the README)
+## Why live
 
-1. **Legal uncertainty** about bulk-copying the dataset (we haven't read the terms carefully; live use of the public API is clearly intended).
+> **Updated 2026-10-25:** the mirror question was reopened in [Q21](21-local-mirror-revisited.md). Live retrieval still stands, but the main reason changed. Q21 found strong precedent for mirroring (ClinicalTrials.gov offers full downloads, and AACT publishes a daily Postgres copy), so the terms of use are no longer the deciding factor. The deciding factor is **search accuracy**: the API resolves drug and condition synonyms, and a plain local copy can't yet. The reasons below are the original ones from 2026-10-24.
+
+1. **Terms of use not yet checked** for bulk-copying the dataset, while live use of the public API is clearly intended.
 2. **Simplicity:** no ingestion job, no multi-GB database, simpler deployment and review.
 3. **Authority:** every number comes from the authoritative API at request time.
 
 ## Alternative we weighed seriously: a local mirror of the full dataset
 
-We spent real design time on this option before choosing live retrieval. Recorded here so the reasoning is visible.
+This option got real design time before we chose live retrieval. It is recorded here so the reasoning is visible. [Q21](21-local-mirror-revisited.md) revisits it with a fuller design and a new finding.
 
 **The design:**
 - Download all ~608k studies once through the API (`/studies`, 1,000 per page, ~608 pages, ~20-30 min at a safe rate) into Postgres.
@@ -37,16 +39,16 @@ We spent real design time on this option before choosing live retrieval. Recorde
 | Exact answers for **any** scope in < 1 s | Including unscoped networks/histograms over all 608k trials, which live retrieval can only do as a background job |
 | No per-request API load | Rate limits only matter for the sync job |
 | Same freshness as the live API | The API itself refreshes once a day (Mon-Fri), so a daily incremental sync loses nothing |
-| Fits the role | A large-scale ingestion pipeline, a core responsibility in Cheiron's job posting |
+| Relevant to the role | Large-scale ingestion is a core responsibility in the role this project was built for |
 
-**Why we rejected it (for this submission):**
+**Why we rejected it (2026-10-24, for this submission):**
 
 | Reason | Weight |
 |---|---|
-| **Legal uncertainty** about bulk-copying the dataset. We haven't verified the terms of use; live use of the public API is clearly intended. | Main reason |
+| **Terms of use** for bulk-copying the dataset were not yet checked; live use of the public API is clearly intended. | Main reason at the time. Since [Q21](21-local-mirror-revisited.md), secondary: precedent for mirroring is strong, and search accuracy is the deciding reason |
 | **Complexity and deployment weight:** an ingestion job, scheduling, a multi-GB database that must be built before first use, and sync-failure handling | High |
 | **Authority:** live retrieval means every number comes from the authoritative API at request time, which is simple to explain and to verify | Medium |
-| ~~Staleness~~ | **Not** a valid reason. We first worried a full daily re-download would be needed; the incremental sync above solves that. Recorded so we don't misstate it in the README. |
+| ~~Staleness~~ | **Not** a valid reason. A full daily re-download would have been needed without the incremental sync above, which solves it. Recorded so it isn't misstated. |
 
 **When to revisit:**
 - the terms of use are confirmed to allow mirroring, **or**
@@ -54,7 +56,7 @@ We spent real design time on this option before choosing live retrieval. Recorde
 
 The data-source interface (D6.6) makes this a contained change.
 
-**Revisited on 2026-10-25** after a broad question took ~7 minutes: see [21-local-mirror-revisited.md](21-local-mirror-revisited.md). Still not built; the deciding issue was search accuracy (the API resolves synonyms; a local copy can't, yet).
+**Revisited on 2026-10-25** after a broad question took about 7 minutes: see [Q21](21-local-mirror-revisited.md). Still not built. The deciding issue is search accuracy: the API resolves synonyms, and a local copy can't yet.
 
 ## How a request is fetched
 
@@ -87,7 +89,7 @@ S1/S2 return counts only, so we can't produce per-trial citations for those valu
 
 | Item | Design |
 |---|---|
-| Trigger | Estimated duration > ~60 s (configurable), Sync vs async is decided **only by the server's estimate**. There is **no client `async` flag** (decided with the user, O1): one predictable behaviour, fewer API states. |
+| Trigger | Estimated duration > ~60 s (configurable). Sync vs async is decided **only by the server's estimate**. There is **no client `async` flag** (open item O1, decided no): one predictable behaviour, fewer API states. |
 | Response | `202 Accepted` + `{ job_id, status: "pending", poll_url, estimated_seconds }` |
 | Poll | `GET /v1/jobs/{job_id}` -> `pending` / `running` (with progress: pages done / total) / `succeeded` (with the normal visualization response) / `failed` (structured error) |
 | Storage | `jobs` table in Postgres: id, request, plan, status, progress, result JSON, error, created/started/finished timestamps, data_timestamp |

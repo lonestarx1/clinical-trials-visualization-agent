@@ -6,7 +6,7 @@ The AI produces exactly two things: the **QueryPlan** (planning agent) and the c
 
 ## Revision (2026-10-24): the AI summary is removed
 
-Decided with the user after live testing.
+Decided after live testing.
 
 **Decision:** the narrator writes **only the chart title**. The one-sentence summary under the title is gone: from the narrator prompt and its JSON schema, from the template fallback, from the response (`visualization.summary`) and from the web UI. This supersedes the summary parts of this file, Q2 D2.3, the narration row in Q3, the `summary` field in Q12, the summary row in Q17 and the "title + summary in one call" narrator in Q20.
 
