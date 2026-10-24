@@ -2,7 +2,7 @@
 // Tested against the real example responses in docs/examples.
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 import { datumAt, toChart, toTable } from "@/lib/adapter";
 import { DARK, LIGHT, seriesColor } from "@/lib/theme";
 import type { Datum, NetworkData, QueryResponse, Visualization } from "@/lib/types";
@@ -59,7 +59,7 @@ describe("toChart", () => {
 
   it("histogram and scatter from the encoding fields", () => {
     const histogram: Visualization = {
-      type: "histogram", title: "t", summary: "s",
+      type: "histogram", title: "t",
       encoding: { x: { field: "bin_start", type: "quantitative", label: "Enrollment" },
                   y: { field: "count", type: "quantitative", label: "Trials" } },
       data: [
@@ -72,7 +72,7 @@ describe("toChart", () => {
     expect((h.option.xAxis as any).data).toEqual(["0-200", "1400+"]);
 
     const scatter: Visualization = {
-      type: "scatter_plot", title: "t", summary: "s",
+      type: "scatter_plot", title: "t",
       encoding: { x: { field: "enrollment", type: "quantitative", label: "Enrollment" },
                   y: { field: "duration_months", type: "quantitative", label: "Duration" },
                   id: { field: "nct_id", type: "nominal", label: "Trial" } },
@@ -85,7 +85,7 @@ describe("toChart", () => {
 
   it("metric: a single number, not a chart", () => {
     const metric: Visualization = {
-      type: "metric", title: "t", summary: "s",
+      type: "metric", title: "t",
       encoding: { value: { field: "value", type: "quantitative", label: "Trials", unit: "trials" } },
       data: [{ key: "all", value: 8, label: "Number of trials", citation_count: 8, citations: [], citations_truncated: false }],
     };
@@ -198,5 +198,17 @@ describe("direct labels", () => {
     expect(series.label.show).toBe(true);
     expect(series.label.position).toBe("right");
     expect((chart.option.xAxis as any).nameLocation).toBe("middle");
+  });
+});
+
+describe("schema 2.0", () => {
+  it("has a title and no summary (the AI summary was removed)", () => {
+    expectTypeOf<Visualization>().toHaveProperty("title");
+    expectTypeOf<Visualization>().not.toHaveProperty("summary");
+    for (const name of ["1-drug-trend", "2-condition-phases", "3-drug-comparison", "4-recruiting-countries", "5-drug-network"]) {
+      const viz = example(name);
+      expect(viz.title).toBeTruthy();
+      expect(viz).not.toHaveProperty("summary");
+    }
   });
 });
