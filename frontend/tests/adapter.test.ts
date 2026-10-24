@@ -3,7 +3,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { datumAt, toChart } from "@/lib/adapter";
+import { datumAt, toChart, toTable } from "@/lib/adapter";
+import { DARK, LIGHT, seriesColor } from "@/lib/theme";
 import type { Datum, NetworkData, QueryResponse, Visualization } from "@/lib/types";
 
 function example(name: string): Visualization {
@@ -118,5 +119,57 @@ describe("network legend", () => {
     const names = ((chart.option.series as any[])[0].categories as { name: string }[]).map((c) => c.name);
     const numbers = names.map((n) => Number(n.replace("Cluster ", "")));
     expect(numbers).toEqual([...numbers].sort((a, b) => a - b));
+  });
+});
+
+describe("readable bars", () => {
+  it("names (countries, sponsors, drugs) become horizontal bars, largest on top", () => {
+    const viz = example("4-recruiting-countries");
+    const rows = viz.data as Datum[];
+    const chart = toChart(viz);
+    if (chart.kind !== "echarts") throw new Error("expected echarts");
+    const y = chart.option.yAxis as any;
+    expect(y.type).toBe("category");
+    expect(y.data).toEqual(rows.map((r) => r.country));
+    expect(y.inverse).toBe(true);
+    expect((chart.option.xAxis as any).type).toBe("value");
+  });
+
+  it("ordered categories (phases) stay vertical", () => {
+    const chart = toChart(example("2-condition-phases"));
+    if (chart.kind !== "echarts") throw new Error("expected echarts");
+    expect((chart.option.xAxis as any).type).toBe("category");
+  });
+});
+
+describe("colour", () => {
+  it("uses the validated palette in fixed order, per theme", () => {
+    const light = toChart(example("3-drug-comparison"), LIGHT);
+    const dark = toChart(example("3-drug-comparison"), DARK);
+    if (light.kind !== "echarts" || dark.kind !== "echarts") throw new Error("expected echarts");
+    expect((light.option.color as string[]).slice(0, 2)).toEqual(["#2a78d6", "#eb6834"]);
+    expect((dark.option.color as string[]).slice(0, 2)).toEqual(["#3987e5", "#d95926"]);
+  });
+
+  it("folds clusters past the eighth into one neutral colour, never a generated hue", () => {
+    expect(seriesColor(LIGHT, 0)).toBe("#2a78d6");
+    expect(seriesColor(LIGHT, 7)).toBe("#e34948");
+    expect(seriesColor(LIGHT, 8)).toBe(LIGHT.other);
+    expect(seriesColor(LIGHT, 12)).toBe(LIGHT.other);
+  });
+});
+
+describe("table view", () => {
+  it("lists every data point with the encoded fields and its trial count", () => {
+    const viz = example("4-recruiting-countries");
+    const table = toTable(viz);
+    expect(table.columns.map((c) => c.field)).toEqual(["country", "trial_count", "citation_count"]);
+    expect(table.rows.length).toBe((viz.data as Datum[]).length);
+  });
+
+  it("lists network nodes and links", () => {
+    const viz = example("5-drug-network");
+    const table = toTable(viz);
+    expect(table.rows.length).toBe((viz.data as NetworkData).nodes.length + (viz.data as NetworkData).edges.length);
   });
 });
