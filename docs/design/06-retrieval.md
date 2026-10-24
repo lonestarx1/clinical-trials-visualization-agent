@@ -13,6 +13,8 @@ Status: **Decided** (2026-10-24)
 | D6.5 | **Background jobs** for requests estimated to take **over ~60 s**: the API returns a job ID immediately; the client polls for the result. Job state is stored in the database. |
 | D6.6 | Retrieval sits behind a **data-source interface**, so a local mirror with incremental sync could be added later without changing other stages (documented as future work). |
 
+**As built (2026-10-25):** strategy S3 (fetch and aggregate) answers most questions, and S2 answers trials-per-year series with one count call per year. Comparison groups are fetched concurrently through the shared rate limiter. Strategy S1 (`/stats/field/values`) and parallel slices within one search are designed below but not built. Code: [`backend/app/pipeline/run.py`](../../backend/app/pipeline/run.py), [`backend/app/ctgov/retrieval.py`](../../backend/app/ctgov/retrieval.py).
+
 ## Why live
 
 > **Updated 2026-10-25:** the mirror question was reopened in [Q21](21-local-mirror-revisited.md). Live retrieval still stands, but the main reason changed. Q21 found strong precedent for mirroring (ClinicalTrials.gov offers full downloads, and AACT publishes a daily Postgres copy), so the terms of use are no longer the deciding factor. The deciding factor is **search accuracy**: the API resolves drug and condition synonyms, and a plain local copy can't yet. The reasons below are the original ones from 2026-10-24.

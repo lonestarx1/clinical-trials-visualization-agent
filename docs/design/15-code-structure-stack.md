@@ -45,7 +45,11 @@ Sources: JetBrains PyCharm blog (2026-06), Fungies, Next-IT, Uvik comparisons. P
 - The **planner** is a bounded tool-calling sub-agent (`list_options`, `check_plan`, `count_trials`, `submit_plan`) with a step limit.
 - Non-AI stages are plain, deterministic Python functions called from nodes, so they stay unit-testable without the framework.
 
+**As built:** LangGraph runs the planner's bounded tool loop ([`backend/app/agents/planner.py`](../../backend/app/agents/planner.py)). The request pipeline around it is plain async Python ([`backend/app/pipeline/query.py`](../../backend/app/pipeline/query.py)), with the guard and planner started as concurrent tasks, rather than one LangGraph state graph.
+
 ## Code structure
+
+The backend lives in `backend/app/` with this layout, plus `llm/` (the model client with retries and the fallback model).
 
 ```
 app/
