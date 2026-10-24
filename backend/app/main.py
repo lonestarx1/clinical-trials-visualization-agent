@@ -12,12 +12,14 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from app.api import debug, health, query, results
 from app.api.deps import openai_factory
 from app.api.errors import install_error_handlers
+from app.api.openapi import DESCRIPTION, SERVERS, TAGS
 from app.api.ratelimit import RateLimitMiddleware
 from app.core.config import Settings
 from app.core.logging import configure_logging
 from app.core.pricing import load_pricing, missing_prices
 from app.ctgov.client import CtgovClient, RateLimiter
 from app.store.db import create_engine
+from app.store.results import CODE_VERSION
 from app.workers.runner import requeue_stale, worker_loop
 
 log = logging.getLogger(__name__)
@@ -61,7 +63,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="ClinicalTrials.gov Query-to-Visualization Agent",
-        version="0.4.0",
+        version=CODE_VERSION,
+        summary="Ask about clinical trials, get a cited chart specification.",
+        description=DESCRIPTION,
+        servers=SERVERS,
+        openapi_tags=TAGS,
         lifespan=lifespan,
     )
     app.state.settings = settings
