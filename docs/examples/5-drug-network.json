@@ -4,15 +4,15 @@
     "citations_per_datum": 2
   },
   "http_status": 200,
-  "seconds": 15.8,
+  "seconds": 11.7,
   "response": {
     "schema_version": "1.0",
-    "result_id": null,
+    "result_id": "d351b949-6832-4d8b-a127-c2e16573f0cf",
     "status": "ok",
     "visualization": {
       "type": "network_graph",
-      "title": "ClinicalTrials.gov melanoma drug network by trial count (top nodes and link)",
-      "summary": "Across 1,422 melanoma trials, the drug network has 38 nodes and 129 links, led by pembrolizumab with 246, and the strongest connection is Ipilimumab - Nivolumab with 119 trials.",
+      "title": "ClinicalTrials.gov network of melanoma trials by drug, showing trial counts",
+      "summary": "Across 38 drug nodes and 130 connections (total 1,446 trials), pembrolizumab is highest (250), and the strongest link is Ipilimumab–Nivolumab (122).",
       "encoding": {
         "node_id": {
           "field": "id",
@@ -78,11 +78,11 @@
             "id": "drug:pembrolizumab",
             "label": "pembrolizumab",
             "type": "drug",
-            "weight": 246,
+            "weight": 250,
             "degree": 19,
             "community": 2,
             "is_query_entity": false,
-            "citation_count": 246,
+            "citation_count": 250,
             "citations": [
               {
                 "nct_id": "NCT05669352",
@@ -122,11 +122,11 @@
             "id": "drug:nivolumab",
             "label": "Nivolumab",
             "type": "drug",
-            "weight": 223,
+            "weight": 231,
             "degree": 16,
             "community": 2,
             "is_query_entity": false,
-            "citation_count": 223,
+            "citation_count": 231,
             "citations": [
               {
                 "nct_id": "NCT07862530",
@@ -166,11 +166,11 @@
             "id": "drug:ipilimumab",
             "label": "Ipilimumab",
             "type": "drug",
-            "weight": 203,
+            "weight": 206,
             "degree": 18,
             "community": 2,
             "is_query_entity": false,
-            "citation_count": 203,
+            "citation_count": 206,
             "citations": [
               {
                 "nct_id": "NCT07838974",
@@ -210,11 +210,11 @@
             "id": "drug:cyclophosphamide",
             "label": "Cyclophosphamide",
             "type": "drug",
-            "weight": 125,
+            "weight": 126,
             "degree": 13,
             "community": 0,
             "is_query_entity": false,
-            "citation_count": 125,
+            "citation_count": 126,
             "citations": [
               {
                 "nct_id": "NCT07651618",
@@ -254,11 +254,11 @@
             "id": "drug:aldesleukin",
             "label": "aldesleukin",
             "type": "drug",
-            "weight": 98,
+            "weight": 99,
             "degree": 16,
             "community": 0,
             "is_query_entity": false,
-            "citation_count": 98,
+            "citation_count": 99,
             "citations": [
               {
                 "nct_id": "NCT07651618",
@@ -287,6 +287,94 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[0].name",
                     "excerpt": "Aldesleukin"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:trametinib",
+            "id": "drug:trametinib",
+            "label": "trametinib",
+            "type": "drug",
+            "weight": 73,
+            "degree": 6,
+            "community": 5,
+            "is_query_entity": false,
+            "citation_count": 73,
+            "citations": [
+              {
+                "nct_id": "NCT07440290",
+                "url": "https://clinicaltrials.gov/study/NCT07440290",
+                "title": "DETERMINE Trial Treatment Arm 07: Dabrafenib in Combination With Trametinib in Adult, Paediatric and Teenage/Young Adult Patients With BRAF V600 Mutation-Positive Cancers.",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "trametinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Trametinib"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT05275374",
+                "url": "https://clinicaltrials.gov/study/NCT05275374",
+                "title": "XP-102 and XP-102 in Combination With Trametinib in Advanced Solid Tumor Patients With a BRAF V600 Mutation",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "trametinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Trametinib"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:dabrafenib",
+            "id": "drug:dabrafenib",
+            "label": "dabrafenib",
+            "type": "drug",
+            "weight": 70,
+            "degree": 7,
+            "community": 5,
+            "is_query_entity": false,
+            "citation_count": 70,
+            "citations": [
+              {
+                "nct_id": "NCT07440290",
+                "url": "https://clinicaltrials.gov/study/NCT07440290",
+                "title": "DETERMINE Trial Treatment Arm 07: Dabrafenib in Combination With Trametinib in Adult, Paediatric and Teenage/Young Adult Patients With BRAF V600 Mutation-Positive Cancers.",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Dabrafenib"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT07092670",
+                "url": "https://clinicaltrials.gov/study/NCT07092670",
+                "title": "MELAFERT: Impact of Adjuvant Therapy on FERTility in Patients With Resected MELAnoma at High Risk of Relapse.",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Dabrafenib + Trametinib"
                   }
                 ]
               }
@@ -338,50 +426,6 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:trametinib",
-            "id": "drug:trametinib",
-            "label": "trametinib",
-            "type": "drug",
-            "weight": 66,
-            "degree": 6,
-            "community": 5,
-            "is_query_entity": false,
-            "citation_count": 66,
-            "citations": [
-              {
-                "nct_id": "NCT07440290",
-                "url": "https://clinicaltrials.gov/study/NCT07440290",
-                "title": "DETERMINE Trial Treatment Arm 07: Dabrafenib in Combination With Trametinib in Adult, Paediatric and Teenage/Young Adult Patients With BRAF V600 Mutation-Positive Cancers.",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "trametinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Trametinib"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT05275374",
-                "url": "https://clinicaltrials.gov/study/NCT05275374",
-                "title": "XP-102 and XP-102 in Combination With Trametinib in Advanced Solid Tumor Patients With a BRAF V600 Mutation",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "trametinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Trametinib"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
             "key": "drug:fludarabine",
             "id": "drug:fludarabine",
             "label": "fludarabine",
@@ -419,50 +463,6 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[6].name",
                     "excerpt": "Fludarabine"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:dabrafenib",
-            "id": "drug:dabrafenib",
-            "label": "dabrafenib",
-            "type": "drug",
-            "weight": 61,
-            "degree": 6,
-            "community": 5,
-            "is_query_entity": false,
-            "citation_count": 61,
-            "citations": [
-              {
-                "nct_id": "NCT07440290",
-                "url": "https://clinicaltrials.gov/study/NCT07440290",
-                "title": "DETERMINE Trial Treatment Arm 07: Dabrafenib in Combination With Trametinib in Adult, Paediatric and Teenage/Young Adult Patients With BRAF V600 Mutation-Positive Cancers.",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "dabrafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Dabrafenib"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT05585320",
-                "url": "https://clinicaltrials.gov/study/NCT05585320",
-                "title": "A Phase 1/2a Study of IMM-1-104 in Participants With Advanced or Metastatic Solid Tumors",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "dabrafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
-                    "excerpt": "IMM-1-104 + dabrafenib (Treatment Group D)"
                   }
                 ]
               }
@@ -518,11 +518,11 @@
             "id": "drug:vemurafenib",
             "label": "Vemurafenib",
             "type": "drug",
-            "weight": 53,
-            "degree": 2,
+            "weight": 55,
+            "degree": 3,
             "community": 4,
             "is_query_entity": false,
-            "citation_count": 53,
+            "citation_count": 55,
             "citations": [
               {
                 "nct_id": "NCT05768178",
@@ -540,16 +540,16 @@
                 ]
               },
               {
-                "nct_id": "NCT05263453",
-                "url": "https://clinicaltrials.gov/study/NCT05263453",
-                "title": "HL-085+Vemurafenib to Treat Advanced Melanoma Patients With BRAF V600E/K Mutation",
+                "nct_id": "NCT05260684",
+                "url": "https://clinicaltrials.gov/study/NCT05260684",
+                "title": "Comparative Effectiveness of Targeted Therapies in BRAF Positive Metastatic Melanoma in the US",
                 "evidence": [
                   {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
                     "excerpt": "Vemurafenib"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
                     "excerpt": "Vemurafenib"
                   }
                 ]
@@ -562,11 +562,11 @@
             "id": "drug:bevacizumab",
             "label": "Bevacizumab",
             "type": "drug",
-            "weight": 40,
+            "weight": 41,
             "degree": 10,
             "community": 1,
             "is_query_entity": false,
-            "citation_count": 40,
+            "citation_count": 41,
             "citations": [
               {
                 "nct_id": "NCT06163820",
@@ -822,6 +822,50 @@
             "citations_truncated": true
           },
           {
+            "key": "drug:cobimetinib",
+            "id": "drug:cobimetinib",
+            "label": "cobimetinib",
+            "type": "drug",
+            "weight": 31,
+            "degree": 2,
+            "community": 4,
+            "is_query_entity": false,
+            "citation_count": 31,
+            "citations": [
+              {
+                "nct_id": "NCT05768178",
+                "url": "https://clinicaltrials.gov/study/NCT05768178",
+                "title": "DETERMINE Trial Treatment Arm 05: Vemurafenib in Combination With Cobimetinib in Adult Patients With BRAF Positive Cancers.",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "cobimetinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Cobimetinib"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT05260684",
+                "url": "https://clinicaltrials.gov/study/NCT05260684",
+                "title": "Comparative Effectiveness of Targeted Therapies in BRAF Positive Metastatic Melanoma in the US",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[4].term",
+                    "excerpt": "cobimetinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
+                    "excerpt": "Cobimetinib"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
             "key": "drug:cisplatin",
             "id": "drug:cisplatin",
             "label": "Cisplatin",
@@ -866,59 +910,15 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:cobimetinib",
-            "id": "drug:cobimetinib",
-            "label": "cobimetinib",
-            "type": "drug",
-            "weight": 29,
-            "degree": 2,
-            "community": 4,
-            "is_query_entity": false,
-            "citation_count": 29,
-            "citations": [
-              {
-                "nct_id": "NCT05768178",
-                "url": "https://clinicaltrials.gov/study/NCT05768178",
-                "title": "DETERMINE Trial Treatment Arm 05: Vemurafenib in Combination With Cobimetinib in Adult Patients With BRAF Positive Cancers.",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "cobimetinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Cobimetinib"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT04835805",
-                "url": "https://clinicaltrials.gov/study/NCT04835805",
-                "title": "A Study to Evaluate the Safety and Activity of Belvarafenib as a Single Agent and in Combination With Either Cobimetinib or Cobimetinib Plus Nivolumab in Patients With NRAS-mutant Advanced Melanoma.",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "cobimetinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Cobimetinib"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
             "key": "drug:binimetinib",
             "id": "drug:binimetinib",
             "label": "binimetinib",
             "type": "drug",
-            "weight": 28,
+            "weight": 30,
             "degree": 6,
             "community": 2,
             "is_query_entity": false,
-            "citation_count": 28,
+            "citation_count": 30,
             "citations": [
               {
                 "nct_id": "NCT05304546",
@@ -947,6 +947,50 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[1].name",
                     "excerpt": "binimetinib"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:atezolizumab",
+            "id": "drug:atezolizumab",
+            "label": "atezolizumab",
+            "type": "drug",
+            "weight": 28,
+            "degree": 5,
+            "community": 4,
+            "is_query_entity": false,
+            "citation_count": 28,
+            "citations": [
+              {
+                "nct_id": "NCT06444815",
+                "url": "https://clinicaltrials.gov/study/NCT06444815",
+                "title": "A Study of VET3-TGI in Patients With Solid Tumors",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "atezolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Atezolizumab"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT06332755",
+                "url": "https://clinicaltrials.gov/study/NCT06332755",
+                "title": "Study to Evaluate LB-LR1109, Administered Alone for the Treatment of Solid Tumor and in Combination With Atezolizumab for the Treatment of NSCLC",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "atezolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Phase 1b: LB-LR1109 and Atezolizumab"
                   }
                 ]
               }
@@ -998,43 +1042,43 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:atezolizumab",
-            "id": "drug:atezolizumab",
-            "label": "atezolizumab",
+            "key": "drug:encorafenib",
+            "id": "drug:encorafenib",
+            "label": "encorafenib",
             "type": "drug",
-            "weight": 27,
-            "degree": 5,
-            "community": 4,
+            "weight": 26,
+            "degree": 6,
+            "community": 2,
             "is_query_entity": false,
-            "citation_count": 27,
+            "citation_count": 26,
             "citations": [
               {
-                "nct_id": "NCT06444815",
-                "url": "https://clinicaltrials.gov/study/NCT06444815",
-                "title": "A Study of VET3-TGI in Patients With Solid Tumors",
+                "nct_id": "NCT06887088",
+                "url": "https://clinicaltrials.gov/study/NCT06887088",
+                "title": "Encorafenib and biNimetinib Followed by CEmiplimab and FiAnLimab in Patients With BRAF Mutant melanOma and Symptomatic Brain Metastases",
                 "evidence": [
                   {
                     "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "atezolizumab"
+                    "excerpt": "encorafenib"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Atezolizumab"
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Encorafenib + Binimetinib"
                   }
                 ]
               },
               {
-                "nct_id": "NCT06332755",
-                "url": "https://clinicaltrials.gov/study/NCT06332755",
-                "title": "Study to Evaluate LB-LR1109, Administered Alone for the Treatment of Solid Tumor and in Combination With Atezolizumab for the Treatment of NSCLC",
+                "nct_id": "NCT06194929",
+                "url": "https://clinicaltrials.gov/study/NCT06194929",
+                "title": "Defactinib and Avutometinib, With or Without Encorafenib, for the Treatment of Patients With Brain Metastases From Cutaneous Melanoma",
                 "evidence": [
                   {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "atezolizumab"
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "encorafenib"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Phase 1b: LB-LR1109 and Atezolizumab"
+                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
+                    "excerpt": "Encorafenib"
                   }
                 ]
               }
@@ -1079,50 +1123,6 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[1].name",
                     "excerpt": "MART-1 antigen"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:encorafenib",
-            "id": "drug:encorafenib",
-            "label": "encorafenib",
-            "type": "drug",
-            "weight": 24,
-            "degree": 6,
-            "community": 2,
-            "is_query_entity": false,
-            "citation_count": 24,
-            "citations": [
-              {
-                "nct_id": "NCT06887088",
-                "url": "https://clinicaltrials.gov/study/NCT06887088",
-                "title": "Encorafenib and biNimetinib Followed by CEmiplimab and FiAnLimab in Patients With BRAF Mutant melanOma and Symptomatic Brain Metastases",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "encorafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Encorafenib + Binimetinib"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT06194929",
-                "url": "https://clinicaltrials.gov/study/NCT06194929",
-                "title": "Defactinib and Avutometinib, With or Without Encorafenib, for the Treatment of Patients With Brain Metastases From Cutaneous Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "encorafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
-                    "excerpt": "Encorafenib"
                   }
                 ]
               }
@@ -1214,11 +1214,11 @@
             "id": "drug:cemiplimab",
             "label": "cemiplimab",
             "type": "drug",
-            "weight": 19,
+            "weight": 20,
             "degree": 1,
             "community": 2,
             "is_query_entity": false,
-            "citation_count": 19,
+            "citation_count": 20,
             "citations": [
               {
                 "nct_id": "NCT07527325",
@@ -1466,6 +1466,42 @@
             "citations_truncated": true
           },
           {
+            "key": "drug:therapeutic autologous lymphocytes",
+            "id": "drug:therapeutic autologous lymphocytes",
+            "label": "therapeutic autologous lymphocytes",
+            "type": "drug",
+            "weight": 16,
+            "degree": 5,
+            "community": 0,
+            "is_query_entity": false,
+            "citation_count": 16,
+            "citations": [
+              {
+                "nct_id": "NCT01339663",
+                "url": "https://clinicaltrials.gov/study/NCT01339663",
+                "title": "Vaccine Therapy Following Therapeutic Autologous Lymphocytes and Cyclophosphamide in Treating Patients With Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
+                    "excerpt": "therapeutic autologous lymphocytes"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT01106235",
+                "url": "https://clinicaltrials.gov/study/NCT01106235",
+                "title": "Therapeutic Autologous Lymphocytes, Cyclophosphamide, and Aldesleukin in Treating Patients With Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "therapeutic autologous lymphocytes"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
             "key": "drug:docetaxel",
             "id": "drug:docetaxel",
             "label": "Docetaxel",
@@ -1503,42 +1539,6 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[2].name",
                     "excerpt": "Docetaxel"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:therapeutic autologous lymphocytes",
-            "id": "drug:therapeutic autologous lymphocytes",
-            "label": "therapeutic autologous lymphocytes",
-            "type": "drug",
-            "weight": 15,
-            "degree": 5,
-            "community": 0,
-            "is_query_entity": false,
-            "citation_count": 15,
-            "citations": [
-              {
-                "nct_id": "NCT01339663",
-                "url": "https://clinicaltrials.gov/study/NCT01339663",
-                "title": "Vaccine Therapy Following Therapeutic Autologous Lymphocytes and Cyclophosphamide in Treating Patients With Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
-                    "excerpt": "therapeutic autologous lymphocytes"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT01106235",
-                "url": "https://clinicaltrials.gov/study/NCT01106235",
-                "title": "Therapeutic Autologous Lymphocytes, Cyclophosphamide, and Aldesleukin in Treating Patients With Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "therapeutic autologous lymphocytes"
                   }
                 ]
               }
@@ -1711,9 +1711,9 @@
             "key": "drug:ipilimumab|drug:nivolumab",
             "source": "drug:ipilimumab",
             "target": "drug:nivolumab",
-            "weight": 119,
-            "jaccard": 0.3876,
-            "citation_count": 119,
+            "weight": 122,
+            "jaccard": 0.3873,
+            "citation_count": 122,
             "citations": [
               {
                 "nct_id": "NCT07838974",
@@ -1769,7 +1769,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:fludarabine",
             "weight": 60,
-            "jaccard": 0.4724,
+            "jaccard": 0.4688,
             "citation_count": 60,
             "citations": [
               {
@@ -1825,9 +1825,9 @@
             "key": "drug:dabrafenib|drug:trametinib",
             "source": "drug:dabrafenib",
             "target": "drug:trametinib",
-            "weight": 53,
-            "jaccard": 0.7162,
-            "citation_count": 53,
+            "weight": 60,
+            "jaccard": 0.7229,
+            "citation_count": 60,
             "citations": [
               {
                 "nct_id": "NCT07440290",
@@ -1882,9 +1882,9 @@
             "key": "drug:aldesleukin|drug:cyclophosphamide",
             "source": "drug:aldesleukin",
             "target": "drug:cyclophosphamide",
-            "weight": 49,
-            "jaccard": 0.2816,
-            "citation_count": 49,
+            "weight": 50,
+            "jaccard": 0.2857,
+            "citation_count": 50,
             "citations": [
               {
                 "nct_id": "NCT07651618",
@@ -1939,9 +1939,9 @@
             "key": "drug:nivolumab|drug:pembrolizumab",
             "source": "drug:nivolumab",
             "target": "drug:pembrolizumab",
-            "weight": 33,
-            "jaccard": 0.0757,
-            "citation_count": 33,
+            "weight": 37,
+            "jaccard": 0.0833,
+            "citation_count": 37,
             "citations": [
               {
                 "nct_id": "NCT06999980",
@@ -2054,7 +2054,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:fludarabine phosphate",
             "weight": 25,
-            "jaccard": 0.1953,
+            "jaccard": 0.1938,
             "citation_count": 25,
             "citations": [
               {
@@ -2110,9 +2110,9 @@
             "key": "drug:ipilimumab|drug:pembrolizumab",
             "source": "drug:ipilimumab",
             "target": "drug:pembrolizumab",
-            "weight": 24,
-            "jaccard": 0.0565,
-            "citation_count": 24,
+            "weight": 25,
+            "jaccard": 0.058,
+            "citation_count": 25,
             "citations": [
               {
                 "nct_id": "NCT07740941",
@@ -2167,9 +2167,9 @@
             "key": "drug:cobimetinib|drug:vemurafenib",
             "source": "drug:cobimetinib",
             "target": "drug:vemurafenib",
-            "weight": 22,
-            "jaccard": 0.3667,
-            "citation_count": 22,
+            "weight": 24,
+            "jaccard": 0.3871,
+            "citation_count": 24,
             "citations": [
               {
                 "nct_id": "NCT05768178",
@@ -2195,25 +2195,25 @@
                 ]
               },
               {
-                "nct_id": "NCT04722575",
-                "url": "https://clinicaltrials.gov/study/NCT04722575",
-                "title": "Combination or Sequence of Vemurafenib, Cobimetinib, and Atezolizumab in High-risk, Resectable Melanoma",
+                "nct_id": "NCT05260684",
+                "url": "https://clinicaltrials.gov/study/NCT05260684",
+                "title": "Comparative Effectiveness of Targeted Therapies in BRAF Positive Metastatic Melanoma in the US",
                 "evidence": [
                   {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "cobimetinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Cobimetinib 20 MG Oral Tablet"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
                     "excerpt": "Vemurafenib"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Vemurafenib 240 Mg Oral Capsule"
+                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
+                    "excerpt": "Vemurafenib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[4].term",
+                    "excerpt": "cobimetinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
+                    "excerpt": "Cobimetinib"
                   }
                 ]
               }
@@ -2225,7 +2225,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:fludarabine",
             "weight": 21,
-            "jaccard": 0.1511,
+            "jaccard": 0.15,
             "citation_count": 21,
             "citations": [
               {
@@ -2281,9 +2281,9 @@
             "key": "drug:binimetinib|drug:encorafenib",
             "source": "drug:binimetinib",
             "target": "drug:encorafenib",
-            "weight": 19,
-            "jaccard": 0.5758,
-            "citation_count": 19,
+            "weight": 21,
+            "jaccard": 0.6,
+            "citation_count": 21,
             "citations": [
               {
                 "nct_id": "NCT05304546",
@@ -2339,7 +2339,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:fludarabine phosphate",
             "weight": 18,
-            "jaccard": 0.1667,
+            "jaccard": 0.1651,
             "citation_count": 18,
             "citations": [
               {
@@ -2396,7 +2396,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:incomplete freund's adjuvant",
             "weight": 15,
-            "jaccard": 0.124,
+            "jaccard": 0.123,
             "citation_count": 15,
             "citations": [
               {
@@ -2453,7 +2453,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:interleukin-2",
             "weight": 15,
-            "jaccard": 0.1034,
+            "jaccard": 0.1027,
             "citation_count": 15,
             "citations": [
               {
@@ -2510,7 +2510,7 @@
             "source": "drug:lenvatinib",
             "target": "drug:pembrolizumab",
             "weight": 15,
-            "jaccard": 0.06,
+            "jaccard": 0.0591,
             "citation_count": 15,
             "citations": [
               {
@@ -2567,7 +2567,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:pembrolizumab",
             "weight": 14,
-            "jaccard": 0.0392,
+            "jaccard": 0.0387,
             "citation_count": 14,
             "citations": [
               {
@@ -2680,9 +2680,9 @@
             "key": "drug:aldesleukin|drug:therapeutic autologous lymphocytes",
             "source": "drug:aldesleukin",
             "target": "drug:therapeutic autologous lymphocytes",
-            "weight": 12,
-            "jaccard": 0.1188,
-            "citation_count": 12,
+            "weight": 13,
+            "jaccard": 0.1275,
+            "citation_count": 13,
             "citations": [
               {
                 "nct_id": "NCT01339663",
@@ -2730,7 +2730,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:therapeutic tumor infiltrating lymphocytes",
             "weight": 12,
-            "jaccard": 0.1212,
+            "jaccard": 0.12,
             "citation_count": 12,
             "citations": [
               {
@@ -2768,6 +2768,55 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[6].name",
                     "excerpt": "Therapeutic Tumor Infiltrating Lymphocytes"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:cyclophosphamide|drug:therapeutic autologous lymphocytes",
+            "source": "drug:cyclophosphamide",
+            "target": "drug:therapeutic autologous lymphocytes",
+            "weight": 12,
+            "jaccard": 0.0923,
+            "citation_count": 12,
+            "citations": [
+              {
+                "nct_id": "NCT01339663",
+                "url": "https://clinicaltrials.gov/study/NCT01339663",
+                "title": "Vaccine Therapy Following Therapeutic Autologous Lymphocytes and Cyclophosphamide in Treating Patients With Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "Cyclophosphamide"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "cyclophosphamide"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
+                    "excerpt": "therapeutic autologous lymphocytes"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT01106235",
+                "url": "https://clinicaltrials.gov/study/NCT01106235",
+                "title": "Therapeutic Autologous Lymphocytes, Cyclophosphamide, and Aldesleukin in Treating Patients With Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "therapeutic autologous lymphocytes"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "excerpt": "Cyclophosphamide"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
+                    "excerpt": "cyclophosphamide"
                   }
                 ]
               }
@@ -2885,7 +2934,7 @@
             "source": "drug:paclitaxel",
             "target": "drug:pembrolizumab",
             "weight": 12,
-            "jaccard": 0.044,
+            "jaccard": 0.0433,
             "citation_count": 12,
             "citations": [
               {
@@ -2942,7 +2991,7 @@
             "source": "drug:atezolizumab",
             "target": "drug:cobimetinib",
             "weight": 11,
-            "jaccard": 0.2444,
+            "jaccard": 0.2292,
             "citation_count": 11,
             "citations": [
               {
@@ -2999,7 +3048,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:filgrastim",
             "weight": 11,
-            "jaccard": 0.0846,
+            "jaccard": 0.084,
             "citation_count": 11,
             "citations": [
               {
@@ -3045,55 +3094,6 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[7].name",
                     "excerpt": "filgrastim"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:cyclophosphamide|drug:therapeutic autologous lymphocytes",
-            "source": "drug:cyclophosphamide",
-            "target": "drug:therapeutic autologous lymphocytes",
-            "weight": 11,
-            "jaccard": 0.0853,
-            "citation_count": 11,
-            "citations": [
-              {
-                "nct_id": "NCT01339663",
-                "url": "https://clinicaltrials.gov/study/NCT01339663",
-                "title": "Vaccine Therapy Following Therapeutic Autologous Lymphocytes and Cyclophosphamide in Treating Patients With Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "Cyclophosphamide"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "cyclophosphamide"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
-                    "excerpt": "therapeutic autologous lymphocytes"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT01106235",
-                "url": "https://clinicaltrials.gov/study/NCT01106235",
-                "title": "Therapeutic Autologous Lymphocytes, Cyclophosphamide, and Aldesleukin in Treating Patients With Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "therapeutic autologous lymphocytes"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
-                    "excerpt": "Cyclophosphamide"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
-                    "excerpt": "cyclophosphamide"
                   }
                 ]
               }
@@ -3154,7 +3154,7 @@
             "source": "drug:carboplatin",
             "target": "drug:pembrolizumab",
             "weight": 10,
-            "jaccard": 0.0369,
+            "jaccard": 0.0364,
             "citation_count": 10,
             "citations": [
               {
@@ -3366,7 +3366,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:filgrastim",
             "weight": 9,
-            "jaccard": 0.0857,
+            "jaccard": 0.0849,
             "citation_count": 9,
             "citations": [
               {
@@ -3423,7 +3423,7 @@
             "source": "drug:binimetinib",
             "target": "drug:nivolumab",
             "weight": 9,
-            "jaccard": 0.0372,
+            "jaccard": 0.0357,
             "citation_count": 9,
             "citations": [
               {
@@ -3537,7 +3537,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:ipilimumab",
             "weight": 9,
-            "jaccard": 0.0282,
+            "jaccard": 0.0279,
             "citation_count": 9,
             "citations": [
               {
@@ -3651,7 +3651,7 @@
             "source": "drug:bevacizumab",
             "target": "drug:paclitaxel",
             "weight": 8,
-            "jaccard": 0.1127,
+            "jaccard": 0.1111,
             "citation_count": 8,
             "citations": [
               {
@@ -3708,7 +3708,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:therapeutic tumor infiltrating lymphocytes",
             "weight": 8,
-            "jaccard": 0.0615,
+            "jaccard": 0.0611,
             "citation_count": 8,
             "citations": [
               {
@@ -3746,6 +3746,120 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[6].name",
                     "excerpt": "Therapeutic Tumor Infiltrating Lymphocytes"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:dabrafenib|drug:nivolumab",
+            "source": "drug:dabrafenib",
+            "target": "drug:nivolumab",
+            "weight": 8,
+            "jaccard": 0.0273,
+            "citation_count": 8,
+            "citations": [
+              {
+                "nct_id": "NCT07092670",
+                "url": "https://clinicaltrials.gov/study/NCT07092670",
+                "title": "MELAFERT: Impact of Adjuvant Therapy on FERTility in Patients With Resected MELAnoma at High Risk of Relapse.",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Dabrafenib + Trametinib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
+                    "excerpt": "Nivolumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
+                    "excerpt": "Nivolumab"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT05714371",
+                "url": "https://clinicaltrials.gov/study/NCT05714371",
+                "title": "Retrospective Assessment of Adverse Events-related Healthcare Resource Utilization and Costs of Immune Checkpoint Inhibitor and Targeted Therapy for Adjuvant Treatment of Melanoma",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "Nivolumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Nivolumab"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
+                    "excerpt": "Dabrafenib + trametinib"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:dabrafenib|drug:pembrolizumab",
+            "source": "drug:dabrafenib",
+            "target": "drug:pembrolizumab",
+            "weight": 8,
+            "jaccard": 0.0256,
+            "citation_count": 8,
+            "citations": [
+              {
+                "nct_id": "NCT07092670",
+                "url": "https://clinicaltrials.gov/study/NCT07092670",
+                "title": "MELAFERT: Impact of Adjuvant Therapy on FERTility in Patients With Resected MELAnoma at High Risk of Relapse.",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Dabrafenib + Trametinib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "excerpt": "pembrolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Pembrolizumab"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT05585320",
+                "url": "https://clinicaltrials.gov/study/NCT05585320",
+                "title": "A Phase 1/2a Study of IMM-1-104 in Participants With Advanced or Metastatic Solid Tumors",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
+                    "excerpt": "IMM-1-104 + dabrafenib (Treatment Group D)"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "pembrolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
+                    "excerpt": "IMM-1-104 + pembrolizumab (Treatment Group E)"
                   }
                 ]
               }
@@ -3814,7 +3928,7 @@
             "source": "drug:encorafenib",
             "target": "drug:nivolumab",
             "weight": 8,
-            "jaccard": 0.0335,
+            "jaccard": 0.0321,
             "citation_count": 8,
             "citations": [
               {
@@ -3871,7 +3985,7 @@
             "source": "drug:fludarabine phosphate",
             "target": "drug:therapeutic autologous lymphocytes",
             "weight": 8,
-            "jaccard": 0.2286,
+            "jaccard": 0.2222,
             "citation_count": 8,
             "citations": [
               {
@@ -3920,7 +4034,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:gp100 antigen",
             "weight": 7,
-            "jaccard": 0.0648,
+            "jaccard": 0.0642,
             "citation_count": 7,
             "citations": [
               {
@@ -3969,7 +4083,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:sargramostim",
             "weight": 7,
-            "jaccard": 0.0569,
+            "jaccard": 0.0565,
             "citation_count": 7,
             "citations": [
               {
@@ -4022,11 +4136,68 @@
             "citations_truncated": true
           },
           {
+            "key": "drug:atezolizumab|drug:pembrolizumab",
+            "source": "drug:atezolizumab",
+            "target": "drug:pembrolizumab",
+            "weight": 7,
+            "jaccard": 0.0258,
+            "citation_count": 7,
+            "citations": [
+              {
+                "nct_id": "NCT05581004",
+                "url": "https://clinicaltrials.gov/study/NCT05581004",
+                "title": "A Study to Evaluate the Safety, Pharmacokinetics, and Activity of Enzelkitug as a Single Agent and in Combination With Checkpoint Inhibitor in Participants With Locally Advanced or Metastatic Solid Tumors",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "atezolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Atezolizumab"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "pembrolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
+                    "excerpt": "Pembrolizumab"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT04902040",
+                "url": "https://clinicaltrials.gov/study/NCT04902040",
+                "title": "Plinabulin in Combination With Radiation/Immunotherapy in Patients With Select Advanced Cancers After Progression on PD-1 or PD-L1 Targeted Antibodies",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "atezolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Atezolizumab"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[6].term",
+                    "excerpt": "pembrolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
+                    "excerpt": "Pembrolizumab"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
             "key": "drug:atezolizumab|drug:vemurafenib",
             "source": "drug:atezolizumab",
             "target": "drug:vemurafenib",
             "weight": 7,
-            "jaccard": 0.0959,
+            "jaccard": 0.0921,
             "citation_count": 7,
             "citations": [
               {
@@ -4083,7 +4254,7 @@
             "source": "drug:bevacizumab",
             "target": "drug:carboplatin",
             "weight": 7,
-            "jaccard": 0.1029,
+            "jaccard": 0.1014,
             "citation_count": 7,
             "citations": [
               {
@@ -4140,7 +4311,7 @@
             "source": "drug:carboplatin",
             "target": "drug:nivolumab",
             "weight": 7,
-            "jaccard": 0.0279,
+            "jaccard": 0.027,
             "citation_count": 7,
             "citations": [
               {
@@ -4197,7 +4368,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:nivolumab",
             "weight": 7,
-            "jaccard": 0.0205,
+            "jaccard": 0.02,
             "citation_count": 7,
             "citations": [
               {
@@ -4254,7 +4425,7 @@
             "source": "drug:dacarbazine",
             "target": "drug:ipilimumab",
             "weight": 7,
-            "jaccard": 0.0264,
+            "jaccard": 0.0261,
             "citation_count": 7,
             "citations": [
               {
@@ -4352,7 +4523,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:interferon-alpha",
             "weight": 6,
-            "jaccard": 0.055,
+            "jaccard": 0.0545,
             "citation_count": 6,
             "citations": [
               {
@@ -4409,7 +4580,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:ipilimumab",
             "weight": 6,
-            "jaccard": 0.0203,
+            "jaccard": 0.0201,
             "citation_count": 6,
             "citations": [
               {
@@ -4462,33 +4633,33 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:atezolizumab|drug:pembrolizumab",
+            "key": "drug:atezolizumab|drug:nivolumab",
             "source": "drug:atezolizumab",
-            "target": "drug:pembrolizumab",
+            "target": "drug:nivolumab",
             "weight": 6,
-            "jaccard": 0.0225,
+            "jaccard": 0.0237,
             "citation_count": 6,
             "citations": [
               {
-                "nct_id": "NCT05581004",
-                "url": "https://clinicaltrials.gov/study/NCT05581004",
-                "title": "A Study to Evaluate the Safety, Pharmacokinetics, and Activity of Enzelkitug as a Single Agent and in Combination With Checkpoint Inhibitor in Participants With Locally Advanced or Metastatic Solid Tumors",
+                "nct_id": "NCT05116202",
+                "url": "https://clinicaltrials.gov/study/NCT05116202",
+                "title": "A Study Evaluating the Efficacy and Safety of Multiple Treatment Combinations in Patients With Melanoma (Morpheus-Melanoma)",
                 "evidence": [
                   {
                     "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "Nivolumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Nivolumab"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
                     "excerpt": "atezolizumab"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
                     "excerpt": "Atezolizumab"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "pembrolizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
-                    "excerpt": "Pembrolizumab"
                   }
                 ]
               },
@@ -4506,12 +4677,12 @@
                     "excerpt": "Atezolizumab"
                   },
                   {
-                    "field": "derivedSection.interventionBrowseModule.meshes[6].term",
-                    "excerpt": "pembrolizumab"
+                    "field": "derivedSection.interventionBrowseModule.meshes[5].term",
+                    "excerpt": "Nivolumab"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
-                    "excerpt": "Pembrolizumab"
+                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
+                    "excerpt": "Nivolumab"
                   }
                 ]
               }
@@ -4523,7 +4694,7 @@
             "source": "drug:binimetinib",
             "target": "drug:pembrolizumab",
             "weight": 6,
-            "jaccard": 0.0224,
+            "jaccard": 0.0219,
             "citation_count": 6,
             "citations": [
               {
@@ -4637,7 +4808,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:il-2",
             "weight": 6,
-            "jaccard": 0.0451,
+            "jaccard": 0.0448,
             "citation_count": 6,
             "citations": [
               {
@@ -4675,120 +4846,6 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[6].name",
                     "excerpt": "IL-2"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:dabrafenib|drug:nivolumab",
-            "source": "drug:dabrafenib",
-            "target": "drug:nivolumab",
-            "weight": 6,
-            "jaccard": 0.0216,
-            "citation_count": 6,
-            "citations": [
-              {
-                "nct_id": "NCT03563729",
-                "url": "https://clinicaltrials.gov/study/NCT03563729",
-                "title": "Melanoma Metastasized to the Brain and Steroids",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
-                    "excerpt": "Nivolumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
-                    "excerpt": "Nivolumab Injection [Opdivo]"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[5].term",
-                    "excerpt": "dabrafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
-                    "excerpt": "Dabrafenib"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT02910700",
-                "url": "https://clinicaltrials.gov/study/NCT02910700",
-                "title": "Nivolumab With Trametinib and Dabrafenib, or Encorafenib and Binimetinib in Treating Patients With BRAF Mutated Metastatic or Unresectable Stage III-IV Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "dabrafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Dabrafenib"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
-                    "excerpt": "Nivolumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
-                    "excerpt": "Nivolumab"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:dabrafenib|drug:pembrolizumab",
-            "source": "drug:dabrafenib",
-            "target": "drug:pembrolizumab",
-            "weight": 6,
-            "jaccard": 0.0199,
-            "citation_count": 6,
-            "citations": [
-              {
-                "nct_id": "NCT05585320",
-                "url": "https://clinicaltrials.gov/study/NCT05585320",
-                "title": "A Phase 1/2a Study of IMM-1-104 in Participants With Advanced or Metastatic Solid Tumors",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "dabrafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
-                    "excerpt": "IMM-1-104 + dabrafenib (Treatment Group D)"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "pembrolizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
-                    "excerpt": "IMM-1-104 + pembrolizumab (Treatment Group E)"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT03563729",
-                "url": "https://clinicaltrials.gov/study/NCT03563729",
-                "title": "Melanoma Metastasized to the Brain and Steroids",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "pembrolizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Pembrolizumab Injection [Keytruda]"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[5].term",
-                    "excerpt": "dabrafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
-                    "excerpt": "Dabrafenib"
                   }
                 ]
               }
@@ -4857,7 +4914,7 @@
             "source": "drug:encorafenib",
             "target": "drug:pembrolizumab",
             "weight": 6,
-            "jaccard": 0.0227,
+            "jaccard": 0.0222,
             "citation_count": 6,
             "citations": [
               {
@@ -5012,7 +5069,7 @@
             "source": "drug:ipilimumab",
             "target": "drug:paclitaxel",
             "weight": 6,
-            "jaccard": 0.0254,
+            "jaccard": 0.0251,
             "citation_count": 6,
             "citations": [
               {
@@ -5069,7 +5126,7 @@
             "source": "drug:nivolumab",
             "target": "drug:paclitaxel",
             "weight": 6,
-            "jaccard": 0.0234,
+            "jaccard": 0.0227,
             "citation_count": 6,
             "citations": [
               {
@@ -5126,7 +5183,7 @@
             "source": "drug:nivolumab",
             "target": "drug:trametinib",
             "weight": 6,
-            "jaccard": 0.0212,
+            "jaccard": 0.0201,
             "citation_count": 6,
             "citations": [
               {
@@ -5183,7 +5240,7 @@
             "source": "drug:pembrolizumab",
             "target": "drug:trametinib",
             "weight": 6,
-            "jaccard": 0.0196,
+            "jaccard": 0.0189,
             "citation_count": 6,
             "citations": [
               {
@@ -5240,7 +5297,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:mart-1 antigen",
             "weight": 5,
-            "jaccard": 0.0427,
+            "jaccard": 0.0424,
             "citation_count": 5,
             "citations": [
               {
@@ -5297,7 +5354,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:pembrolizumab",
             "weight": 5,
-            "jaccard": 0.0147,
+            "jaccard": 0.0145,
             "citation_count": 5,
             "citations": [
               {
@@ -5350,56 +5407,113 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:atezolizumab|drug:nivolumab",
-            "source": "drug:atezolizumab",
-            "target": "drug:nivolumab",
+            "key": "drug:bevacizumab|drug:ipilimumab",
+            "source": "drug:bevacizumab",
+            "target": "drug:ipilimumab",
             "weight": 5,
-            "jaccard": 0.0204,
+            "jaccard": 0.0207,
             "citation_count": 5,
             "citations": [
               {
-                "nct_id": "NCT05116202",
-                "url": "https://clinicaltrials.gov/study/NCT05116202",
-                "title": "A Study Evaluating the Efficacy and Safety of Multiple Treatment Combinations in Patients With Melanoma (Morpheus-Melanoma)",
+                "nct_id": "NCT06163820",
+                "url": "https://clinicaltrials.gov/study/NCT06163820",
+                "title": "Bevacizumab and ICIs + hSRT in Symptomatic Melanoma Brain Metastases",
                 "evidence": [
                   {
                     "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "Nivolumab"
+                    "excerpt": "Bevacizumab"
                   },
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Nivolumab"
+                    "excerpt": "Bevacizumab"
                   },
                   {
-                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
-                    "excerpt": "atezolizumab"
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "Ipilimumab"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
-                    "excerpt": "Atezolizumab"
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Ipilimumab"
                   }
                 ]
               },
               {
-                "nct_id": "NCT04902040",
-                "url": "https://clinicaltrials.gov/study/NCT04902040",
-                "title": "Plinabulin in Combination With Radiation/Immunotherapy in Patients With Select Advanced Cancers After Progression on PD-1 or PD-L1 Targeted Antibodies",
+                "nct_id": "NCT06047379",
+                "url": "https://clinicaltrials.gov/study/NCT06047379",
+                "title": "Safety and Efficacy of NEO212 in Patients With Astrocytoma IDH-mutant, Glioblastoma IDH-wildtype or Brain Metastasis",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "Ipilimumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Ipilimumab"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[9].term",
+                    "excerpt": "Bevacizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[8].name",
+                    "excerpt": "Bevacizumab"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:bevacizumab|drug:nivolumab",
+            "source": "drug:bevacizumab",
+            "target": "drug:nivolumab",
+            "weight": 5,
+            "jaccard": 0.0187,
+            "citation_count": 5,
+            "citations": [
+              {
+                "nct_id": "NCT06163820",
+                "url": "https://clinicaltrials.gov/study/NCT06163820",
+                "title": "Bevacizumab and ICIs + hSRT in Symptomatic Melanoma Brain Metastases",
                 "evidence": [
                   {
                     "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "atezolizumab"
+                    "excerpt": "Bevacizumab"
                   },
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Atezolizumab"
+                    "excerpt": "Bevacizumab"
                   },
                   {
-                    "field": "derivedSection.interventionBrowseModule.meshes[5].term",
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "excerpt": "Nivolumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
+                    "excerpt": "Nivolumab"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT06047379",
+                "url": "https://clinicaltrials.gov/study/NCT06047379",
+                "title": "Safety and Efficacy of NEO212 in Patients With Astrocytoma IDH-mutant, Glioblastoma IDH-wildtype or Brain Metastasis",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
                     "excerpt": "Nivolumab"
                   },
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[3].name",
                     "excerpt": "Nivolumab"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[9].term",
+                    "excerpt": "Bevacizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[8].name",
+                    "excerpt": "Bevacizumab"
                   }
                 ]
               }
@@ -5411,7 +5525,7 @@
             "source": "drug:bevacizumab",
             "target": "drug:temozolomide",
             "weight": 5,
-            "jaccard": 0.0538,
+            "jaccard": 0.0532,
             "citation_count": 5,
             "citations": [
               {
@@ -5464,11 +5578,125 @@
             "citations_truncated": true
           },
           {
+            "key": "drug:binimetinib|drug:dabrafenib",
+            "source": "drug:binimetinib",
+            "target": "drug:dabrafenib",
+            "weight": 5,
+            "jaccard": 0.0526,
+            "citation_count": 5,
+            "citations": [
+              {
+                "nct_id": "NCT04903119",
+                "url": "https://clinicaltrials.gov/study/NCT04903119",
+                "title": "Nilotinib Plus Dabrafenib/Trametinib or Encorafenib/Binimetinib in Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
+                    "excerpt": "Dabrafenib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[4].term",
+                    "excerpt": "binimetinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
+                    "excerpt": "Binimetinib"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT05260684",
+                "url": "https://clinicaltrials.gov/study/NCT05260684",
+                "title": "Comparative Effectiveness of Targeted Therapies in BRAF Positive Metastatic Melanoma in the US",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "excerpt": "binimetinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Binimetinib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[5].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
+                    "excerpt": "Dabrafenib"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:binimetinib|drug:trametinib",
+            "source": "drug:binimetinib",
+            "target": "drug:trametinib",
+            "weight": 5,
+            "jaccard": 0.051,
+            "citation_count": 5,
+            "citations": [
+              {
+                "nct_id": "NCT04903119",
+                "url": "https://clinicaltrials.gov/study/NCT04903119",
+                "title": "Nilotinib Plus Dabrafenib/Trametinib or Encorafenib/Binimetinib in Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "excerpt": "trametinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
+                    "excerpt": "Trametinib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[4].term",
+                    "excerpt": "binimetinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
+                    "excerpt": "Binimetinib"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT05260684",
+                "url": "https://clinicaltrials.gov/study/NCT05260684",
+                "title": "Comparative Effectiveness of Targeted Therapies in BRAF Positive Metastatic Melanoma in the US",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "excerpt": "binimetinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Binimetinib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[6].term",
+                    "excerpt": "trametinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
+                    "excerpt": "Trametinib"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
             "key": "drug:carboplatin|drug:ipilimumab",
             "source": "drug:carboplatin",
             "target": "drug:ipilimumab",
             "weight": 5,
-            "jaccard": 0.0215,
+            "jaccard": 0.0212,
             "citation_count": 5,
             "citations": [
               {
@@ -5696,7 +5924,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:incomplete freund's adjuvant",
             "weight": 5,
-            "jaccard": 0.0316,
+            "jaccard": 0.0314,
             "citation_count": 5,
             "citations": [
               {
@@ -5753,7 +5981,7 @@
             "source": "drug:dacarbazine",
             "target": "drug:pembrolizumab",
             "weight": 5,
-            "jaccard": 0.0161,
+            "jaccard": 0.0159,
             "citation_count": 5,
             "citations": [
               {
@@ -5810,7 +6038,7 @@
             "source": "drug:filgrastim",
             "target": "drug:therapeutic autologous lymphocytes",
             "weight": 5,
-            "jaccard": 0.1923,
+            "jaccard": 0.1852,
             "citation_count": 5,
             "citations": [
               {
@@ -5859,7 +6087,7 @@
             "source": "drug:fludarabine",
             "target": "drug:pembrolizumab",
             "weight": 5,
-            "jaccard": 0.0165,
+            "jaccard": 0.0163,
             "citation_count": 5,
             "citations": [
               {
@@ -5973,7 +6201,7 @@
             "source": "drug:interleukin-2",
             "target": "drug:ipilimumab",
             "weight": 5,
-            "jaccard": 0.0215,
+            "jaccard": 0.0212,
             "citation_count": 5,
             "citations": [
               {
@@ -6140,7 +6368,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:tyrosinase peptide",
             "weight": 4,
-            "jaccard": 0.0345,
+            "jaccard": 0.0342,
             "citation_count": 4,
             "citations": [
               {
@@ -6185,11 +6413,68 @@
             "citations_truncated": true
           },
           {
+            "key": "drug:atezolizumab|drug:bevacizumab",
+            "source": "drug:atezolizumab",
+            "target": "drug:bevacizumab",
+            "weight": 4,
+            "jaccard": 0.0615,
+            "citation_count": 4,
+            "citations": [
+              {
+                "nct_id": "NCT04356729",
+                "url": "https://clinicaltrials.gov/study/NCT04356729",
+                "title": "A Phase II Trial of PD-L1 Therapy Combined With Anti-VEGF Therapy in Unresectable or Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "atezolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Atezolizumab"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "Bevacizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Bevacizumab"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT04107168",
+                "url": "https://clinicaltrials.gov/study/NCT04107168",
+                "title": "Microbiome Immunotherapy Toxicity and Response Evaluation",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[5].term",
+                    "excerpt": "atezolizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
+                    "excerpt": "Atezolizumab"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[6].term",
+                    "excerpt": "Bevacizumab"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[6].name",
+                    "excerpt": "Bevacizumab"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
             "key": "drug:bevacizumab|drug:cisplatin",
             "source": "drug:bevacizumab",
             "target": "drug:cisplatin",
             "weight": 4,
-            "jaccard": 0.0606,
+            "jaccard": 0.0597,
             "citation_count": 4,
             "citations": [
               {
@@ -6242,105 +6527,25 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:bevacizumab|drug:ipilimumab",
+            "key": "drug:bevacizumab|drug:pembrolizumab",
             "source": "drug:bevacizumab",
-            "target": "drug:ipilimumab",
+            "target": "drug:pembrolizumab",
             "weight": 4,
-            "jaccard": 0.0167,
+            "jaccard": 0.0139,
             "citation_count": 4,
             "citations": [
-              {
-                "nct_id": "NCT06163820",
-                "url": "https://clinicaltrials.gov/study/NCT06163820",
-                "title": "Bevacizumab and ICIs + hSRT in Symptomatic Melanoma Brain Metastases",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "Ipilimumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Ipilimumab"
-                  }
-                ]
-              },
               {
                 "nct_id": "NCT06047379",
                 "url": "https://clinicaltrials.gov/study/NCT06047379",
                 "title": "Safety and Efficacy of NEO212 in Patients With Astrocytoma IDH-mutant, Glioblastoma IDH-wildtype or Brain Metastasis",
                 "evidence": [
                   {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "Ipilimumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Ipilimumab"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[9].term",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[8].name",
-                    "excerpt": "Bevacizumab"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:bevacizumab|drug:nivolumab",
-            "source": "drug:bevacizumab",
-            "target": "drug:nivolumab",
-            "weight": 4,
-            "jaccard": 0.0154,
-            "citation_count": 4,
-            "citations": [
-              {
-                "nct_id": "NCT06163820",
-                "url": "https://clinicaltrials.gov/study/NCT06163820",
-                "title": "Bevacizumab and ICIs + hSRT in Symptomatic Melanoma Brain Metastases",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
                     "field": "derivedSection.interventionBrowseModule.meshes[2].term",
-                    "excerpt": "Nivolumab"
+                    "excerpt": "pembrolizumab"
                   },
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[2].name",
-                    "excerpt": "Nivolumab"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT06047379",
-                "url": "https://clinicaltrials.gov/study/NCT06047379",
-                "title": "Safety and Efficacy of NEO212 in Patients With Astrocytoma IDH-mutant, Glioblastoma IDH-wildtype or Brain Metastasis",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
-                    "excerpt": "Nivolumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
-                    "excerpt": "Nivolumab"
+                    "excerpt": "Pembrolizumab"
                   },
                   {
                     "field": "derivedSection.interventionBrowseModule.meshes[9].term",
@@ -6351,61 +6556,27 @@
                     "excerpt": "Bevacizumab"
                   }
                 ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:binimetinib|drug:dabrafenib",
-            "source": "drug:binimetinib",
-            "target": "drug:dabrafenib",
-            "weight": 4,
-            "jaccard": 0.0471,
-            "citation_count": 4,
-            "citations": [
-              {
-                "nct_id": "NCT04903119",
-                "url": "https://clinicaltrials.gov/study/NCT04903119",
-                "title": "Nilotinib Plus Dabrafenib/Trametinib or Encorafenib/Binimetinib in Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "dabrafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
-                    "excerpt": "Dabrafenib"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[4].term",
-                    "excerpt": "binimetinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
-                    "excerpt": "Binimetinib"
-                  }
-                ]
               },
               {
-                "nct_id": "NCT03563729",
-                "url": "https://clinicaltrials.gov/study/NCT03563729",
-                "title": "Melanoma Metastasized to the Brain and Steroids",
+                "nct_id": "NCT05824975",
+                "url": "https://clinicaltrials.gov/study/NCT05824975",
+                "title": "A Study to Evaluate the Safety and Therapeutic Activity of GI-102 As a Single Agent and in Combination with Conventional Anti-cancer Drugs, Pembrolizumab or Trastuzumab Deruxtecan(T-DXd) in Patients with Advanced Solid Tumors (KEYNOTE-G08)",
                 "evidence": [
                   {
-                    "field": "derivedSection.interventionBrowseModule.meshes[4].term",
-                    "excerpt": "binimetinib"
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "excerpt": "Bevacizumab"
                   },
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[4].name",
-                    "excerpt": "Binimetinib"
+                    "excerpt": "bevacizumab"
                   },
                   {
                     "field": "derivedSection.interventionBrowseModule.meshes[5].term",
-                    "excerpt": "dabrafenib"
+                    "excerpt": "pembrolizumab"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
-                    "excerpt": "Dabrafenib"
+                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
+                    "excerpt": "pembrolizumab"
                   }
                 ]
               }
@@ -6417,7 +6588,7 @@
             "source": "drug:binimetinib",
             "target": "drug:ipilimumab",
             "weight": 4,
-            "jaccard": 0.0176,
+            "jaccard": 0.0172,
             "citation_count": 4,
             "citations": [
               {
@@ -6463,63 +6634,6 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[3].name",
                     "excerpt": "binimetinib"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
-            "key": "drug:binimetinib|drug:trametinib",
-            "source": "drug:binimetinib",
-            "target": "drug:trametinib",
-            "weight": 4,
-            "jaccard": 0.0444,
-            "citation_count": 4,
-            "citations": [
-              {
-                "nct_id": "NCT04903119",
-                "url": "https://clinicaltrials.gov/study/NCT04903119",
-                "title": "Nilotinib Plus Dabrafenib/Trametinib or Encorafenib/Binimetinib in Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
-                    "excerpt": "trametinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
-                    "excerpt": "Trametinib"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[4].term",
-                    "excerpt": "binimetinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
-                    "excerpt": "Binimetinib"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT03563729",
-                "url": "https://clinicaltrials.gov/study/NCT03563729",
-                "title": "Melanoma Metastasized to the Brain and Steroids",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[4].term",
-                    "excerpt": "binimetinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
-                    "excerpt": "Binimetinib"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[6].term",
-                    "excerpt": "trametinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[6].name",
-                    "excerpt": "Trametinib"
                   }
                 ]
               }
@@ -6588,7 +6702,7 @@
             "source": "drug:cisplatin",
             "target": "drug:nivolumab",
             "weight": 4,
-            "jaccard": 0.0161,
+            "jaccard": 0.0156,
             "citation_count": 4,
             "citations": [
               {
@@ -6645,7 +6759,7 @@
             "source": "drug:cisplatin",
             "target": "drug:pembrolizumab",
             "weight": 4,
-            "jaccard": 0.0147,
+            "jaccard": 0.0145,
             "citation_count": 4,
             "citations": [
               {
@@ -6755,11 +6869,68 @@
             "citations_truncated": true
           },
           {
+            "key": "drug:dabrafenib|drug:encorafenib",
+            "source": "drug:dabrafenib",
+            "target": "drug:encorafenib",
+            "weight": 4,
+            "jaccard": 0.0435,
+            "citation_count": 4,
+            "citations": [
+              {
+                "nct_id": "NCT04903119",
+                "url": "https://clinicaltrials.gov/study/NCT04903119",
+                "title": "Nilotinib Plus Dabrafenib/Trametinib or Encorafenib/Binimetinib in Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
+                    "excerpt": "Dabrafenib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
+                    "excerpt": "encorafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[6].name",
+                    "excerpt": "Encorafenib"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT05260684",
+                "url": "https://clinicaltrials.gov/study/NCT05260684",
+                "title": "Comparative Effectiveness of Targeted Therapies in BRAF Positive Metastatic Melanoma in the US",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "encorafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Encorafenib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[5].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
+                    "excerpt": "Dabrafenib"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
             "key": "drug:dabrafenib|drug:ipilimumab",
             "source": "drug:dabrafenib",
             "target": "drug:ipilimumab",
             "weight": 4,
-            "jaccard": 0.0154,
+            "jaccard": 0.0147,
             "citation_count": 4,
             "citations": [
               {
@@ -6873,7 +7044,7 @@
             "source": "drug:encorafenib",
             "target": "drug:ipilimumab",
             "weight": 4,
-            "jaccard": 0.0179,
+            "jaccard": 0.0175,
             "citation_count": 4,
             "citations": [
               {
@@ -6919,6 +7090,63 @@
                   {
                     "field": "protocolSection.armsInterventionsModule.interventions[2].name",
                     "excerpt": "ipilimumab"
+                  }
+                ]
+              }
+            ],
+            "citations_truncated": true
+          },
+          {
+            "key": "drug:encorafenib|drug:trametinib",
+            "source": "drug:encorafenib",
+            "target": "drug:trametinib",
+            "weight": 4,
+            "jaccard": 0.0421,
+            "citation_count": 4,
+            "citations": [
+              {
+                "nct_id": "NCT04903119",
+                "url": "https://clinicaltrials.gov/study/NCT04903119",
+                "title": "Nilotinib Plus Dabrafenib/Trametinib or Encorafenib/Binimetinib in Metastatic Melanoma",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
+                    "excerpt": "trametinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
+                    "excerpt": "Trametinib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
+                    "excerpt": "encorafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[6].name",
+                    "excerpt": "Encorafenib"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT05260684",
+                "url": "https://clinicaltrials.gov/study/NCT05260684",
+                "title": "Comparative Effectiveness of Targeted Therapies in BRAF Positive Metastatic Melanoma in the US",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "encorafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Encorafenib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[6].term",
+                    "excerpt": "trametinib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
+                    "excerpt": "Trametinib"
                   }
                 ]
               }
@@ -7036,7 +7264,7 @@
             "source": "drug:fludarabine",
             "target": "drug:nivolumab",
             "weight": 4,
-            "jaccard": 0.0142,
+            "jaccard": 0.0138,
             "citation_count": 4,
             "citations": [
               {
@@ -7142,7 +7370,7 @@
             "source": "drug:incomplete freund's adjuvant",
             "target": "drug:ipilimumab",
             "weight": 4,
-            "jaccard": 0.0169,
+            "jaccard": 0.0167,
             "citation_count": 4,
             "citations": [
               {
@@ -7199,7 +7427,7 @@
             "source": "drug:interferon alpha-2",
             "target": "drug:ipilimumab",
             "weight": 4,
-            "jaccard": 0.0188,
+            "jaccard": 0.0185,
             "citation_count": 4,
             "citations": [
               {
@@ -7313,7 +7541,7 @@
             "source": "drug:ipilimumab",
             "target": "drug:temozolomide",
             "weight": 4,
-            "jaccard": 0.0156,
+            "jaccard": 0.0154,
             "citation_count": 4,
             "citations": [
               {
@@ -7370,7 +7598,7 @@
             "source": "drug:ipilimumab",
             "target": "drug:trametinib",
             "weight": 4,
-            "jaccard": 0.0151,
+            "jaccard": 0.0145,
             "citation_count": 4,
             "citations": [
               {
@@ -7427,7 +7655,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:cisplatin",
             "weight": 3,
-            "jaccard": 0.024,
+            "jaccard": 0.0238,
             "citation_count": 3,
             "citations": [
               {
@@ -7484,7 +7712,7 @@
             "source": "drug:aldesleukin",
             "target": "drug:dacarbazine",
             "weight": 3,
-            "jaccard": 0.0183,
+            "jaccard": 0.0182,
             "citation_count": 3,
             "citations": [
               {
@@ -7537,68 +7765,11 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:atezolizumab|drug:bevacizumab",
-            "source": "drug:atezolizumab",
-            "target": "drug:bevacizumab",
-            "weight": 3,
-            "jaccard": 0.0469,
-            "citation_count": 3,
-            "citations": [
-              {
-                "nct_id": "NCT04356729",
-                "url": "https://clinicaltrials.gov/study/NCT04356729",
-                "title": "A Phase II Trial of PD-L1 Therapy Combined With Anti-VEGF Therapy in Unresectable or Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "atezolizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Atezolizumab"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Bevacizumab"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT04091217",
-                "url": "https://clinicaltrials.gov/study/NCT04091217",
-                "title": "Atezolizumab in Combination With Bevacizumab in Patients With Unresectable Locally Advanced or Metastatic Mucosal Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
-                    "excerpt": "atezolizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
-                    "excerpt": "Atezolizumab"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
-                    "excerpt": "Bevacizumab"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
             "key": "drug:bevacizumab|drug:dacarbazine",
             "source": "drug:bevacizumab",
             "target": "drug:dacarbazine",
             "weight": 3,
-            "jaccard": 0.0283,
+            "jaccard": 0.028,
             "citation_count": 3,
             "citations": [
               {
@@ -7651,68 +7822,11 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:bevacizumab|drug:pembrolizumab",
-            "source": "drug:bevacizumab",
-            "target": "drug:pembrolizumab",
-            "weight": 3,
-            "jaccard": 0.0106,
-            "citation_count": 3,
-            "citations": [
-              {
-                "nct_id": "NCT06047379",
-                "url": "https://clinicaltrials.gov/study/NCT06047379",
-                "title": "Safety and Efficacy of NEO212 in Patients With Astrocytoma IDH-mutant, Glioblastoma IDH-wildtype or Brain Metastasis",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
-                    "excerpt": "pembrolizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
-                    "excerpt": "Pembrolizumab"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[9].term",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[8].name",
-                    "excerpt": "Bevacizumab"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT05824975",
-                "url": "https://clinicaltrials.gov/study/NCT05824975",
-                "title": "A Study to Evaluate the Safety and Therapeutic Activity of GI-102 As a Single Agent and in Combination with Conventional Anti-cancer Drugs, Pembrolizumab or Trastuzumab Deruxtecan(T-DXd) in Patients with Advanced Solid Tumors (KEYNOTE-G08)",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
-                    "excerpt": "Bevacizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
-                    "excerpt": "bevacizumab"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[5].term",
-                    "excerpt": "pembrolizumab"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[7].name",
-                    "excerpt": "pembrolizumab"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
             "key": "drug:bevacizumab|drug:sorafenib",
             "source": "drug:bevacizumab",
             "target": "drug:sorafenib",
             "weight": 3,
-            "jaccard": 0.0526,
+            "jaccard": 0.0517,
             "citation_count": 3,
             "citations": [
               {
@@ -7826,7 +7940,7 @@
             "source": "drug:cemiplimab",
             "target": "drug:pembrolizumab",
             "weight": 3,
-            "jaccard": 0.0115,
+            "jaccard": 0.0112,
             "citation_count": 3,
             "citations": [
               {
@@ -7997,7 +8111,7 @@
             "source": "drug:cyclophosphamide",
             "target": "drug:montanide isa 51",
             "weight": 3,
-            "jaccard": 0.0213,
+            "jaccard": 0.0211,
             "citation_count": 3,
             "citations": [
               {
@@ -8050,56 +8164,56 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:dabrafenib|drug:encorafenib",
+            "key": "drug:dabrafenib|drug:vemurafenib",
             "source": "drug:dabrafenib",
-            "target": "drug:encorafenib",
+            "target": "drug:vemurafenib",
             "weight": 3,
-            "jaccard": 0.0366,
+            "jaccard": 0.0246,
             "citation_count": 3,
             "citations": [
               {
-                "nct_id": "NCT04903119",
-                "url": "https://clinicaltrials.gov/study/NCT04903119",
-                "title": "Nilotinib Plus Dabrafenib/Trametinib or Encorafenib/Binimetinib in Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
-                    "excerpt": "dabrafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
-                    "excerpt": "Dabrafenib"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
-                    "excerpt": "encorafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[6].name",
-                    "excerpt": "Encorafenib"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT03563729",
-                "url": "https://clinicaltrials.gov/study/NCT03563729",
-                "title": "Melanoma Metastasized to the Brain and Steroids",
+                "nct_id": "NCT05260684",
+                "url": "https://clinicaltrials.gov/study/NCT05260684",
+                "title": "Comparative Effectiveness of Targeted Therapies in BRAF Positive Metastatic Melanoma in the US",
                 "evidence": [
                   {
                     "field": "derivedSection.interventionBrowseModule.meshes[3].term",
-                    "excerpt": "encorafenib"
+                    "excerpt": "Vemurafenib"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
-                    "excerpt": "Encorafenib"
+                    "field": "protocolSection.armsInterventionsModule.interventions[2].name",
+                    "excerpt": "Vemurafenib"
                   },
                   {
                     "field": "derivedSection.interventionBrowseModule.meshes[5].term",
                     "excerpt": "dabrafenib"
                   },
                   {
-                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
+                    "field": "protocolSection.armsInterventionsModule.interventions[4].name",
                     "excerpt": "Dabrafenib"
+                  }
+                ]
+              },
+              {
+                "nct_id": "NCT02052193",
+                "url": "https://clinicaltrials.gov/study/NCT02052193",
+                "title": "Evaluation of Photosensitivity in Dabrafenib or Vemurafenib Treated Metastatic Melanoma Patients - a Phase IIa/IIb Study",
+                "evidence": [
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[0].term",
+                    "excerpt": "dabrafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[0].name",
+                    "excerpt": "Dabrafenib"
+                  },
+                  {
+                    "field": "derivedSection.interventionBrowseModule.meshes[1].term",
+                    "excerpt": "Vemurafenib"
+                  },
+                  {
+                    "field": "protocolSection.armsInterventionsModule.interventions[1].name",
+                    "excerpt": "Vemurafenib"
                   }
                 ]
               }
@@ -8168,7 +8282,7 @@
             "source": "drug:dacarbazine",
             "target": "drug:nivolumab",
             "weight": 3,
-            "jaccard": 0.0104,
+            "jaccard": 0.0101,
             "citation_count": 3,
             "citations": [
               {
@@ -8221,68 +8335,11 @@
             "citations_truncated": true
           },
           {
-            "key": "drug:encorafenib|drug:trametinib",
-            "source": "drug:encorafenib",
-            "target": "drug:trametinib",
-            "weight": 3,
-            "jaccard": 0.0345,
-            "citation_count": 3,
-            "citations": [
-              {
-                "nct_id": "NCT04903119",
-                "url": "https://clinicaltrials.gov/study/NCT04903119",
-                "title": "Nilotinib Plus Dabrafenib/Trametinib or Encorafenib/Binimetinib in Metastatic Melanoma",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[2].term",
-                    "excerpt": "trametinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[5].name",
-                    "excerpt": "Trametinib"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
-                    "excerpt": "encorafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[6].name",
-                    "excerpt": "Encorafenib"
-                  }
-                ]
-              },
-              {
-                "nct_id": "NCT03563729",
-                "url": "https://clinicaltrials.gov/study/NCT03563729",
-                "title": "Melanoma Metastasized to the Brain and Steroids",
-                "evidence": [
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[3].term",
-                    "excerpt": "encorafenib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[3].name",
-                    "excerpt": "Encorafenib"
-                  },
-                  {
-                    "field": "derivedSection.interventionBrowseModule.meshes[6].term",
-                    "excerpt": "trametinib"
-                  },
-                  {
-                    "field": "protocolSection.armsInterventionsModule.interventions[6].name",
-                    "excerpt": "Trametinib"
-                  }
-                ]
-              }
-            ],
-            "citations_truncated": true
-          },
-          {
             "key": "drug:fludarabine|drug:ipilimumab",
             "source": "drug:fludarabine",
             "target": "drug:ipilimumab",
             "weight": 3,
-            "jaccard": 0.0115,
+            "jaccard": 0.0113,
             "citation_count": 3,
             "citations": [
               {
@@ -8335,7 +8392,7 @@
             "source": "drug:il-2",
             "target": "drug:nivolumab",
             "weight": 3,
-            "jaccard": 0.0128,
+            "jaccard": 0.0124,
             "citation_count": 3,
             "citations": [
               {
@@ -8384,7 +8441,7 @@
             "source": "drug:incomplete freund's adjuvant",
             "target": "drug:therapeutic autologous lymphocytes",
             "weight": 3,
-            "jaccard": 0.06,
+            "jaccard": 0.0588,
             "citation_count": 3,
             "citations": [
               {
@@ -8547,7 +8604,7 @@
             "source": "drug:interleukin-2",
             "target": "drug:nivolumab",
             "weight": 3,
-            "jaccard": 0.0118,
+            "jaccard": 0.0114,
             "citation_count": 3,
             "citations": [
               {
@@ -8604,7 +8661,7 @@
             "source": "drug:interleukin-2",
             "target": "drug:pembrolizumab",
             "weight": 3,
-            "jaccard": 0.0108,
+            "jaccard": 0.0106,
             "citation_count": 3,
             "citations": [
               {
@@ -8661,7 +8718,7 @@
             "source": "drug:ipilimumab",
             "target": "drug:sargramostim",
             "weight": 3,
-            "jaccard": 0.0129,
+            "jaccard": 0.0128,
             "citation_count": 3,
             "citations": [
               {
@@ -8824,7 +8881,7 @@
             "source": "drug:pembrolizumab",
             "target": "drug:temozolomide",
             "weight": 3,
-            "jaccard": 0.01,
+            "jaccard": 0.0098,
             "citation_count": 3,
             "citations": [
               {
@@ -8891,38 +8948,35 @@
       "filters": {
         "conditions": [
           "melanoma"
-        ],
-        "study_types": [
-          "INTERVENTIONAL"
         ]
       },
       "assumptions": [
-        "Interpreting 'combination studies' as interventional studies with more than one drug intervention listed."
+        "Interpreting 'combination studies' as trials involving more than one drug intervention."
       ],
       "warnings": [],
       "notes": [],
       "counting_rule": "Node size = distinct trials with that entity; edge width = distinct trials with both.",
       "additive": false,
-      "unique_trials": 1422,
+      "unique_trials": 1446,
       "excluded": [],
       "sort": null,
       "api_queries": [
         {
           "group": null,
-          "url": "https://clinicaltrials.gov/api/v2/studies?filter.advanced=AREA%5BStudyType%5DINTERVENTIONAL&query.cond=%22melanoma%22",
-          "total_count": 3143
+          "url": "https://clinicaltrials.gov/api/v2/studies?query.cond=%22melanoma%22",
+          "total_count": 3780
         }
       ],
       "group_overlap": null,
       "network": {
-        "nodes_before": 1427,
-        "edges_before": 4013,
+        "nodes_before": 1439,
+        "edges_before": 4049,
         "nodes": 38,
-        "edges": 129,
+        "edges": 130,
         "min_edge_weight": 3,
         "top_n_per_type": 40,
-        "trials_with_data": 2665,
-        "trials_without_links": 1721,
+        "trials_with_data": 2758,
+        "trials_without_links": 2334,
         "community_algorithm": "greedy modularity (networkx), weighted by edge weight"
       },
       "citations": {
@@ -8932,39 +8986,21 @@
         "reason": null
       },
       "data_timestamp": "2026-10-23T09:00:04",
-      "retrieved_at": "2026-10-24T11:49:17+00:00",
+      "retrieved_at": "2026-10-24T12:08:52+00:00",
       "source": "clinicaltrials.gov",
       "guard": {
         "verdict": "ok",
         "model": "gpt-5.4-nano"
       },
       "planner": {
-        "steps": 5,
+        "steps": 2,
         "tool_calls": [
           {
-            "tool": "list_options",
-            "ms": 0,
-            "ok": true
-          },
-          {
-            "tool": "count_trials",
+            "tool": "submit_plan",
             "ms": 0,
             "ok": false,
             "errors": [
-              "1 validation error for Filters\nintervention_type\n  Extra inputs are not permitted [type=extra_forbidden, input_value=['DRUG'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.14/v/extra_forbidden"
-            ]
-          },
-          {
-            "tool": "count_trials",
-            "ms": 324,
-            "ok": true
-          },
-          {
-            "tool": "check_plan",
-            "ms": 0,
-            "ok": true,
-            "errors": [
-              "options.fixed_fields: Extra inputs are not permitted"
+              "chart_type: Input should be 'bar_chart', 'grouped_bar_chart', 'time_series', 'histogram', 'scatter_plot', 'network_graph' or 'metric'"
             ]
           },
           {
@@ -8982,21 +9018,25 @@
         "errors": []
       },
       "usage": {
-        "llm_calls": 7,
-        "input_tokens": 13816,
-        "output_tokens": 800,
-        "cost_usd": 0.006021,
+        "llm_calls": 4,
+        "input_tokens": 3658,
+        "output_tokens": 489,
+        "cost_usd": 0.002545,
         "models": [
           "gpt-5.4-mini",
           "gpt-5.4-nano"
         ]
       },
-      "trace_id": "f1cc52be-4c4c-4220-8082-7d43c0e18dc1",
+      "cache": {
+        "plan": "miss",
+        "result": "miss"
+      },
+      "trace_id": "2d3898dd-907a-4064-93d2-e1e337ed9860",
       "timings_ms": {
-        "retrieve": 6137,
-        "aggregate": 157,
-        "narrate": 1204,
-        "total": 7716
+        "retrieve": 6702,
+        "aggregate": 147,
+        "narrate": 1242,
+        "total": 8091
       },
       "details": {}
     }
