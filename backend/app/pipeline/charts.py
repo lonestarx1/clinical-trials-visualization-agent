@@ -178,7 +178,37 @@ def build_chart(
         return _scatter(plan, dim, studies, citations_per_datum)
     if dim.kind is DimensionKind.NUMERIC:
         return _histogram(plan, dim, groups, studies, citations_per_datum)
+    if plan.dimension_2 and not plan.groups:
+        series_dim = DIMENSIONS[plan.dimension_2]
+        split = _split_series(plan, series_dim, [s for _, m in groups for s in m])
+        return _bars(plan, dim, split, studies, now_year, citations_per_datum, series=series_dim)
     return _bars(plan, dim, groups, studies, now_year, citations_per_datum)
+
+
+MAX_SERIES = 6
+
+
+def _split_series(
+    plan: QueryPlan, series: Dimension, studies: Sequence[dict[str, Any]]
+) -> list[tuple[str | None, list[dict[str, Any]]]]:
+    """One group of trials per value of the series dimension (a trial can be in several)."""
+    buckets = group(studies, series, plan.model_copy(update={"filters": plan.filters}))
+    labels = {k: b.label for k, b in buckets.buckets.items()}
+    sizes = {k: float(len(b.trials)) for k, b in buckets.buckets.items()}
+    keys, _, _ = _sorted_keys(
+        series,
+        plan.model_copy(
+            update={
+                "options": plan.options.model_copy(
+                    update={"top_n": MAX_SERIES if series.kind is DimensionKind.ENTITY else None}
+                )
+            }
+        ),
+        sizes,
+        labels,
+    )
+    by_id = {nct_id(s): s for s in studies}
+    return [(labels[k], [by_id[i] for i in buckets.buckets[k].trials]) for k in keys]
 
 
 def _bars(
@@ -188,7 +218,9 @@ def _bars(
     studies: dict[str, dict[str, Any]],
     now_year: int,
     limit: int,
+    series: Dimension | None = None,
 ) -> ChartResult:
+    """Bars or a time series; several groups (comparison) or series (split by `series`)."""
     measure = plan.measure
     years = (
         year_range([s for _, m in groups for s in m], dim, plan, now_year)
@@ -209,7 +241,8 @@ def _bars(
         totals[key] += m.value
     keys, sort, notes = _sorted_keys(dim, plan, totals, labels)
 
-    comparison = len(groupings) > 1
+    comparison = len(groupings) > 1 or series is not None
+    color_field = series.key if series else "group"
     rows = []
     for label, g in groupings:
         for key in keys:
@@ -221,7 +254,7 @@ def _bars(
                 measure: m.value,
             }
             if comparison:
-                row["group"] = label
+                row[color_field] = label
             if dim.kind is DimensionKind.TIME:
                 row["estimated_count"] = len(bucket.estimated & set(m.evidence))
             rows.append(row | sample_citations(m.evidence, studies, limit))
@@ -237,14 +270,16 @@ def _bars(
 
     encoding = {"x": _x_channel(dim, sort), "y": _y_channel(measure)}
     if comparison:
-        encoding["color"] = Channel(field="group", type="nominal", label="Group")
+        encoding["color"] = Channel(
+            field=color_field, type="nominal", label=series.label if series else "Group"
+        )
     if dim.kind is DimensionKind.TIME:
         chart_type = ChartType.TIME_SERIES
     else:
         chart_type = ChartType.GROUPED_BAR_CHART if comparison else ChartType.BAR_CHART
 
     overlap = None
-    if comparison:
+    if comparison and series is None:
         members = {label: {nct_id(s) for s in ms} for label, ms in groups}
         overlap = [
             {"groups": [a, b], "trials": len(members[a] & members[b])}
@@ -447,7 +482,7 @@ def _summary(rows: list[dict[str, Any]], dim: Dimension, measure: str, trials: i
     top = max(rows, key=lambda r: r[measure], default=None)
     if top is None or not top[measure]:
         return f"{trials} trials matched."
-    where = f" ({top['group']})" if "group" in top else ""
+    where = f" ({top['group']})" if "group" in top else ""  # comparison groups only
     return (
         f"{trials} trials matched; {top[dim.key]}{where} has the highest value ({top[measure]:g})."
     )

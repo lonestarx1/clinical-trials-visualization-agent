@@ -91,8 +91,16 @@ def compatibility_errors(plan: QueryPlan) -> list[str]:
         DimensionKind.ENTITY,
     ):
         errors.append(f"{chart} needs a categorical or entity dimension.")
-    if chart is ChartType.GROUPED_BAR_CHART and not plan.groups:
-        errors.append("grouped_bar_chart needs comparison groups (2-4).")
+    if chart is ChartType.GROUPED_BAR_CHART and not plan.groups and not dim_2:
+        errors.append(
+            "grouped_bar_chart needs comparison groups (2-4) or a dimension_2 to split by."
+        )
+    if dim_2 and dim_2.kind not in (DimensionKind.CATEGORICAL, DimensionKind.ENTITY):
+        errors.append("dimension_2 (series split) must be a categorical or entity dimension.")
+    if dim_2 and plan.groups:
+        errors.append("Use either comparison groups or dimension_2, not both.")
+    if dim_2 and chart is ChartType.BAR_CHART:
+        errors.append("A split by dimension_2 needs grouped_bar_chart.")
     if chart in (ChartType.BAR_CHART, ChartType.HISTOGRAM, ChartType.METRIC) and plan.groups:
         errors.append(
             f"{chart} can't show comparison groups; use grouped_bar_chart or time_series."
