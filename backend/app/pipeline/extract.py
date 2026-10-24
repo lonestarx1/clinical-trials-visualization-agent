@@ -41,6 +41,7 @@ class Value:
     label: str  # display label
     evidence: tuple[Evidence, ...]
     estimated: bool = False
+    aliases: tuple[str, ...] = ()  # other normalised names the record gives it (drug other names)
 
 
 @dataclass(frozen=True)
@@ -257,7 +258,9 @@ def _drugs(study: dict[str, Any]) -> list[Value]:
         name = item.get("name") if isinstance(item, dict) else None
         if item.get("type") not in DRUG_TYPES or not isinstance(name, str) or _PLACEBO.search(name):
             continue
-        names = _tokens(" ".join([name, *(item.get("otherNames") or [])]))
+        other_names = [n for n in item.get("otherNames") or [] if isinstance(n, str)]
+        names = _tokens(" ".join([name, *other_names]))
+        aliases = tuple(normalise_name(n) for n in [name, *other_names])
         overlap, term_path, term = max(
             ((len(_tokens(t) & names), p, t) for p, t in mesh),
             default=(0, "", ""),
@@ -265,11 +268,10 @@ def _drugs(study: dict[str, Any]) -> list[Value]:
         )
         name_evidence = Evidence(f"{path}.name", name)
         if overlap:
-            found.append(
-                Value(normalise_name(term), term, (Evidence(term_path, term), name_evidence))
-            )
+            evidence = (Evidence(term_path, term), name_evidence)
+            found.append(Value(normalise_name(term), term, evidence, aliases=aliases))
         elif key := clean_drug_name(name):
-            found.append(Value(key, " ".join(name.split()), (name_evidence,)))
+            found.append(Value(key, " ".join(name.split()), (name_evidence,), aliases=aliases))
     return _distinct(found)
 
 
