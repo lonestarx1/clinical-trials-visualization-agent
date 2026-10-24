@@ -215,7 +215,7 @@ Index: `(created_at)` for retention and recent-trace queries. **No secrets or AP
 
 ## 10. `llm_usage`: one row per LLM call (usage and cost tracking)
 
-Added on the user's request. Valuable because the public demo runs on **Cheiron's** OpenAI key.
+This table exists because the public demo runs on **Cheiron's** OpenAI key, so every call's cost must be visible and capped.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -265,7 +265,7 @@ Rough size: a cached 1,000-study page (~2 MB raw) is ~0.2-0.3 MB compressed. 1,0
 
 - **Rate limiter state:** in-process for the single-instance submission (Q8, D8.5). In production it moves to Redis.
 - **Secrets:** environment / secrets manager only.
-- **A full mirror of studies:** rejected in Q6.
+- **A full mirror of studies:** not built (Q6, revisited in [Q21](21-local-mirror-revisited.md)).
 
 ## Requirement links
 

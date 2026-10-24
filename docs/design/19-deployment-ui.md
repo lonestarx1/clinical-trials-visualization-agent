@@ -2,7 +2,7 @@
 
 Status: **Decided** (2026-10-24)
 
-## Frontend (Next.js, one codebase for Docker Compose and Vercel)
+## Frontend (Next.js, one codebase for local and deployed use)
 
 | Feature | Detail |
 |---|---|
