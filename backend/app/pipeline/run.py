@@ -90,6 +90,21 @@ def yearly_span(plan: QueryPlan, *, now_year: int) -> tuple[int, int] | None:
     return lo, hi
 
 
+async def gather_or_cancel[T](*work: Awaitable[T]) -> list[T]:
+    """asyncio.gather, but when one fails the others are cancelled instead of left running.
+
+    A compare question downloads each group at once: when one download stops (a cancelled
+    job, or ClinicalTrials.gov failing), the others must not keep fetching pages.
+    """
+    tasks = [asyncio.ensure_future(w) for w in work]
+    try:
+        return list(await asyncio.gather(*tasks))
+    except BaseException:
+        for task in tasks:
+            task.cancel()
+        raise
+
+
 @dataclass
 class Prepared:
     plan: QueryPlan
@@ -298,7 +313,7 @@ async def _downloaded(
 
         return on_page
 
-    results = await asyncio.gather(
+    results = await gather_or_cancel(
         *(ctgov.fetch_all(s, fields, tracker(i)) for i, s in enumerate(searches))
     )
     meta.api_queries = [
