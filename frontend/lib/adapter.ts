@@ -168,7 +168,10 @@ export function toChart(viz: Visualization, theme: Theme = LIGHT): Chart {
       const groups = [...new Set(nodes.map((n) => String(n[colorBy])))].sort((a, b) =>
         colorBy === "community" ? Number(a) - Number(b) : a.localeCompare(b),
       );
-      const name = (g: string) => (colorBy === "community" ? `Cluster ${g}` : g.replace(/_/g, " "));
+      const largest = (g: string) =>
+        [...nodes].filter((n) => String(n[colorBy]) === g).sort((a, b) => Number(b[enc.node_size.field]) - Number(a[enc.node_size.field]))[0];
+      const name = (g: string) =>
+        colorBy === "community" ? `${largest(g)?.[enc.node_label.field] ?? g} cluster` : g.replace(/_/g, " ");
       const size = enc.node_size.field;
       const maxWeight = Math.max(1, ...nodes.map((n) => Number(n[size])));
       const maxEdge = Math.max(1, ...edges.map((e) => Number(e[enc.edge_width.field])));
@@ -187,8 +190,8 @@ export function toChart(viz: Visualization, theme: Theme = LIGHT): Chart {
             layout: "force",
             roam: true,
             draggable: true,
-            top: 40,
-            force: { repulsion: 260, edgeLength: [50, 170], gravity: 0.1, friction: 0.2 },
+            top: 56, bottom: 16, left: 16, right: 16,
+            force: { repulsion: 180, edgeLength: [40, 130], gravity: 0.22, friction: 0.25 },
             categories: groups.map((g, i) => ({ name: name(g), itemStyle: { color: seriesColor(theme, i) } })),
             label: { position: "right", fontSize: 12, color: theme.ink },
             labelLayout: { hideOverlap: true },
