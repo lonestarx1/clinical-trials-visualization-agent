@@ -159,8 +159,8 @@ Never cut: input validation, the plan gate, narration checks, citation exactness
 
 ## What's planned
 
-- **An evaluation set for the AI stages** ([Q18](design/18-testing.md)): about 40 cases (questions with expected plan properties, malicious and harmless inputs for the guard, fact sheets for the narrator checks), plus a live end-to-end set of about 60 questions, with a report of the results.
-- **A model bake-off per stage** ([Q20](design/20-model-selection.md)): candidates must first meet the quality bars on the evaluation set, then the cheapest by measured cost wins, then the fastest. The planner comes first. Until then, the guard and narrator use `gpt-5.4-nano` and the planner `gpt-5.4-mini`.
+- ~~An evaluation set for the AI stages and a model bake-off per stage.~~ **Done 2026-10-25** ([`docs/eval/`](eval/README.md), [Q20 results](design/20-model-selection.md#bake-off-results-2026-10-25)).
+- **A live end-to-end set of about 60 questions** ([Q18](design/18-testing.md)), with a report of the results. Today's end-to-end suite has 11.
 - **Remaining live checks against ClinicalTrials.gov:**
   - whether every visible change to a trial updates its `LastUpdatePostDate` (which cache revalidation relies on);
   - how `/stats/field/values` counts, and its 250-value cap.

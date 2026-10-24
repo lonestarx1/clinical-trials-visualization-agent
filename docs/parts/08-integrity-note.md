@@ -40,7 +40,7 @@ Evidence of careful construction, testing and iteration is rewarded.
 ### Tools used
 
 - **Claude Code** (Anthropic) as the coding assistant, for design discussion, code, tests and documentation.
-- **OpenAI models** inside the product, for the guard, planner and title-writing stages. The defaults are `gpt-5.4-nano` (guard and title), `gpt-5.4-mini` (planner) and `gpt-4.1-mini` (fallback); see [design Q20](../design/20-model-selection.md).
+- **OpenAI models** inside the product, for the guard, planner and title-writing stages. The models were chosen by a measured bake-off on our AI evaluation set: `gpt-5.4-nano` (guard), `gpt-5.4-mini` (planner) and `gpt-4o-mini` (title); see [design Q20](../design/20-model-selection.md) and [`docs/eval/`](../eval/README.md).
 - **Libraries and platforms:** FastAPI, Pydantic, httpx, LangGraph, SQLAlchemy and Alembic on Postgres for the backend; Next.js and Apache ECharts for the web app; Terraform, Kustomize and k3s on AWS for the deployment.
 - **References:** the ClinicalTrials.gov API documentation, checked against the live API ([`../api/contract.md`](../api/contract.md), [`../api/live-probe.md`](../api/live-probe.md)).
 

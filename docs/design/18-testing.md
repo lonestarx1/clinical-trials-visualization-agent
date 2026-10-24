@@ -15,7 +15,7 @@ Status: **Decided** (2026-10-24)
 | **Live end-to-end** | **~60 questions** run through the **full pipeline with the real ClinicalTrials.gov API and real OpenAI models**, over HTTP against the running Docker Compose stack. See "Live end-to-end suite" below. | Live API + real AI | Opt-in (`-m e2e`); run before submission and after major changes |
 | **Smoke** | `docker compose up` -> `/health` ok -> one real question end to end -> valid response | Yes | Manual / pre-submit |
 
-**As built (2026-10-25):** the offline layers (unit, contract, integration), the database tests, the live cross-checks and a smaller live end-to-end suite run today; the [README](../../README.md) lists them with counts. The end-to-end suite covers the 9 appendix questions plus two measure questions, not yet the ~60 below. The ~40-question AI evaluation set is not built yet, so the model bake-off (Q20) hasn't run.
+**As built (2026-10-25):** the offline layers (unit, contract, integration), the database tests, the live cross-checks and a smaller live end-to-end suite run today; the [README](../../README.md) lists them with counts. The end-to-end suite covers the 9 appendix questions plus two measure questions, not yet the ~60 below. The AI evaluation set is built ([`docs/eval/`](../eval/README.md)): 42 planner questions, 36 labelled guard requests and 10 narrator fact sheets, run with `make eval` (not `-m eval`: it writes a report rather than pass/fail tests). Its first run found a gate bug and three prompt problems, all fixed and re-measured, and the model bake-off (Q20) ran on it.
 
 ## Live end-to-end suite
 

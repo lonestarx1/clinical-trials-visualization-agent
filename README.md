@@ -70,7 +70,7 @@ Language models are good at reading questions and bad at counting. This project 
 - **Results:** all 9 example questions from the assignment's appendix pass end to end against live data.
 - **Deployment:** Kubernetes (k3s) on AWS, defined in Terraform.
 
-**Planned:** a measured evaluation set for the AI stages and a model bake-off per stage. The current models are starting defaults. Later, once the agents can change things or other agents call the API, task-scoped authorization with [Tenuo](https://tenuo.ai/). See [how it was built](docs/implementation-plan.md#whats-planned).
+**AI evaluation:** an evaluation set for every AI stage, scored against quality bars, found a gate bug and three prompt problems, all fixed and re-measured. A bake-off then chose the models ([results](docs/eval/README.md)). **Planned:** a larger live end-to-end set (about 60 questions), and later, once the agents can change things or other agents call the API, task-scoped authorization with [Tenuo](https://tenuo.ai/). See [how it was built](docs/implementation-plan.md#whats-planned).
 
 ## Web app
 
@@ -110,7 +110,7 @@ request ─► validate (422) ─┬─► guard (AI, fail closed) ────�
 | Compile, retrieve | Code | Plan -> Essie query tree (text from the request can only ever be a quoted phrase) -> ClinicalTrials.gov, with a global rate limiter, retries and a circuit breaker. Trials-per-year series are **counted with one call per year** when that is quicker than downloading every trial (2010-2020: 412 s → 57 s). |
 | Aggregate, chart | Code | Every number. Measures: trials, total or median enrollment, and **distinct entities** (e.g. lead sponsors with at least 3 trials per year). Explicit counting rules for multi-valued fields, and nothing silently dropped (`meta.excluded`). Runs off the event loop, so a large question doesn't stall other requests. |
 | Verify | Code | Every citation excerpt is compared with the record it came from; a mismatch fails the request. |
-| Narrate | AI (`gpt-5.4-nano`) | Writes the chart title **with placeholders** filled from a fact sheet, so numbers are correct by construction. Checked for invented numbers, names not in the chart, evaluative claims, length and repeated phrases; one retry, then a template title. There is no free-text summary: it was removed as prone to hallucination and not required ([decision](docs/design/04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)). |
+| Narrate | AI (`gpt-4o-mini`) | Writes the chart title **with placeholders** filled from a fact sheet, so numbers are correct by construction. Checked for invented numbers, names not in the chart, evaluative claims, length and repeated phrases; one retry, then a template title. There is no free-text summary: it was removed as prone to hallucination and not required ([decision](docs/design/04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)). |
 
 **Networks:** one entity dimension gives co-occurrence (drugs used together); two give links between kinds (sponsor - drug, condition - drug, sponsor - collaborator, investigator - site). Node and edge weights are distinct trials, and edges also carry Jaccard similarity. The graph is pruned deterministically (recorded in `meta.network`) and communities are detected: in the melanoma example they separate lymphodepletion + IL-2 regimens, chemotherapy, checkpoint + BRAF/MEK therapy and peptide vaccines.
 
@@ -219,11 +219,12 @@ The code was written test-first: each `test:` commit fails before the `feat:` co
 
 | Suite | Command | What |
 |---|---|---|
-| Offline (CI) | `make test` | 407 unit, contract and integration tests: compiler strings written by hand, chart numbers worked out by hand from recorded real trials and small fixtures, scripted fake models for the agents |
-| Database (CI) | `make test-db` | 23 tests against Postgres (in its own `ctviz_test` database): repositories, stored results and citation paging, plan and result caches (per citation mode), background jobs (heartbeats, requeue after a restart, expiry), the daily budget (cached answers still served) |
+| Offline (CI) | `make test` | 550 unit, contract and integration tests: compiler strings written by hand, chart numbers worked out by hand from recorded real trials and small fixtures, scripted fake models for the agents |
+| Database (CI) | `make test-db` | 32 tests against Postgres (in its own `ctviz_test` database): repositories, stored results and citation paging, plan and result caches (per citation mode), background jobs (heartbeats, requeue after a restart, expiry), the daily budget (cached answers still served) |
 | Live API | `make test-live` | 18 checks: query syntax against the real API, and **cross-checks**. Our aggregated counts equal the API's own counts exactly, and the sponsor counts and per-year counts equal an independent tally of the raw records |
 | End to end | `make test-e2e` | 11 questions through the running stack, with real models and live data: **the 9 appendix questions all pass**, plus a sponsor-count question and a refused "average duration" |
-| Web (CI) | `make test-web` | 57 tests: the chart adapter against the example responses, theme contrast gates, the question, evidence and API-guide helpers |
+| AI evaluation | `make eval`, `make bakeoff` | 42 planner questions, 36 labelled guard requests and 10 narrator fact sheets, scored against the design's quality bars with the real models, 3 runs per case. **Every stage passes every bar** ([results](docs/eval/README.md)), and the models were chosen by a measured bake-off |
+| Web (CI) | `make test-web` | 66 tests: the chart adapter against the example responses, theme contrast gates, the question, evidence and API-guide helpers |
 
 CI never calls ClinicalTrials.gov or a model: the live and end-to-end suites are opt-in.
 
@@ -232,7 +233,7 @@ CI never calls ClinicalTrials.gov or a model: the live and end-to-end suites are
 - **Tools:** Claude Code (Anthropic) as the coding assistant; OpenAI models inside the product for the guard, planner and title stages ([design Q20](docs/design/20-model-selection.md)).
 - **Designed deliberately:** the decisions in [`docs/design/`](docs/design/README.md), made one question at a time with reasons and alternatives: the architecture (the AI chooses, code computes), the schemas, the counting rules, the citation model and the deployment.
 - **Generated and adapted:** code, tests and docs were drafted with Claude Code, then reviewed, tested and revised, test-first where possible.
-- **How correctness was checked:** the test suites in [Testing and validation](#testing-and-validation), counts cross-checked against the API's own counts, and every citation checked against its raw record.
+- **How correctness was checked:** the test suites in [Testing and validation](#testing-and-validation), counts cross-checked against the API's own counts, every citation checked against its raw record, and an [AI evaluation set](docs/eval/README.md) that measures each AI stage against quality bars.
 
 The full disclosure is in the [integrity note](docs/parts/08-integrity-note.md).
 
@@ -243,7 +244,7 @@ The full disclosure is in the [integrity note](docs/parts/08-integrity-note.md).
 - Two parts of the database design are not built: the page-level API cache (L1) and the `traces` table (traces live in logs and `meta`).
 - Sponsor names are not merged across spellings ("Merck Sharp & Dohme LLC" vs "Merck & Co."). MeSH grouping inherits MeSH quirks: "aldesleukin" and "Interleukin-2" can be separate drug nodes.
 - The ClinicalTrials.gov rate limiter, the per-client limit and the job workers are in-process (one instance). Several instances would need a shared store such as Redis.
-- The AI stages have no measured evaluation set yet, and the models have not been compared in a bake-off (see [what's planned](docs/implementation-plan.md#whats-planned)).
+- The AI evaluation sets are our own and small (tens of cases), so their numbers are indicative. One known miss: the planner sometimes drops the condition from a question (about 1 run in 3 on two of 42 questions).
 
 ## Deployment
 
