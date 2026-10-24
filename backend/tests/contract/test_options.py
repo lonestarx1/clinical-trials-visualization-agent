@@ -23,3 +23,15 @@ def test_options_list_the_registry_with_labels() -> None:
     assert {c["key"] for c in body["chart_types"]} >= {"bar_chart", "network_graph", "scatter_plot"}
     assert {"value": "RECRUITING", "label": "Recruiting"} in body["filters"]["status"]
     assert "United States" in body["filters"]["country"]
+
+
+def test_per_client_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Design Q19: RATE_LIMIT_PER_IP_PER_MIN, 429 too_many_requests with Retry-After."""
+    monkeypatch.setenv("RATE_LIMIT_PER_IP_PER_MIN", "2")
+    client = TestClient(create_app())
+    assert [client.get("/v1/options").status_code for _ in range(2)] == [200, 200]
+    limited = client.get("/v1/options")
+    assert limited.status_code == 429
+    assert limited.json()["error"]["code"] == "too_many_requests"
+    assert int(limited.headers["Retry-After"]) >= 1
+    assert client.get("/health").status_code != 429  # health checks are never limited
