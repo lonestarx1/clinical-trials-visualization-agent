@@ -29,24 +29,7 @@
   --mono: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) {
-    color-scheme: dark;
-    --bg: #090e18; --surface: #141c2b; --surface-2: #1b2537; --ink: #f5f8fc; --ink-2: #d7deea;
-    --muted: #a9b5c7; --line: #26324a; --line-strong: #364563; --action: #86abff; --action-hover: #a3c0ff;
-    --action-ink: #08101f; --action-soft: #1a2a4d; --mark: #f5c518; --mark-ink: #161000;
-    --danger: #ff8d82; --danger-soft: #2c1615; --warn: #f5c86e; --warn-soft: #2b2312;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
-  }
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #090e18; --surface: #141c2b; --surface-2: #1b2537; --ink: #f5f8fc; --ink-2: #d7deea;
-    --muted: #a9b5c7; --line: #26324a; --line-strong: #364563; --action: #86abff; --action-hover: #a3c0ff;
-    --action-ink: #08101f; --action-soft: #1a2a4d; --mark: #f5c518; --mark-ink: #161000;
-    --danger: #ff8d82; --danger-soft: #2c1615; --warn: #f5c86e; --warn-soft: #2b2312;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
-}
+/* Other themes (lib/themes) are applied as inline CSS variables on <html> before first paint. */
 
 * { box-sizing: border-box; }
 html, body { margin: 0; }

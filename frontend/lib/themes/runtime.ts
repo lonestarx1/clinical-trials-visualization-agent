@@ -1,11 +1,13 @@
 // Applying a theme: UI tokens become CSS variables on <html>; charts read the chart tokens.
-// "system" follows the OS light/dark setting with the clinical themes.
+// The default is Clinical light. "system" (Automatic) follows the device's light/dark setting
+// with the clinical themes, only when the user picks it.
 import { DEFAULT_DARK, DEFAULT_LIGHT, findTheme, THEMES } from "./index";
 import type { ThemeDef, UiTokens } from "./types";
 
 export const STORAGE_KEY = "ctx-theme";
 export const CHANGE_EVENT = "ctx-theme-change";
 export type Selection = "system" | string;
+export const DEFAULT_SELECTION: Selection = DEFAULT_LIGHT;
 
 const CSS_VARS: Record<keyof UiTokens, string> = {
   bg: "--bg", surface: "--surface", surface2: "--surface-2", ink: "--ink", ink2: "--ink-2",
@@ -16,12 +18,12 @@ const CSS_VARS: Record<keyof UiTokens, string> = {
 };
 
 export function resolve(selection: Selection, prefersDark: boolean): ThemeDef {
-  const chosen = selection !== "system" ? findTheme(selection) : undefined;
-  return chosen ?? findTheme(prefersDark ? DEFAULT_DARK : DEFAULT_LIGHT)!;
+  if (selection === "system") return findTheme(prefersDark ? DEFAULT_DARK : DEFAULT_LIGHT)!;
+  return findTheme(selection) ?? findTheme(DEFAULT_SELECTION)!;
 }
 
 export function readSelection(): Selection {
-  try { return localStorage.getItem(STORAGE_KEY) ?? "system"; } catch { return "system"; }
+  try { return localStorage.getItem(STORAGE_KEY) ?? DEFAULT_SELECTION; } catch { return DEFAULT_SELECTION; }
 }
 
 export function prefersDark(): boolean {
@@ -39,8 +41,7 @@ export function applyTheme(theme: ThemeDef): void {
 
 export function saveSelection(selection: Selection): void {
   try {
-    if (selection === "system") localStorage.removeItem(STORAGE_KEY);
-    else localStorage.setItem(STORAGE_KEY, selection);
+    localStorage.setItem(STORAGE_KEY, selection);
   } catch { /* storage unavailable: the choice lasts for this visit */ }
   applyTheme(resolve(selection, prefersDark()));
   window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: selection }));
@@ -54,6 +55,7 @@ export function themeScript(): string {
   }]));
   return `(function(){try{var T=${JSON.stringify(vars)};var s=localStorage.getItem(${JSON.stringify(STORAGE_KEY)});` +
     `var d=window.matchMedia("(prefers-color-scheme: dark)").matches;` +
-    `var t=T[s]||T[d?${JSON.stringify(DEFAULT_DARK)}:${JSON.stringify(DEFAULT_LIGHT)}];var r=document.documentElement;` +
+    `var t=T[s==="system"?(d?${JSON.stringify(DEFAULT_DARK)}:${JSON.stringify(DEFAULT_LIGHT)}):s]||T[${JSON.stringify(DEFAULT_SELECTION)}];` +
+    `var r=document.documentElement;` +
     `for(var k in t.vars)r.style.setProperty(k,t.vars[k]);r.style.colorScheme=t.mode;r.dataset.mode=t.mode;}catch(e){}})();`;
 }

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { type Theme, toChartTheme } from "./theme";
-import { CHANGE_EVENT, applyTheme, prefersDark, readSelection, resolve, saveSelection, type Selection } from "./themes/runtime";
+import { CHANGE_EVENT, DEFAULT_SELECTION, applyTheme, prefersDark, readSelection, resolve, saveSelection, type Selection } from "./themes/runtime";
 
 /** The chosen theme ("system" or a theme id) and its chart colours. */
 export function useTheme(): { theme: Theme; selection: Selection; choose: (s: Selection) => void } {
-  const [selection, setSelection] = useState<Selection>("system");
+  const [selection, setSelection] = useState<Selection>(DEFAULT_SELECTION);
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
