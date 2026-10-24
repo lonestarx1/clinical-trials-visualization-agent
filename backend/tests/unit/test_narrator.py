@@ -131,3 +131,20 @@ async def test_narrate_falls_back_to_the_template(replies: tuple[Any, ...]) -> N
     assert n.fallback is True
     assert (n.title, n.summary) == (result.visualization.title, result.visualization.summary)
     assert n.errors
+
+
+def test_no_share_of_total_for_comparisons() -> None:
+    """Groups can overlap, so a bar's share of all trials is misleading (seen in a live run)."""
+    plan = QueryPlan.model_validate(
+        {
+            "scope": "in_scope",
+            "intent": "comparison",
+            "chart_type": "grouped_bar_chart",
+            "dimension": "phase",
+            "groups": [{"label": "A", "filters": {}}, {"label": "B", "filters": {}}],
+        }
+    )
+    result = build_chart(plan, [("A", STUDIES[:4]), ("B", STUDIES[4:])], now_year=2026)
+    facts = fact_sheet(plan, result.visualization, result.meta)
+    assert "share_of_max" not in facts
+    assert facts["max_group"] in ("A", "B")
