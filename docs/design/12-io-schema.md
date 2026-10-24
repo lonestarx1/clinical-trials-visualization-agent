@@ -59,7 +59,7 @@ The request schema is in Q5 (`05-request-fields.md`).
     "narration": { "model": "...", "attempts": 1, "fallback": false },
     "usage": { "llm_calls": 3, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0, "plan_cache_hit": false },
     "citations": { "requested": "sample | full", "applied": "sample | full", "per_datum": 5, "reason": "null, or why applied differs (Q14)" },
-    "network": "network graphs only: nodes/edges before and after pruning, thresholds, community algorithm (Q13)",
+    "network": "network graphs only: nodes/edges before and after pruning, thresholds, community algorithm, and query_entities: how each filter term was matched to a node (Q13)",
     "group_overlap": "comparisons only: overlapping trial counts per pair of groups (Q9)",
     "cache": { "plan": "hit | miss", "result": "hit | miss | revalidated" },
     "details": "non-ok statuses only, see below",

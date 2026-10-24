@@ -50,7 +50,7 @@ Each milestone had an **exit check**: what had to be true before its pull reques
 | M4: Persistence | Stored results, full citations, caches, background jobs, cost tracking | 318 (+16 database) |
 | M5: Frontend | Next.js and ECharts web app | 8 web |
 | M6: Deploy | Terraform and k3s on AWS, live over HTTPS | |
-| After M6 | AI evaluation and model bake-off, mirror and fast mode, full citations for per-year rows | 589 (+86 database, 71 web) |
+| After M6 | AI evaluation and model bake-off, mirror and fast mode, full citations for per-year rows | 597 (+87 database, 71 web) |
 
 ### M0: Skeleton
 

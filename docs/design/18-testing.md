@@ -19,8 +19,8 @@ Status: **Decided** (2026-10-24)
 
 | Suite | Tests | How it runs |
 |---|---|---|
-| Offline: unit, contract, integration | 589 | `uv run pytest`, in CI on every push |
-| Database (real Postgres) | 86 | `pytest -m db`, in CI (Postgres service) |
+| Offline: unit, contract, integration | 597 | `uv run pytest`, in CI on every push |
+| Database (real Postgres) | 87 | `pytest -m db`, in CI (Postgres service) |
 | Live ClinicalTrials.gov: cross-checks, query syntax, counted measures, mirror vs API | 20 | `pytest -m live`, opt-in |
 | Live end-to-end, over HTTP against a running stack | 11 | `pytest -m e2e`, opt-in |
 | Web app (Vitest) | 71 | `npm test`, in CI |

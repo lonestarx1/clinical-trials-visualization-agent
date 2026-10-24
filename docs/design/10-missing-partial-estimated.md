@@ -47,7 +47,7 @@ Checked against [`extract.py`](../../backend/app/pipeline/extract.py), [`aggrega
 - **D10.5:** there is no month granularity (time dimensions are yearly), so the case never arises.
 - **D10.6:** the exclusion reason reads "start after 2026".
 - **D10.8:** as designed: `estimated_count` per time bucket, and a warning when most of a bucket's trials have estimated dates.
-- **D10.9:** time series are zero-filled. `show_empty` is **not built**: the plan accepts it, but no code reads it, so enum charts show only the values that occur.
+- **D10.9:** as designed. Time series are zero-filled, and with `show_empty` an enum chart lists every value in its natural order, with 0 and no citations where no trial has it. Open-ended dimensions (drugs, sponsors, countries) are never filled, and median charts keep only the values that occur, since a median of no trials isn't 0.
 - **D10.10:** enrollment ESTIMATED vs ACTUAL is **not** reported per bucket. Scatter points carry `estimated: true` when either value is an estimate.
 - **D10.11:** the overflow bin starts at the nearest-rank P99, and `meta.notes` gives the bin width and the cut. There is no log-scale hint.
 - **D10.12:** histograms exclude negative durations and count them as "completion before start (data error)". Scatter plots drop them under the general "no ... reported" reason. Estimated completion dates are flagged only on scatter points.
