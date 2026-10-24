@@ -208,7 +208,7 @@ From `/studies/metadata`. "Piece" is the short name used in `fields=`, `AREA[...
 |---|---|---|
 | Data refresh | [docs] | "refreshed daily Monday through Friday, generally by 9 a.m. ET (14:00 UTC)". Check `dataTimestamp` at `/version`. |
 | Auth / API key | [docs] | None needed (the spec has no security scheme). |
-| Rate limit | **Not stated in any official page we read** | Third-party sources disagree: ~50 req/min per IP ([reference doc](https://cdn.jsdelivr.net/npm/@saibolla/ada@0.1.3/skills/clinicaltrials-database/references/api_reference.md)) vs ~3 req/s ([Jentic](https://jentic.com/apis/clinicaltrials.gov/clinicaltrials)). One analysis ([IntuitionLabs](https://intuitionlabs.ai/pdfs/clinicaltrials-gov-api-v2-pipeline.pdf)) notes no formal value is published. **[ours]** Design for limits we can't see in advance: bounded concurrency, exponential backoff with jitter on 429/5xx, caching. The live probe deliberately did not test the limit ([live-probe §8](live-probe.md#8-rate-limits-educated-guess-not-tested-on-purpose)). |
+| Rate limit | **Not stated in any official page we read** | Third-party sources disagree: ~50 req/min per IP ([reference doc](https://cdn.jsdelivr.net/npm/@saibolla/ada@0.1.3/skills/clinicaltrials-database/references/api_reference.md)) vs ~3 req/s ([Jentic](https://jentic.com/apis/clinicaltrials.gov/clinicaltrials)). One analysis ([IntuitionLabs](https://intuitionlabs.ai/pdfs/clinicaltrials-gov-api-v2-pipeline.pdf)) notes no formal value is published. **[ours]** Design for limits we can't see in advance: bounded concurrency, exponential backoff with jitter on 429/5xx, caching. The first live probe did not test the limit on purpose; a later, careful test measured about 10 requests per 10 s per IP ([live-probe §8](live-probe.md#8-rate-limits-educated-guess-not-tested-on-purpose)). |
 | Data ingest change | [docs] | Since 2025-08-26 modernised ingest: some markup formats differ; "Locations and geopoint data are now pulling from a different database for geographic data." [ours, speculation] Country/city spellings may differ from older third-party write-ups; check live values. |
 
 ## 7. Implications for our design (summary, [ours])
@@ -226,7 +226,7 @@ From `/studies/metadata`. "Piece" is the short name used in `fields=`, `AREA[...
 
 ## 8. Questions the documentation leaves open
 
-**All are answered in [`live-probe.md`](live-probe.md)** (2026-10-24), except the rate limit, which was deliberately not tested. Summary:
+**All are answered in [`live-probe.md`](live-probe.md)** (2026-10-24). The rate limit was left out of that probe on purpose and measured later (2026-10-25). Summary:
 - [x] Result sizes: drug ~2-3k, broad condition ~12-17k, unscoped multi-intervention ~289k
 - [x] Latency: count ~0.35 s; 1,000 studies 1.1-2.2 s depending on fields
 - [x] Keytruda / MK-3475 = pembrolizumab: **yes**, identical counts
@@ -236,7 +236,7 @@ From `/studies/metadata`. "Piece" is the short name used in `fields=`, `AREA[...
 - [x] `pageSize=0` falls back to 10 (use `pageSize=1` for counts)
 - [x] Country names: clean English ("South Korea", "Turkey (Türkiye)")
 - [x] Error format: 400/404 `text/plain` with a clear message
-- [ ] Rate limit: **not tested** (risk of being blocked). Educated guess and design in live-probe §8
+- [x] Rate limit: about 10 requests per 10 s per IP, no limit on concurrency, `429` without `Retry-After` (measured 2026-10-25, live-probe §8)
 - [x] `AREA[Phase]PHASE3` = `AREA[Phase]"Phase 3"`; `AREA[StartDate]RANGE[...]` (both date formats); `AREA[LeadSponsorClass]INDUSTRY`: all work
 - [x] Search-only fields: accepted in `fields` but returned empty
 - [x] Observational studies: `phases` key absent (not `NA`)

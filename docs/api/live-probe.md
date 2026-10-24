@@ -9,7 +9,8 @@ This is the second half of our research on the ClinicalTrials.gov API. The first
   - [`probe-data/batch1_counts.json`](probe-data/batch1_counts.json): all count results
   - [`probe-data/samples/`](probe-data/samples/): 8 full study records chosen to be messy (now used as test fixtures)
   - `probe-data/raw/`: large dumps, not committed, re-creatable with the scripts
-- **Rate limits were deliberately not tested**, to avoid getting blocked. See section 8.
+- **Rate limits were deliberately not tested** in this first probe, to avoid getting blocked. They were measured later, with care (section 8).
+- **Later checks (2026-10-25):** the rate limit (section 8), open items O4 and O5 (sections 9-10, both resolved) and the quoting of `ALL` (section 11).
 
 Live counts change daily. Treat every number below as a snapshot.
 
@@ -190,7 +191,7 @@ So the limit is about **10 requests per ~10 s window** (~60/min) per IP. **Concu
 
 ## 9. `/stats/field/values`: counting and the 250-value cap (open item O4)
 
-Measured 2026-10-25 (data timestamp `2026-10-23T09:00:04`, 608,415 studies), about 25 calls.
+**Resolved.** Measured 2026-10-25 (data timestamp `2026-10-23T09:00:04`, 608,415 studies), about 25 calls.
 
 | Field | Type | Unique values | `topValues` returned | Sum of counts | Missing |
 |---|---|---|---|---|---|
@@ -216,7 +217,7 @@ Measured 2026-10-25 (data timestamp `2026-10-23T09:00:04`, 608,415 studies), abo
 
 ## 10. Does every change bump `LastUpdatePostDate`? (open item O5)
 
-**No, not for derived data.** Measured 2026-10-25:
+**Resolved: no, not for derived data.** Measured 2026-10-25:
 
 - **Derived data is rebuilt with every release.** Records last updated in December 2005 (e.g. NCT00145262, NCT00271141) carry `derivedSection.miscInfoModule.versionHolder` = `2026-10-23`, the current data version, while their `LastUpdatePostDate` stays 2005.
 - **Their MeSH terms are current.** NCT00145262, last updated in 2005, is tagged with the MeSH heading "Chronic Limb-Threatening Ischemia". Four trials last updated in January to May 2021 carry "Post-Acute COVID-19 Syndrome", a heading MeSH added in its 2022 edition (e.g. NCT04694768, last updated 2021-01-05, condition "Post COVID-19 Syndrome").
@@ -227,6 +228,8 @@ So the registry re-maps conditions and interventions to MeSH, and recomputes oth
 - Check 1 (no trial changed since) can miss a re-mapped trial.
 - Check 2 (the total count is unchanged) still catches any re-mapping that changes the count, but not a swap where one trial leaves and another joins.
 - MeSH re-mapping is rare (mostly the yearly MeSH update), so the risk is small but real. The **7-day safety ceiling stays**: no stored answer is reused for more than 7 days without being recomputed.
+
+**And for fast mode** ([design Q22](../design/22-term-sets.md)), whose copy of the registry has the same gap: the API lists each search term's trials again at least weekly, a start-year slice whose count differs from the API's is listed again, and every fast answer must match a live count.
 
 ## 11. The code `ALL` must be quoted (found by the mirror cross-check)
 
