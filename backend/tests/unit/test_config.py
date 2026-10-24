@@ -28,15 +28,19 @@ def make_settings(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_stage_defaults_match_the_design(make_settings) -> None:
+    """The bake-off's choices (docs/eval/model-selection.md, design Q20)."""
     s = make_settings()
     assert (s.guard.model, s.planner.model, s.narrator.model) == (
         "gpt-5.4-nano",
         "gpt-5.4-mini",
-        "gpt-5.4-nano",
+        "gpt-4o-mini",
     )
-    assert {s.guard.fallback_model, s.planner.fallback_model, s.narrator.fallback_model} == {
-        "gpt-4.1-mini"
-    }
+    # gpt-4.1-mini scored 83% as a planner, so the planner falls back to gpt-5-mini (99%).
+    assert (s.guard.fallback_model, s.planner.fallback_model, s.narrator.fallback_model) == (
+        "gpt-4.1-mini",
+        "gpt-5-mini",
+        "gpt-4.1-mini",
+    )
     assert (s.guard.timeout_seconds, s.planner.timeout_seconds, s.narrator.timeout_seconds) == (
         5,
         30,
