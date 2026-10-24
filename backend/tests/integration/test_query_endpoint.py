@@ -21,12 +21,7 @@ PA3 = {
 }
 QUESTION = {"query": "How are breast cancer trials distributed across phases?"}
 OK = text({"verdict": "ok", "reason": "trial analytics"})
-NARRATION = text(
-    {
-        "title": "Breast cancer trials by phase",
-        "summary": "{max_bucket} is the most common phase ({max_value} of {total} trials).",
-    }
-)
+NARRATION = text({"title": "Breast cancer trials by phase: {max_bucket} leads"})
 
 
 @pytest.fixture(autouse=True)
@@ -54,8 +49,9 @@ def test_question_to_chart() -> None:
     body = response.json()
     assert body["status"] == "ok"
     viz, meta = body["visualization"], body["meta"]
-    assert viz["title"] == "Breast cancer trials by phase"
-    assert viz["summary"] == "Phase 2 is the most common phase (2 of 8 trials)."
+    assert body["schema_version"] == "2.0"
+    assert viz["title"] == "Breast cancer trials by phase: Phase 2 leads"
+    assert "summary" not in viz
     assert meta["interpretation"]["chart_type_source"] == "ai"
     assert meta["guard"] == {"verdict": "ok", "model": "fake-model"}
     assert meta["planner"]["steps"] == 1

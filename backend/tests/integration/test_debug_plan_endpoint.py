@@ -45,7 +45,7 @@ def test_plan_runs_end_to_end() -> None:
     assert response.status_code == 200, response.text
     body = QueryResponse.model_validate(response.json())
 
-    assert (body.schema_version, body.status) == ("1.0", "ok")
+    assert (body.schema_version, body.status) == ("2.0", "ok")
     assert body.visualization is not None
     assert body.visualization.type == "bar_chart"
     assert [(r["phase"], r["trial_count"]) for r in body.visualization.data] == [

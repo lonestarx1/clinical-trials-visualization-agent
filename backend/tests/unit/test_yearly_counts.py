@@ -122,6 +122,7 @@ def test_rows_carry_the_counts_and_a_sample_of_cited_trials() -> None:
         ("2016", 20, 0),
     ]
     assert [r["citation_count"] for r in rows] == [10, 20]  # type: ignore[index]
+    assert "summary" not in result.visualization.model_dump()
     assert [[c["nct_id"] for c in r["citations"]] for r in rows] == [["N1", "N2"], ["N3"]]  # type: ignore[index]
     assert all(r["citations_truncated"] for r in rows)  # type: ignore[index]
     verify_citations(

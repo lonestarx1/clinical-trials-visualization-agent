@@ -1,10 +1,19 @@
 """Narrator (design Q4b V5-V9): fact sheet + placeholders, text checks, retry, template fallback."""
 
+from dataclasses import fields
 from typing import Any
 
 import pytest
 
-from app.agents.narrator import check_text, fact_sheet, narrate, render
+from app.agents.narrator import (
+    INSTRUCTIONS,
+    SCHEMA,
+    Narration,
+    check_text,
+    fact_sheet,
+    narrate,
+    render,
+)
 from app.llm.client import LLMUnavailable
 from app.pipeline.charts import build_chart
 from app.schemas.plan import QueryPlan
@@ -93,22 +102,28 @@ def test_unknown_placeholders_and_length() -> None:
     assert any("too long" in e for e in _check("x" * 201))
 
 
-async def test_narrate_uses_the_model_text() -> None:
+async def test_narrate_uses_the_model_title() -> None:
     plan, result = chart()
-    summary = "{max_bucket} is the most common phase, with {max_value} of {total} trials."
-    llm = ScriptedLLM(text({"title": "Breast cancer trials by phase", "summary": summary}))
+    llm = ScriptedLLM(text({"title": "Breast cancer trials by phase: {max_bucket} leads"}))
     n = await narrate(llm, plan, result.visualization, result.meta)
-    assert n.title == "Breast cancer trials by phase"
-    assert n.summary == "Phase 2 is the most common phase, with 2 of 8 trials."
+    assert n.title == "Breast cancer trials by phase: Phase 2 leads"
     assert (n.attempts, n.fallback) == (1, False)
     assert "max_value" in llm.prompt_text()  # the model sees fact names
+
+
+def test_the_model_is_asked_for_a_title_only() -> None:
+    """The AI summary was removed (Q4b revision): free text the chart can't back up."""
+    assert SCHEMA["schema"]["required"] == ["title"]
+    assert list(SCHEMA["schema"]["properties"]) == ["title"]
+    assert "summary" not in INSTRUCTIONS.lower()
+    assert "summary" not in {f.name for f in fields(Narration)}
 
 
 async def test_narrate_retries_with_the_errors_then_succeeds() -> None:
     plan, result = chart()
     llm = ScriptedLLM(
-        text({"title": "Phase 2 is the most effective", "summary": "{total} trials."}),
-        text({"title": "Trials by phase", "summary": "{total} trials matched."}),
+        text({"title": "Phase 2 is the most effective"}),
+        text({"title": "Trials by phase"}),
     )
     n = await narrate(llm, plan, result.visualization, result.meta)
     assert (n.attempts, n.fallback, n.title) == (2, False, "Trials by phase")
@@ -119,8 +134,8 @@ async def test_narrate_retries_with_the_errors_then_succeeds() -> None:
     "replies",
     [
         (
-            text({"title": "Best phase", "summary": "x"}),
-            text({"title": "Cure found", "summary": "y"}),
+            text({"title": "Best phase"}),
+            text({"title": "Cure found"}),
         ),
         (LLMUnavailable("down"),),
     ],
@@ -129,7 +144,7 @@ async def test_narrate_falls_back_to_the_template(replies: tuple[Any, ...]) -> N
     plan, result = chart()
     n = await narrate(ScriptedLLM(*replies), plan, result.visualization, result.meta)
     assert n.fallback is True
-    assert (n.title, n.summary) == (result.visualization.title, result.visualization.summary)
+    assert n.title == result.visualization.title
     assert n.errors
 
 
@@ -204,7 +219,7 @@ async def test_titles_do_not_start_with_the_source_name(title: str) -> None:
     """Every chart is from ClinicalTrials.gov; repeating it in each title is noise (seen live)."""
     plan, result = chart()
     n = await narrate(
-        ScriptedLLM(text({"title": title, "summary": "{total} trials."})),
+        ScriptedLLM(text({"title": title})),
         plan,
         result.visualization,
         result.meta,
