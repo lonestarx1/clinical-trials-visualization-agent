@@ -138,7 +138,7 @@ Retrieval is a structured API search, not a vector search. The answer is numbers
 
 These were checked against the live API; the findings are in [`api/live-probe.md`](api/live-probe.md) and [`api/contract.md`](api/contract.md).
 
-- **Pagination and volume:** broad conditions match many thousands of studies. The service needs exact per-bucket counts, the API's total count, and an honest note on what was computed. (Resolved: answers are exact, computed from the live API at request time; see [design Q6](design/06-retrieval.md).)
+- **Pagination and volume:** broad conditions match many thousands of studies. The service needs exact per-bucket counts, the API's total count, and an honest note on what was computed. (Resolved: answers are exact, computed from the live API at request time; see [design Q6](design/06-retrieval.md). Fast mode is an opt-in alternative: it reads the trials from a daily-synced copy of the registry, and a live count must confirm each answer; see [design Q22](design/22-term-sets.md).)
 - **Multi-valued fields:** one study can have several phases (e.g. Phase 1/Phase 2), conditions, interventions and countries, so the counting rule must be chosen and documented ([design Q9](design/09-counting-rules.md)).
 - **Dates:** start dates can be partial (`YYYY-MM` or `YYYY`), missing, or estimated ([design Q10](design/10-missing-partial-estimated.md)).
 - **Messy entity names:** the same drug appears as a brand name, a code name, or with dose text ("Pembrolizumab", "MK-3475", "Keytruda 200 mg"). Placebo should usually be left out of drug networks ([design Q11](design/11-name-normalization.md)).
@@ -154,10 +154,11 @@ The task needs a web framework (FastAPI), an HTTP client for the API, and an LLM
 | Deliverable | Where |
 |---|---|
 | Source code | [`backend/`](../backend), [`frontend/`](../frontend), [`infra/`](../infra) |
-| How to run, schemas, design decisions, limitations | The [README](../README.md); the interactive OpenAPI reference is served at `/docs` |
+| How to run, schemas, design decisions, limitations | The [README](../README.md) and the [design decisions](design/README.md); an API guide in the web app at `/docs`, and the interactive OpenAPI reference at the API's `/docs` |
 | Tool-use disclosure | [`parts/08-integrity-note.md`](parts/08-integrity-note.md) |
 | Example runs (actual JSON outputs) | [`examples/`](examples) |
-| Tests | The README's "Testing and validation" section |
+| Tests and AI evaluation | The README's "Testing and validation" section; the AI evaluation set and model bake-off in [`eval/`](eval/README.md) |
+| How it was built | [`implementation-plan.md`](implementation-plan.md): milestones, test-first workflow, what's planned |
 | UI and deployed endpoint | Web app at https://trials.cheiron.engineeradriel.com, API at https://api.cheiron.engineeradriel.com ([design Q19](design/19-deployment-ui.md), "Revision (2026-10-25)") |
 
 ## Exercise constraints

@@ -1,6 +1,6 @@
 # Design Q22: The API picks the trials, our database counts them
 
-Status: **Built** (2026-10-25; see "As built: fast mode" below). A **second mode, `fast`**, next to today's live fetching, which stays the default and is unchanged. It builds on the mirror designed in [Q21](21-local-mirror-revisited.md) and removes the reason Q21 gave for not building it.
+Status: **Built** (2026-10-25), and **on in the deployment** (`MIRROR_SYNC_ENABLED` and `FAST_MODE_ENABLED` in [`infra/k8s/base/api.yaml`](../../infra/k8s/base/api.yaml)). The core is built: mirror, daily sync, term sets, the fast path, per-answer count check, live fallback and sampled shadow runs. Several safety nets designed below are not built yet; see "As built: fast mode" and "As built: what is not built". A **second mode, `fast`**, next to today's live fetching, which stays the default and is unchanged. It builds on the mirror designed in [Q21](21-local-mirror-revisited.md) and removes the reason Q21 gave for not building it.
 
 ## The problem
 
@@ -30,7 +30,7 @@ The mirror never interprets a search term, so it can't get synonyms wrong: membe
 | | `live` (default) | `fast` |
 |---|---|---|
 | What it does | Today's pipeline, unchanged: download the matching trials (S3) or count per year (S2), at question time | Term sets from the API, records from the mirror, checked against a live count (Parts 1-3) |
-| Speed | Bound by the number of trials: seconds to minutes; broad questions become background jobs | About a second for most questions |
+| Speed | Bound by the number of trials: seconds to minutes; broad questions become background jobs | About a second for most questions (design estimate, not yet measured) |
 | Where the records come from | ClinicalTrials.gov, at request time | Our copy of ClinicalTrials.gov at the same data timestamp |
 | When it can't answer | n/a | It falls back to `live` and says so |
 
@@ -48,7 +48,7 @@ A stored answer can be reused by either mode: when the checks pass, both modes g
 
 As designed in Q21: a `registry` schema in the app's Postgres, one row per trial with the record as the API returns it (JSONB, only the fields the registry uses), plus extracted, indexed columns.
 
-- **First load:** 608,415 trials (2026-10-25), 609 pages, about 11 minutes at the limit. Page tokens make one search's pages strictly sequential, so the load runs as several searches sliced by `StartDate` range (plus trials with no start date), each paging on its own, so together they keep the limiter busy.
+- **First load:** 608,415 trials (2026-10-25), 609 pages, about 11 minutes at the full limit (54 requests a minute). As built, the sync is capped at half the budget (27 a minute, below). **Measured (PR #38): the first load took 23.4 minutes**, 633 requests, and the mirror holds 1.16 GB in Postgres. Five requests got a `429` and succeeded after the 10 s wait. Page tokens make one search's pages strictly sequential, so the load runs as several searches sliced by `StartDate` range (plus trials with no start date), each paging on its own, so together they keep the limiter busy.
 - **Daily update:** only the trials that changed, after each new `dataTimestamp` (below).
 - **Removals and repairs:** compare the API's total count with the mirror's (one call). When they differ, compare the count of each start-year slice (32 count calls; measured, the slices add up to the API's total exactly) and list IDs only in the slices that differ: trials gone from the API are deleted, and trials the mirror lacks (changed without a new `LastUpdatePostDate`, O5) are fetched again with their slice. Splitting a differing year by month is a later refinement.
 - **Weekly full re-sync**, at night (~11 minutes at the full rate): a safety net for changes that don't bump `LastUpdatePostDate` (open item O5). Its diff against the daily updates measures how often that happens.
@@ -124,6 +124,8 @@ A live answer aggregates the records the API returns for a search. A mirror answ
 | A structured filter means something different in SQL (for example partial dates such as `2015-03` inside a `StartDate` range) | The cross-check suite before launch, and the per-answer count check |
 | Equal totals hide different trials (one in, one out) | **Shadow runs:** a sample of mirror answers (for example 5%) is also computed live in the background and compared value by value and citation by citation. Any difference is logged and alerts |
 
+*As built:* shadow runs compare every data point's values and trial counts but **not citations** (`differences()` in `app/mirror/fast.py` drops the citation sample, which may legitimately differ), and a difference only goes to the log (`fast-mode drift`). There is no alert and no `registry.drift` table.
+
 When a check fails, the question falls back to `live` mode: **as slow as today, never different.** The mirror is an accelerator, not a second source of truth.
 
 **Citations:** mirror records are the API's JSON at the same data timestamp, so citations and their exactness check (Q14) work unchanged. `meta` keeps the live search URLs in both modes, so anyone can still check a number against ClinicalTrials.gov.
@@ -139,11 +141,11 @@ When a check fails, the question falls back to `live` mode: **as slow as today, 
 
 The SQL times are estimates, to be measured. With indexes on the extracted columns and on term-set members, aggregating a few hundred thousand rows in Postgres should take well under a second.
 
-**A new term, sooner:** resolve only the term AND this question's structured filters first (often a few pages), answer, and complete the full term set in the background.
+**A new term, sooner:** resolve only the term AND this question's structured filters first (often a few pages), answer, and complete the full term set in the background. *Not built:* a new term above `FAST_NEW_TERM_MAX_TRIALS` (20,000) is answered live instead.
 
 ## Cost
 
-- **Storage:** the registry fields of ~608k trials take a few GB (Q21). Term sets store NCT IDs as integers, 4 bytes each: 1,000 sets of ~5,000 trials is ~20 MB.
+- **Storage:** the registry fields of ~608k trials take a few GB (Q21). Term sets store NCT IDs as integers, 4 bytes each: 1,000 sets of ~5,000 trials is ~20 MB. *As built:* the mirror measured 1.16 GB, and term members are stored as text NCT IDs (so joins need no cast), a few times larger than integers but still small.
 - **API budget:** per day, one or two sync pages, one total-count call, and one refresh call per term in use. Per week, ~609 pages for the re-sync, at night. That is far below the limit and leaves the daytime budget to questions.
 - **Code:** the ingestion (first load, daily sync, removals), term sets, `to_sql`, the `mode` request field and its switch in the web app, the cross-check suite and shadow runs. The `live` pipeline is untouched.
 
@@ -177,7 +179,7 @@ ClinicalTrials.gov's [Terms and Conditions](https://clinicaltrials.gov/about-sit
 
 ## As built: fast mode (2026-10-25)
 
-- **Request and response:** `POST /v1/query` takes `mode` (`live`, the default, or `fast`), and `meta.data_source` says which mode answered. `GET /health` reports `fast_mode.status` (`ready`, `syncing`, `not_loaded`, `off`) and the data version the mirror holds. The plan cache ignores `mode`, so both modes share plans; a stored answer serves either mode.
+- **Request and response:** `POST /v1/query` takes `mode` (`live`, the default, or `fast`), and `meta.data_source` says which mode answered. `GET /health` reports `fast_mode.status` (`ready`, `syncing`, `not_loaded`, `off`) and the data version the mirror holds. The plan cache ignores `mode`, so both modes share plans; a stored answer serves either mode (see the known issue below).
 - **The path** (`app/mirror/fast.py`, called from `handle_query` after `prepare()`):
   1. the mirror must hold the API's current `dataTimestamp`;
   2. the chart's fields must be ones the mirror keeps;
@@ -187,18 +189,38 @@ ClinicalTrials.gov's [Terms and Conditions](https://clinicaltrials.gov/about-sit
   6. then the mirror's records go through the same aggregation, citation check and narration as live mode.
   Any failure, including an unexpected error, answers live with a note in `meta.notes`. A fast answer is answered synchronously: it never becomes a background job.
 - **Shadow runs:** a sample of fast answers (`FAST_MODE_SHADOW_RATE`, default 10%, only those of at most 20 pages, so shadows don't eat the API budget) is recomputed live in the background and compared point by point (every value except the citation sample). A difference is logged as `fast-mode drift`. The `registry.drift` table is not built: drift goes to the logs.
-- **Rollout, deviated from:** step 5 planned a week of shadow-only running before offering `fast`. We offered it at once, as an opt-in, because every fast answer is already checked against a live count and falls back to live when the count differs, and a sample is shadow-run. The residual risk is a swap (one trial in, one out) that keeps the count equal; the shadow sample and the weekly full re-sync are there for it.
+- **Rollout, deviated from:** step 5 planned a week of shadow-only running before offering `fast`. We offered it at once, as an opt-in, because every fast answer is already checked against a live count and falls back to live when the count differs, and a sample is shadow-run. The residual risk is a swap (one trial in, one out) that keeps the count equal; the shadow sample is there for it (the weekly full re-sync, the other net, is not built yet).
 - **Web app:** a Live/Fast switch under the search box, kept in shared links (`&mode=fast`), with a line saying what fast mode does, or why it is answering live right now. Each answer says where its trials came from: "Live from ClinicalTrials.gov" or "Fast: our copy of the <date> data, checked against ClinicalTrials.gov".
 - **Resumable load:** a restarted first load (a deploy, a crash) kept nothing and started again from zero. Now each slice the mirror already holds in full (its count equals the API's) is kept after one count call, and the trials changed since the oldest saved one are fetched again, so kept slices end on the current data. A mirror copied from another database resumes the same way. Runs left `running` by a stopped process are closed as failed.
+
+## As built: what is not built (2026-10-25)
+
+Checked against `app/mirror/`, `app/workers/mirror.py` and `app/pipeline/query.py`:
+
+| Designed | Built? |
+|---|---|
+| Sync loop: `/version` every 10 min, advisory lock, 3-day overlap, full reload after 7 days, retries after 1, 5, 15, 30, then every 60 min | **Built** |
+| "Behind" alert after 3 h | **Partly:** one error-level log line, no alert channel |
+| Reconcile by start-year slice, total check, resumable first load | **Built** |
+| Weekly full re-sync on Sundays | **Not built.** The O5 net for a removal and an addition in the same slice is missing; only a full reload after 7 days without a sync does the same |
+| Nightly pre-warm of term sets (03:00 UTC) | **Not built.** Term sets are listed on first use |
+| Re-resolve a term set in full after 7 days | **Built** (`RESOLVE_AGAIN_AFTER`) |
+| Re-resolve term sets when the count check fails, then check again | **Not built.** A failed check answers live and logs `fast-mode drift` |
+| "A new term, sooner" (narrowed first listing) | **Not built** |
+| `registry.drift` table | **Not built.** Drift goes to the logs |
+| Shadow runs | **Built for a sample:** `FAST_MODE_SHADOW_RATE` (10%) of fast answers of at most `FAST_MODE_SHADOW_MAX_PAGES` (20) pages; values compared, citations not; log only |
+| `FAST_MODE_SHADOW` (shadow-only phase, step 5 of the rollout) | **Not built** (deviation, see "As built: fast mode") |
+
+**Known issue: the stored answer ignores `mode`.** The result key (`result_key` in `app/pipeline/keys.py`) covers the plan and citation options, not `mode`. So a `live` request for a question already answered in `fast` mode is served the stored fast answer. Its `meta.data_source` still says `fast`, so it is visible, but the user asked for live data. Fix (code): add `mode` to the result key, or don't reuse fast answers for live requests.
 
 ## Rollout
 
 1. **Terms of use:** done, see above.
-2. **Mirror ingestion:** the sync loop, first load, daily update, reconciling by slice, then the weekly re-sync. Off by default (`MIRROR_SYNC_ENABLED`). Measure O5.
-3. **`to_sql` and the cross-check suite:** for every registry enum value and every year, the mirror count equals the live count; for a sample of terms, the term set equals the live ID list.
-4. **Term sets:** resolve, refresh, re-resolve, pre-warm.
-5. **Shadow first:** with `FAST_MODE_SHADOW` on, every question is answered `live`, and the `fast` answer is computed too and compared. Keep it on until the drift log stays empty for a week of daily updates.
-6. **Offer `fast`:** turn on `FAST_MODE_ENABLED`, so requests can ask for `mode: "fast"` and the web app shows the switch. Keep shadow-running a sample of `fast` answers. `live` stays the default.
+2. **Mirror ingestion:** the sync loop, first load, daily update, reconciling by slice, then the weekly re-sync. Off by default (`MIRROR_SYNC_ENABLED`). Measure O5. *Built and on in the deployment, except the weekly re-sync; O5 is not measured yet.*
+3. **`to_sql` and the cross-check suite:** for every registry enum value and every year, the mirror count equals the live count; for a sample of terms, the term set equals the live ID list. *Done (`app/mirror/query.py`, `tests/live/test_mirror_cross_check.py`); it found the `AREA[Sex]ALL` bug.*
+4. **Term sets:** resolve, refresh, re-resolve, pre-warm. *Built, except pre-warm and re-resolve on a failed check.*
+5. **Shadow first:** with `FAST_MODE_SHADOW` on, every question is answered `live`, and the `fast` answer is computed too and compared. Keep it on until the drift log stays empty for a week of daily updates. *Skipped (see "Rollout, deviated from").*
+6. **Offer `fast`:** turn on `FAST_MODE_ENABLED`, so requests can ask for `mode: "fast"` and the web app shows the switch. Keep shadow-running a sample of `fast` answers. `live` stays the default. *Done: on in the deployment, with sampled shadow runs.*
 
 ## What it doesn't fix
 

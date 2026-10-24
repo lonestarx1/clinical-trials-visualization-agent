@@ -58,6 +58,8 @@ Added as a new **network type**:
 - **Trial count** (default)
 - **Total enrollment** and **median enrollment** (e.g. "How many participants are in Phase 3 trials for X?")
 
+**As built (2026-10-25):** a fourth measure, **distinct count**, counts entities instead of trials, optionally with a minimum number of trials ("How many sponsors ran more than 2 breast cancer trials each year?"). A measure the tool can't compute (e.g. an average duration) gets the structured "out of scope" answer with a suggested question it can answer, never a substitute measure ([Q4a](04a-plan-schema.md)).
+
 ## Out of scope (structured "unsupported" response, never an invented chart)
 
 | Request | Why |

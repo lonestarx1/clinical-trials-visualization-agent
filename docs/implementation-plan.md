@@ -6,8 +6,8 @@ The work ran in this order:
 
 1. **Requirements:** the assignment was transcribed and broken into atomic requirements ([`docs/parts/`](parts/README.md)).
 2. **API research:** the ClinicalTrials.gov documentation was read ([contract](api/contract.md)), then the live API was probed ([live probe](api/live-probe.md)).
-3. **System design:** design decisions Q1 to Q20, one question at a time ([`docs/design/`](design/README.md)). Q21 was added during the build.
-4. **Build:** the milestones below, each one a pull request.
+3. **System design:** design decisions Q1 to Q20, one question at a time ([`docs/design/`](design/README.md)). Q21 and Q22 were added during the build.
+4. **Build:** the milestones below, each one a pull request, then the work after M6.
 
 The design was larger than the time available, so the build had two safeguards. Every milestone left `main` runnable, and lower-priority pieces had cut lines decided in advance. Anything designed but not built is listed in the README's [limitations](../README.md#limitations).
 
@@ -50,6 +50,7 @@ Each milestone had an **exit check**: what had to be true before its pull reques
 | M4: Persistence | Stored results, full citations, caches, background jobs, cost tracking | 318 (+16 database) |
 | M5: Frontend | Next.js and ECharts web app | 8 web |
 | M6: Deploy | Terraform and k3s on AWS, live over HTTPS | |
+| After M6 | AI evaluation and model bake-off, mirror and fast mode, full citations for per-year rows | 589 (+86 database, 71 web) |
 
 ### M0: Skeleton
 
@@ -125,14 +126,29 @@ Live use surfaced problems that were fixed before deployment:
 - **Counting what was asked.** A question about the number of sponsors per year was answered with a trial count. A new `distinct_count` measure counts sponsors, drugs and other entities (with an optional minimum number of trials). A new gate check rejects a plan that doesn't count what the question counts, and an unsupported measure gets a refusal with a suggestion instead of a substitute.
 - **Speed.** Trials-per-year series use one count call per year instead of downloading every trial: 2010-2020 went from 412 s to 57 s, with identical numbers. Chart building moved off the event loop, so a large question no longer blocks other requests.
 - **Less AI text.** The AI-written summary under each chart was removed as prone to hallucination and not required. The checked AI title stays ([Q4b revision](design/04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)).
-- **Local mirror revisited.** A local copy of the registry was reconsidered for broad questions and not built, because it would miss the API's synonym matching ([Q21](design/21-local-mirror-revisited.md)).
+- **Local mirror revisited.** A local copy of the registry was reconsidered for broad questions and not built then, because it would miss the API's synonym matching ([Q21](design/21-local-mirror-revisited.md)). It was built after M6 in a form that keeps the API's matching, as fast mode ([Q22](design/22-term-sets.md), below).
 
 ### M6: Deploy
 
 - **Planned:** an EC2 instance defined in CloudFormation or CDK, with Caddy for HTTPS, and the frontend on Vercel.
 - **Delivered:** Kubernetes (k3s) on one EC2 instance, defined in Terraform and Kustomize, with both the API and the web app on the cluster, Let's Encrypt certificates, and deploys through an SSM tunnel. The reasons for the change and a production design are in the [Q19 revision](design/19-deployment-ui.md#revision-2026-10-25-what-was-actually-deployed); how to deploy is in [`infra/README.md`](../infra/README.md).
 - **Exit check:** the public endpoint answers the example request over HTTPS.
-- **Followed by** documentation for API users: a hand-written API guide in the web app at `/docs`, and a complete OpenAPI reference behind Swagger and ReDoc.
+- **Followed by** documentation for API users: a hand-written API guide in the web app at `/docs`, and a complete OpenAPI reference behind Swagger and ReDoc. Clients can also cancel a background job (`DELETE /v1/jobs/{id}`), and the client's rate limit was raised to the measured 9 requests per 10 s.
+
+### After M6: AI evaluation, fast mode, full citations
+
+- **AI evaluation and model bake-off** (PRs #36, #37, #39): 42 planner questions, 36 guard requests and 10 narrator fact sheets, scored with the real models against the quality bars of [Q20](design/20-model-selection.md).
+  - The baseline found a gate bug, a planner whose first plan passed the gate only 21% of the time, and a guard that let a writing request through.
+  - Two rounds of prompt fixes brought every stage over every bar: the planner went from 94% to 98% fully correct, and from 21% to 81% first-time passes.
+  - The bake-off chose `gpt-5.4-nano` for the guard and `gpt-4o-mini` for the narrator, and kept `gpt-5.4-mini` for the planner ([results](eval/README.md)).
+- **Mirror and fast mode** (PRs #38, #40, #42 to #45, #47; [Q22](design/22-term-sets.md)):
+  - Q21's objection was that a local copy can't reproduce the API's synonym search. In Q22 the API still picks the trials: each search term is listed once by ClinicalTrials.gov as a set of trial IDs. A copy of all 608,415 trials in Postgres supplies their records.
+  - The copy loads once (23.4 minutes, at half the rate budget) and then syncs after each daily update (18 s).
+  - `mode: "fast"` answers from it only when the copy holds the current data version and its count equals the live count. Anything else answers live. Live stays the default, and the web app has a Live/Fast switch.
+  - Cross-checking the copy against the live API found that Essie reads a bare `ALL` as "every trial", so a "sex: all" filter matched everything, in live mode too. Fixed with a test first (PR #44).
+- **Full citations for per-year rows** (PR #46): a trials-per-year row counted with one call per year stored only its inline sample, so the citations endpoint listed 5 trials for a year of 10,000. It now pages the rest of the year from ClinicalTrials.gov on first read, and stores it.
+- **Narrator eval on 25 cases** (PR #48): the set grew from 10 to 25 fact sheets, some built to trip the title checks. All 75 titles pass every check, but reading them found a misnamed condition and charts described wrongly, which the checks don't catch ([report](eval/narrator-25.md)).
+- **Live checks:** open items O4 and O5 were measured on the live API (PR #41, [live probe §9-10](api/live-probe.md#9-statsfieldvalues-counting-and-the-250-value-cap-open-item-o4)).
 
 ## Cut lines
 
@@ -145,7 +161,7 @@ These were decided before the build, in the order they would be dropped if time 
 5. Frontend extras (field pickers, job progress)
 6. Deployment
 
-Line 4 was cut. The extra network types, the frontend extras and the deployment were all built. The bake-off is still planned (below).
+Line 4 was cut, and no demo video was made (line 1). The model bake-off was done after M6, and the extra network types, the frontend extras and the deployment were all built.
 
 Never cut: input validation, the plan gate, narration checks, citation exactness, honest handling of excluded trials and uninterpretable questions, and tests for the deterministic core.
 
@@ -153,14 +169,16 @@ Never cut: input validation, the plan gate, narration checks, citation exactness
 
 | Risk | Mitigation | Outcome |
 |---|---|---|
-| Planner quality below the bar | Tool feedback and a code gate first; a bigger model only as a last resort | All 9 appendix questions pass with the starting model (`gpt-5.4-mini`) |
+| Planner quality below the bar | Tool feedback and a code gate first; a bigger model only as a last resort | All 9 appendix questions pass with the starting model (`gpt-5.4-mini`), which the bake-off kept; on the 42 eval questions it is fully correct in 98% of runs |
 | ClinicalTrials.gov throttling during development | Recorded fixtures for tests, a global client-side rate limiter, and the rate-limit test left for last | Measured on 2026-10-25 (~10 requests per 10 s); the limiter now allows 9 per 10 s ([live probe §8](api/live-probe.md)) |
-| Broad questions too slow | Count per bucket before fetching, and background jobs, never a silent partial answer | Per-year counts became fast; broad questions that need every record still take minutes, as background jobs (see [limitations](../README.md#limitations)) |
+| Broad questions too slow | Count per bucket before fetching, and background jobs, never a silent partial answer | Per-year counts became fast. Broad questions that need every record still take minutes live, as background jobs. Opt-in fast mode reads those records from the daily copy instead ([Q22](design/22-term-sets.md)); its speed on real broad questions is not yet measured |
 
 ## What's planned
 
 - ~~An evaluation set for the AI stages and a model bake-off per stage.~~ **Done 2026-10-25** ([`docs/eval/`](eval/README.md), [Q20 results](design/20-model-selection.md#bake-off-results-2026-10-25)).
 - **A live end-to-end set of about 60 questions** ([Q18](design/18-testing.md)), with a report of the results. Today's end-to-end suite has 11.
+- **Two more title checks**, from the 25-case narrator eval: every name in a title must match a chart name exactly, and the title must name every dimension ([eval](eval/README.md)).
+- **The weekly full re-sync of the mirror** ([Q22](design/22-term-sets.md)), a safety net for a swap (one trial in, one out) that keeps the counts equal. Today term sets are listed again weekly, a copy more than 7 days behind is loaded again, and a 10% sample of fast answers is recomputed live and compared.
 - ~~Remaining live checks against ClinicalTrials.gov (O4, O5).~~ **Done 2026-10-25** ([live probe §9-10](api/live-probe.md#9-statsfieldvalues-counting-and-the-250-value-cap-open-item-o4)).
 - **Task-scoped authorization with [Tenuo](https://tenuo.ai/), once the agents can change things.** Today the planner's four tools only read (option lists, trial counts, plan checks), and the schemas, the validation gate and the step cap already limit them, so Tenuo would duplicate those checks. It becomes worth adding when:
   - the API is offered to other agents, for example as an MCP server: a signed warrant per task could limit which questions a caller may ask, how many ClinicalTrials.gov pages a question may fetch, and for how long;

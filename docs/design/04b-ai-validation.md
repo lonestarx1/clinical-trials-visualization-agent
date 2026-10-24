@@ -28,6 +28,12 @@ Decided after live testing.
 | V3 | **Non-empty search:** each entity filter must match > 0 trials (via `count_trials`, cached) | Typos, nonsense terms | Error to agent with the count; at the gate: structured "no matching trials" response |
 | V4 | **Unrequested filters need a stated reason:** any filter not traceable to the query or fields (e.g. a year range, a status) needs a matching entry in `assumptions[]` | Hidden, silent narrowing of the question | Error to agent; at the gate: reject the plan |
 
+**As built (2026-10-25)**, checked against [`gate.py`](../../backend/app/validation/gate.py):
+- **V1** as designed, plus one more check: a question that counts entities ("how many sponsors") needs a plan that counts them (measure `distinct_count`, or grouping by that entity).
+- **V2** covers drugs, conditions, sponsors, countries and US states, in the shared filters and in each group's filters. A term is grounded if it appears in the query, the fields or the compare labels, ignoring case, accents and punctuation, or if a run of words there is at least 85% similar. Group labels themselves are not checked.
+- **V3 is not a gate check.** The planner can call `count_trials` while planning. After the gate, the count stage answers `no_matching_trials` only when every search matches nothing; a comparison group with no trials is charted at 0.
+- **V4 is looser than designed, in two ways.** First, one stated assumption excuses every unrequested filter: the gate only checks that `assumptions` is not empty (`gate.py`, line 361), not that each filter has its own entry. Second, `has_results` and `healthy_volunteers` count as asked for only when the question contains the exact words "has results" or "healthy volunteers"; "trials with results" or "posted results" needs an assumption. Only the shared filters are checked, not group filters.
+
 ## B. Narration (title; the summary was removed in the 2026-10-24 revision)
 
 ### V5: Fact sheet (the core mechanism)
@@ -54,6 +60,10 @@ The narrator gets **only** the fact sheet (plus chart type and dimension labels)
 
 Code replaces the placeholders with the fact values. **The numbers are correct by construction.** The AI chooses words, never values.
 
+**As built (2026-10-25):** the mechanism is as designed, with different fact names ([`narrator.py`](../../backend/app/agents/narrator.py)). Every chart has `total`, `measure`, `dimension` and `scope` (the entity terms and group labels; there is no `applied_filters`). Bars and time series add `n_buckets`, `max_bucket`/`max_value`, `min_bucket`/`min_value`, `next_items`, `share_of_max` (additive trial counts only) and the group labels; time series add `first_bucket`, `last_bucket`, `trend_direction`. Networks have `n_nodes`, `n_edges`, `top_node` (with degree and trials) and `strongest_link`; histograms `largest_bin`, `largest_bin_count`, `n_bins`; scatter plots `n_points`, `median_x`, `median_y`; a metric has `value`.
+
+**What "never values" covers:** every number in the chart, its data and its citations comes from code, and so does every number in the title. The planner's free text is not checked the same way: `assumptions` and, for out-of-scope answers, `scope_reason` and `scope_suggestion` are copied into `meta` as written, and the labels of comparison groups the planner creates become series names. None of it feeds a computation, but none of it is checked against the data either, so it could state a wrong number.
+
 ### Checks on the rendered text
 
 | # | Check | Catches | On failure |
@@ -62,6 +72,12 @@ Code replaces the placeholders with the fact values. **The numbers are correct b
 | V7 | **Name check:** every category/entity named in the text must exist in the chart's data labels or the applied filters | Mentioning things not in the chart | Retry, then fallback |
 | V8 | **Banned claims:** deny-list of evaluative or medical-conclusion words ("effective", "best", "safe", "proves", "cure", "superior", ...) and unknown placeholders | Clinical conclusions the data can't support | Retry, then fallback |
 | V9 | **Failure policy:** one retry with the specific errors; if it still fails, fall back to a **template** title built from the same facts (originally also a template summary), and `meta.narration.fallback = true` with the reasons | Persistent narration failure | Always returns valid text |
+
+**As built (2026-10-25):**
+- **V6:** a number typed by the model must equal a fact value exactly, ignoring commas and `%`. Text that is a chart label, a fact or a known name is removed first, so "Phase 3" is not read as a number. There is no rounding tolerance and no separate year rule: a year must be a fact or part of a label.
+- **V7 is narrower than designed.** It checks a fixed list of names: phase labels, multi-word status labels and country names. A drug, condition or sponsor that isn't in the chart is not caught.
+- **V8:** 25 banned words, plus unknown or malformed placeholders.
+- **V9:** as designed: one retry with the errors, then the template title, with `meta.narration.fallback: true`. If the model is unavailable, the template is used at once. A leading "ClinicalTrials.gov" is stripped from the title.
 
 Additional structural limits: title ≤ ~90 characters. Only known placeholders are allowed. ~~Summary is 1 sentence, ≤ ~200 characters.~~ (superseded 2026-10-24: the AI summary was removed, see [Q4b revision](04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed))
 
@@ -77,4 +93,4 @@ This is the evidence for "how we validated correctness" (Part 8) and for "includ
 
 ## Requirement links
 
-P7-4, P7-5, P7-6 (hallucination, validation, planning), P8-2 (validation evidence), P2-2 (authoritative data: numbers never come from the AI).
+P7-4, P7-5, P7-6 (hallucination, validation, planning), P8-2 (validation evidence), P2-2 (authoritative data: chart and citation numbers never come from the AI).

@@ -80,6 +80,8 @@ Every candidate ran the evaluation set 3 times per case, after the prompt fixes 
 
 **Fallbacks.** The planner's fallback was gpt-4.1-mini, which failed the planner bars (83% correct). It is now **gpt-5-mini** (99%). The guard and narrator keep gpt-4.1-mini as their fallback, which passed both stages' bars.
 
+**Narrator re-measured on 25 cases (2026-10-25).** The bake-off used the first 10 narrator cases. The set then grew to 25 (every chart type and measure, and fact sheets built to trip the checks), and the chosen narrator ran it 3 times ([narrator-25](../eval/narrator-25.md), $0.005): **100%** of the 75 titles passed every check first time, no template fallbacks, p95 1.15 s. The choice stands. Reading the titles found what the checks miss: a partly wrong entity name ("Spinal Muscular Dystrophy" for spinal muscular atrophy) and titles that misdescribe a scatter plot or a network. Exact name matching and a "title names every dimension" check are future work ([eval README](../eval/README.md)).
+
 ## Models in use
 
 The five example runs in [`docs/examples/`](../examples/) (made with the starting defaults) cost about $0.002-0.003 each in AI calls (`meta.usage.cost_usd`), well under the estimate above.

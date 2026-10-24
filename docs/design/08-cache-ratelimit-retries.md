@@ -50,7 +50,7 @@ Old rows past the ceiling or unused for a while are deleted by a periodic cleanu
 - **Request coalescing ("single-flight"):** concurrent identical L1 fetches share one in-flight API call.
 - **Version fields** (model/prompt version in L2, code/schema version in L3) make deployments invalidate old plans and responses safely.
 
-**As built:** L2 (plans) and L3 (stored results) are implemented, with revalidation as above and the 7-day safety ceiling. Each stored result keeps its searches and totals for revalidation. The L1 page cache and request coalescing are not built ([Q16 implementation status](16-database.md#implementation-status-2026-10-24)).
+**As built (2026-10-25):** L2 (plans) and L3 (stored results) are implemented, with revalidation as above and the 7-day safety ceiling. Each stored result keeps its searches and totals for revalidation. The L1 page cache is not built ([Q16 implementation status](16-database.md#implementation-status-2026-10-24)); only count calls are cached, in memory (D8.3a). **Request coalescing is not built:** two identical requests arriving together each make their own API calls. Only a repeat after the first one finishes is served from the count cache or the stored result.
 
 ### Why Postgres, not Redis (recorded alternative)
 
@@ -68,7 +68,7 @@ We considered Redis (an in-memory cache with native TTL, LRU eviction and sub-mi
 |---|---|
 | D8.3 | **One global limiter** for all requests and background jobs: default **40 requests/min** (20% under the most conservative third-party estimate of ~50/min; see live-probe §8). Configurable. |
 | D8.4 | **Concurrency cap**, default **2** in-flight API calls (Q6). Configurable. |
-| D8.3a | **Revision (2026-10-25), measured:** ClinicalTrials.gov allows ~10 requests per ~10 s per IP, with no concurrency limit and no `Retry-After` on its `429` ([live probe §8](../api/live-probe.md)). The limiter now allows 9 requests per 10 s (54 a minute), up to 9 at once: a sliding window, so a burst starts at once. A `429` without `Retry-After` waits 10 s. Count calls are cached in memory for 10 minutes and dropped when the data timestamp changes, so the planner's counts, the count stage and repeat questions don't repeat them. |
+| D8.3a | **Revision (2026-10-25), measured:** ClinicalTrials.gov allows ~10 requests per ~10 s per IP, with no concurrency limit and no `Retry-After` on its `429` ([live probe §8](../api/live-probe.md)). The limiter now allows 9 requests per 10 s (54 a minute), up to 9 at once: a sliding window, so a burst starts at once. A `429` without `Retry-After` waits 10 s. Count calls are cached in memory for 10 minutes and dropped when the data timestamp changes, so the planner's counts, the count stage and repeat questions don't repeat them. The mirror sync ([Q22](22-term-sets.md)) has its own lower cap, 27 a minute, inside this shared budget. |
 | D8.5 | Single-process deployment for now: the limiter is in-process. With several instances it must move to shared storage (Postgres advisory locks / a token table, or Redis). Documented as a scaling limitation. |
 
 ## Retries and failure handling
@@ -77,9 +77,9 @@ We considered Redis (an in-memory cache with native TTL, LRU eviction and sub-mi
 |---|---|---|
 | D8.6 | ClinicalTrials.gov | **Retry** on 429, 5xx, timeouts and connection errors: up to **4 attempts**, exponential backoff with full jitter (base 1 s, cap 30 s), honouring `Retry-After` if present. |
 | D8.7 | ClinicalTrials.gov | **Never retry** 400/404 (our bug or a genuine "not found"); surface them as structured errors. |
-| D8.8 | ClinicalTrials.gov | **Circuit breaker:** after N consecutive failures (e.g. 5), fail fast for ~30 s instead of adding load, and return a 503 `upstream_unavailable` (or keep a background job pending and retry later). |
-| D8.9 | All HTTP | **Timeouts:** connect 5 s, read 30 s; plus an overall per-request deadline (sync requests) after which the work moves to / stays in a background job. |
-| D8.10 | OpenAI | Same retry policy for 429/5xx/timeouts, plus a **fallback model** (e.g. primary `gpt-5.4-mini`, fallback `gpt-4.1-mini`). Every attempt and fallback is recorded in the trace. |
+| D8.8 | ClinicalTrials.gov | **Circuit breaker:** after N consecutive failures (e.g. 5), fail fast for ~30 s instead of adding load, and return a 503 `upstream_unavailable` (or keep a background job pending and retry later). *As built:* 5 failures, 30 s; a failed job is retried up to 3 attempts in all. |
+| D8.9 | All HTTP | **Timeouts:** connect 5 s, read 30 s; plus an overall per-request deadline (sync requests) after which the work moves to / stays in a background job. *As built:* the timeouts are built. The deadline is not: sync vs background job is decided once, by the up-front estimate (Q6). |
+| D8.10 | OpenAI | Same retry policy for 429/5xx/timeouts, plus a **fallback model** (e.g. primary `gpt-5.4-mini`, fallback `gpt-4.1-mini`). Every attempt and fallback is recorded in the trace. *As built:* the models per stage are in [Q20](20-model-selection.md). |
 
 ## Requirement links
 

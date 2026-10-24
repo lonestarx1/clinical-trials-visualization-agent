@@ -15,7 +15,19 @@ Status: **Decided** (2026-10-24)
 | **Live end-to-end** | **~60 questions** run through the **full pipeline with the real ClinicalTrials.gov API and real OpenAI models**, over HTTP against the running Docker Compose stack. See "Live end-to-end suite" below. | Live API + real AI | Opt-in (`-m e2e`); run before submission and after major changes |
 | **Smoke** | `docker compose up` -> `/health` ok -> one real question end to end -> valid response | Yes | Manual / pre-submit |
 
-**As built (2026-10-25):** the offline layers (unit, contract, integration), the database tests, the live cross-checks and a smaller live end-to-end suite run today; the [README](../../README.md) lists them with counts. The end-to-end suite covers the 9 appendix questions plus two measure questions, not yet the ~60 below. The AI evaluation set is built ([`docs/eval/`](../eval/README.md)): 42 planner questions, 36 labelled guard requests and 10 narrator fact sheets, run with `make eval` (not `-m eval`: it writes a report rather than pass/fail tests). Its first run found a gate bug and three prompt problems, all fixed and re-measured, and the model bake-off (Q20) ran on it.
+**As built (2026-10-25):** every layer exists, at these sizes:
+
+| Suite | Tests | How it runs |
+|---|---|---|
+| Offline: unit, contract, integration | 589 | `uv run pytest`, in CI on every push |
+| Database (real Postgres) | 86 | `pytest -m db`, in CI (Postgres service) |
+| Live ClinicalTrials.gov: cross-checks, query syntax, counted measures, mirror vs API | 20 | `pytest -m live`, opt-in |
+| Live end-to-end, over HTTP against a running stack | 11 | `pytest -m e2e`, opt-in |
+| Web app (Vitest) | 71 | `npm test`, in CI |
+
+- **End-to-end:** 11 cases, the 9 appendix questions plus two measure questions. The ~60-question set below is **not built**.
+- **Database:** no retention-cleanup test, because there is no cleanup task yet (Q16).
+- **AI evaluation:** built ([`docs/eval/`](../eval/README.md)): 42 planner questions, 36 labelled guard requests and 25 narrator fact sheets, run with `make eval` (not `-m eval`: it writes a report rather than pass/fail tests). Its first run found a gate bug and three prompt problems, all fixed and re-measured; the model bake-off (Q20) ran on it, and the narrator was re-measured on all 25 cases ([narrator-25](../eval/narrator-25.md)).
 
 ## Live end-to-end suite
 

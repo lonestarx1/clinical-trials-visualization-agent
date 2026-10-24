@@ -29,8 +29,8 @@ Error bodies **never** contain stack traces, prompts, model outputs, keys, or in
 | 404 | `not_found` | Unknown `job_id` / `result_id` / data point, or a path that doesn't exist |
 | 405 | `method_not_allowed` | A known path with the wrong HTTP method (the `Allow` header lists the right one) |
 | 410 | `expired` | Result or job past retention / no longer valid (Q14). A finished job expires 24 h after finishing, or with its result |
-| 429 | `too_many_requests` | **Our own** per-client rate limit; includes a `Retry-After` header |
-| 503 | `upstream_unavailable` | ClinicalTrials.gov still failing after retries, or the circuit breaker is open (Q8) |
+| 429 | `too_many_requests` | **Our own** per-client rate limit; includes a `Retry-After` header. Also too many active background jobs for one client (`MAX_ACTIVE_JOBS_PER_IP`, Q19) |
+| 503 | `upstream_unavailable` | ClinicalTrials.gov still failing after retries, or the circuit breaker is open (Q8), or its data changed in the middle of a read (inconsistent totals) |
 | 503 | `llm_unavailable` | OpenAI failing after retries **and** the fallback model (Q8) |
 | 503 | `safety_check_unavailable` | The guard failed after its retry: fail closed (Q5b) |
 | 503 | `budget_exceeded` | The daily LLM spending cap was reached (Q16 `llm_usage`) and the request needs a model call. Cached results are still served: an exact repeat whose plan and result are stored is answered with no model call (Q16). |
@@ -49,6 +49,7 @@ If **any** search behind a chart fails after retries (e.g. one group of an "A vs
 | Sync request exceeds its time budget | Converted to a **background job** (202 + `job_id`), not a 504 timeout (Q6) |
 | Guard unavailable | **No** fallback: fail closed (503) |
 | Data errors in individual trials (impossible dates, missing fields) | Excluded and counted in `meta.excluded` (Q10), not an error |
+| `mode: "fast"` can't answer exactly (mirror syncing or not loaded, a check fails, a new term too large, any mirror error) | Answered by `live` mode, with the reason in `meta.notes` and `meta.data_source: "live"` ([Q22](22-term-sets.md)). Never an error |
 
 ## Rule 5: background jobs use the same error body
 
@@ -57,6 +58,8 @@ A failed job is `GET /v1/jobs/{id}` -> `{ "status": "failed", "error": { ...same
 ## Logging
 
 Every error is logged with its `trace_id`, error code, stage, and upstream status (if any). 5xx errors are logged at error level, 4xx at info level. Error rates per code are available from `traces` (`outcome`, `http_status`).
+
+**As built (2026-10-25):** the `traces` table was not built (Q16), so the `trace_id` leads to the JSON logs on stdout, not to a stored trace. Error rates per code come from the logs.
 
 ## Requirement links
 

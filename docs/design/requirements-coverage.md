@@ -1,6 +1,6 @@
 # Requirement coverage: assignment -> design
 
-Maps every requirement ID from [`docs/parts/README.md`](../parts/README.md) to the design decisions that cover it. Reviewed 2026-10-24 after the first 19 design questions. The tables below are that design-time review; what was delivered since is in [Revision (2026-10-25): delivery status](#revision-2026-10-25-delivery-status) at the end.
+Maps every requirement ID from [`docs/parts/README.md`](../parts/README.md) to the design decisions that cover it. Reviewed 2026-10-24 after the first 19 design questions (Q20-Q22 came later). The tables below are that design-time review; what was delivered since is in [Revision (2026-10-25): delivery status](#revision-2026-10-25-delivery-status) at the end.
 
 **Coverage status:**
 - **Designed**: fully covered by a decision
@@ -49,7 +49,7 @@ No requirement is uncovered. The "Planned" items are deliverables (README sectio
 | ID | Requirement | Covered by | Status |
 |---|---|---|---|
 | P2-1 | Use the ClinicalTrials.gov Data API | Q6 D6.1, `docs/api/contract.md`, `docs/api/live-probe.md` | Designed |
-| P2-2 | Authoritative: every fact from the API | Q3 (code computes numbers), Q4b fact sheet, Q14 exactness check, Q6 (no mirror) | Designed |
+| P2-2 | Authoritative: every fact from the API | Q3 (code computes numbers), Q4b fact sheet, Q14 exactness check, Q6 (live data; a mirror came later as the opt-in fast mode, Q22) | Designed |
 | P2-3 | Any endpoints/fields | Q6 S1-S3 (`/studies`, `/stats/field/values`, `/version`) | Designed (verify: O4 S1 semantics) |
 
 ## Part 3: Functional requirements
@@ -163,17 +163,19 @@ The service is built and deployed. This updates the rows above that were "Planne
 | ID | Now | Where |
 |---|---|---|
 | P0-3 | Done | Milestones M0-M6 complete ([implementation plan](../implementation-plan.md)) |
+| P2-2, P7-8 | Kept with fast mode | [Q22](22-term-sets.md) adds an opt-in `fast` mode (on in the deployment): ClinicalTrials.gov's search still picks the trials, a local mirror supplies the records, and each answer must match a live count or it is answered live. `meta.data_source` says which mode answered |
 | P2-3, P5 count-only note | O4 no longer blocks | The service doesn't call `/stats/field/values` when answering a question (it was only used to build the static country list, `backend/app/ctgov/data/location-countries.json`). Exact counts come from one count call per bucket (`backend/app/ctgov/retrieval.py`) |
 | P3-3, P6-3 | Done | README "API" section (request fields table, response example, errors); OpenAPI at `/docs` and `/openapi.json` |
 | P3-12 | Done | README "Response" section, [Q12](12-io-schema.md), and the web app's renderer, which reads only `encoding` |
+| P5-1, P5 count-only note | Done | Every data point lists all its trials through `GET /v1/results/{id}/citations`. For trials-per-year rows counted per year (S2), the endpoint pages the year's API search on demand and stores what it reads (`result_datums.source`, [Q14 as built](14-citations.md), [Q16](16-database.md)) |
 | P6-1 | Done | This repository (`backend/`, `frontend/`, `infra/`), runnable with `make up` |
-| P6-2 | Done | README "Quick start" and "Configuration" |
+| P6-2 | Done | README, [Quick start](../../README.md#quick-start-docker-compose) and [Configuration](../../README.md#configuration) |
 | P6-4 | Done | README "Key design decisions", plus this folder |
-| P6-5 | Done | README "Limitations (current)" |
+| P6-5 | Done | README, [Limitations](../../README.md#limitations) and future improvements |
 | P6-6 | Done | 5 script-generated outputs in [`../examples/`](../examples), listed in the README "Examples" section |
 | P6-7 | Done | Web app in `frontend/` |
 | P6-8 | Done (O8 resolved) | Live at https://api.cheiron.engineeradriel.com (API) and https://trials.cheiron.engineeradriel.com (web), on k3s on EC2 instead of the first plan of `api.engineeradriel.com`; see [Q19](19-deployment-ui.md), "Revision (2026-10-25)" |
 | P6-9 | Not tracked here | Optional demo video |
-| P8-1, P8-3 | Written | [`../parts/08-integrity-note.md`](../parts/08-integrity-note.md), "Our disclosure" |
+| P8-1, P8-3 | Written | The README's tools and integrity section, and [`../parts/08-integrity-note.md`](../parts/08-integrity-note.md), "Our disclosure" |
 | P8-2 | Done | README "Testing and validation"; [`../parts/08-integrity-note.md`](../parts/08-integrity-note.md) |
 | PA-1..9 | Done | All 9 appendix questions pass end to end (`make test-e2e`) |

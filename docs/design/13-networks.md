@@ -22,7 +22,7 @@ Sponsor ↔ collaborator always uses both sponsor roles (Q7, D7.6). Other sponso
 
 | Element | Fields |
 |---|---|
-| Node | `id` (`<type>:<normalised key>`), `label` (most common raw spelling), `type`, `weight` (= distinct trials containing the node), `degree` (edges after pruning), `community`, `is_query_entity`, `citations` |
+| Node | `id` (`<type>:<normalised key>`), `label` (most common raw spelling), `type`, `weight` (= distinct trials containing the node; as built, linked trials only, see below), `degree` (edges after pruning), `community`, `is_query_entity`, `citations` |
 | Edge | `source`, `target`, `weight` (= distinct trials containing both), `jaccard` (= shared trials / trials containing either node), `citations` |
 
 **Why Jaccard as well:** raw counts favour hubs. Carboplatin co-occurs with almost every chemo combination, so by count it looks linked to everything. Jaccard measures how **specific** a link is. Both values are sent: `encoding.edge_width` defaults to `weight`, and `edge_metric: count | jaccard` lets the user choose.
@@ -46,6 +46,11 @@ The pruning is deterministic (ties broken by label), so the same data always giv
 | D13.2 | **Communities:** a deterministic community-detection algorithm (e.g. greedy modularity / Louvain with a fixed seed) labels every node with a `community`, so the frontend can colour clusters (e.g. "chemotherapy combinations" vs "immunotherapy combinations"). The algorithm is named in `meta`. |
 | D13.3 | **No layout coordinates.** Layout is the frontend's job (force-directed etc.). We send graph structure and weights only. |
 | D13.4 | **Encoding hints:** node size = `weight`, node colour = `type` (bipartite) or `community` (co-occurrence), edge width = `weight` or `jaccard`. |
+
+## As built (2026-10-25): two limits
+
+- **Query-entity match is by name, so it can miss silently.** `is_query_entity` and `hide_query_entity` compare the filter's text, case-folded, with node keys, which are normalised MeSH terms for drugs and conditions (`app/pipeline/networks.py`, around line 101). "pembrolizumab" matches its node; "Keytruda" or "lung cancer" (MeSH "Lung Neoplasms") match nothing, so no node is flagged or hidden and nothing says so. Fix (code): map the filter through the same MeSH lookup, or flag nodes present in every trial, and add a note when nothing matched.
+- **Node weight counts linked trials only.** A node's `weight`, and the Jaccard denominator, count the trials in which the node is part of at least one edge. For drug ↔ drug that is the stated rule (trials with >= 2 drugs). For two node types it means a sponsor's weight is its trials **with at least one drug**, not all its trials in scope. `meta.network.trials_without_links` reports how many trials gave no link.
 
 ## Requirement links
 

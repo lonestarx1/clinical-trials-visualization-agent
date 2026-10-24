@@ -53,8 +53,8 @@ First proposal:
 
 ### Other decisions
 
-- **Live calls vs a local copy.** We query the live API per request, with caching for speed, rate limits and repeatable answers ([design Q6](../design/06-retrieval.md), [Q8](../design/08-cache-ratelimit-retries.md)).
-  - We don't download the full dataset (500k+ studies) for the submission. A local mirror was designed and weighed twice, and not built: a local copy can't reproduce the API's synonym and MeSH search ([design Q21](../design/21-local-mirror-revisited.md)).
+- **Live calls vs a local copy.** By default we query the live API per request, with caching for speed, rate limits and repeatable answers ([design Q6](../design/06-retrieval.md), [Q8](../design/08-cache-ratelimit-retries.md)).
+  - A local copy alone can't reproduce the API's synonym and MeSH search ([design Q21](../design/21-local-mirror-revisited.md)). So the opt-in fast mode keeps a daily-synced copy of all ~608k trials but lets the API pick which trials match each search term, and checks every answer against a live count ([design Q22](../design/22-term-sets.md)).
 - **Data freshness.** Cached data is from a point in time, so each answer records a `retrieved_at` timestamp in `meta`.
 
 ## 6. Acceptance checks

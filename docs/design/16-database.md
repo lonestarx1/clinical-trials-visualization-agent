@@ -10,6 +10,8 @@ Built: `data_versions`, `plan_cache`, `results`, `result_datums`, `result_citati
 
 **Revision (2026-10-25): the mirror's tables.** Migration `b3e1c0a7d222` adds the `registry` schema for the mirror behind `fast` mode ([Q22](22-term-sets.md)): `registry.trials` and `registry.sync_runs` (section 11). They are filled only when `MIRROR_SYNC_ENABLED` is on. Migration `c4f2d1b8e333` adds `registry.term_sets` and `registry.term_members` (section 12).
 
+**Revision (2026-10-25): citation sources.** Migration `d5a3e2c9f444` adds `source`, `next_page_token` and `complete` to `result_datums` (section 6), so the citations endpoint can page a sampled data point's trials from the API on demand ([Q14](14-citations.md)).
+
 ## Conventions
 
 | Topic | Rule |
@@ -52,7 +54,11 @@ Simplified overview:
   traces 1 --- N llm_usage <--- N 1 jobs    (one row per LLM call; each FK optional)
   results.search_keys[] ...> api_searches   (logical reference, no FK)
   plan_cache                                (standalone, no relations)
+  registry.trials, registry.sync_runs       (the mirror, Q22; own schema, no FKs to app tables)
+  registry.term_sets 1 --- N registry.term_members
 ```
+
+Not built: `api_searches`, `api_pages` and `traces` (see "Implementation status").
 
 Reading the diagram: `1 -- N` means "one row on this side, many on the other". `0..1` means optional (e.g. a job has a result only after it succeeds).
 
@@ -152,6 +158,14 @@ Indexes: `(result_key, created_at DESC)` to find the latest result for a plan; `
 | `source_query` | jsonb | For `api_query`: URL + params + total count |
 | `citations_materialized` | boolean | `false` until on-demand citation fetching has filled `result_citations` (count-only datums) |
 
+**As built (2026-10-25):** the last three columns were replaced by three others (migration `d5a3e2c9f444`):
+
+| Column | Type | Notes |
+|---|---|---|
+| `source` | jsonb | Null for a data point whose every trial is in `result_citations`. For a sampled one (a trials-per-year row counted per year, Q6 S2): the API search that lists all its trials (params, fields, sort, dimension) |
+| `next_page_token` | text | The API page token of the next unread page of `source` |
+| `complete` | boolean | Default `true`. `false` while `source` still has unread pages; the citations endpoint reads them on demand and appends to `result_citations` |
+
 ## 7. `result_citations`: full citation lists (paginated endpoint, Q14)
 
 | Column | Type | Notes |
@@ -185,6 +199,7 @@ Volume estimate: a broad country chart (~17k trials × ~1.5 countries) is about 
 | `locked_by` | text | Worker ID holding the job |
 | `heartbeat_at` | timestamptz | Worker heartbeat while running |
 | `trace_id` | uuid | |
+| `client_ip` | text | Added in the build: the per-IP active-job limit (`MAX_ACTIVE_JOBS_PER_IP`, Q19) |
 | `created_at`, `started_at`, `finished_at` | timestamptz | |
 | `expires_at` | timestamptz | Retention after finishing (24 h). Polling a job past it, or a succeeded job whose result has expired, returns **410 `expired`**, like results |
 
@@ -240,6 +255,8 @@ This table exists because the public demo runs on **Cheiron's** OpenAI key, so e
 | `created_at` | timestamptz | |
 
 Indexes: `(created_at)`, `(model, created_at)`, `(trace_id)`.
+
+*As built:* `attempt` and `status` were not built, and `trace_id` has no foreign key (`traces` is not built).
 
 **Price table:** model prices are **not** hard-coded from memory. They live in a config file (`pricing.yaml`: per model, USD per 1M input / cached input / output tokens) with a `version` and a **"last verified" date**, filled in from OpenAI's official pricing page. An unknown model is logged with `cost_usd = null` and a warning, never silently priced at 0.
 
@@ -308,13 +325,15 @@ The trials each search term matches, as the API resolved them, so the mirror nev
 | `llm_usage` | 90 days (small rows; keeps cost history) |
 | `data_versions` | Keep (tiny) |
 
+**As built (2026-10-25): no cleanup task yet.** Expiry is logical: a result or job past `expires_at` is answered `410 expired` and is never reused, but nothing deletes the rows. `plan_cache` and `llm_usage` are kept indefinitely too. The `(expires_at)` index is ready for a periodic `DELETE`; at demo traffic the tables stay small. The mirror's tables are not subject to retention: they are the copy itself.
+
 Rough size: a cached 1,000-study page (~2 MB raw) is ~0.2-0.3 MB compressed. 1,000 cached pages is ~250 MB. Fine for a single Postgres instance.
 
 ## What isn't in the database (by design)
 
 - **Rate limiter state:** in-process for the single-instance submission (Q8, D8.5). In production it moves to Redis.
 - **Secrets:** environment / secrets manager only.
-- **A full mirror of studies:** not built (Q6, revisited in [Q21](21-local-mirror-revisited.md)).
+- **A full mirror of studies:** not in the original design (Q6, revisited in [Q21](21-local-mirror-revisited.md)). **Superseded:** built later for `fast` mode, in the `registry` schema (sections 11-12, [Q22](22-term-sets.md)).
 
 ## Requirement links
 

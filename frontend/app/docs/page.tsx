@@ -67,6 +67,7 @@ const QUICK_RESPONSE = `{
     "filters": { "conditions": ["breast cancer"] },
     "assumptions": ["Interpreting 'breast cancer trials' as trials with condition 'breast cancer'."],
     "warnings": [],
+    "data_source": "live",
     "notes": [],
     "counting_rule": "Each trial is counted once; trials with two phases get a combined bucket (e.g. Phase 2/Phase 3).",
     "additive": true,
@@ -219,7 +220,7 @@ const REQUEST_FIELDS: Row[] = [
   ["compare", "object[]", "[]", <>2 to 4 groups to compare, each <code>{"{"} label, drug_name?, condition?, sponsor?, country? {"}"}</code>. Labels (1 to 100 characters) must be unique, and each group needs at least one entity.</>],
   ["chart_type", "string or null", "null", <>Force a chart: <code>bar_chart</code>, <code>grouped_bar_chart</code>, <code>time_series</code>, <code>histogram</code>, <code>scatter_plot</code>, <code>network_graph</code> or <code>metric</code>. If it can&apos;t show the question, the answer is <code>could_not_interpret</code>.</>],
   ["top_n", "integer or null", "null", <>Keep only the top N categories (1 to 50).</>],
-  ["match_mode", "\"strict\" | \"broad\"", "\"strict\"", <>How drugs and conditions match. <code>strict</code> uses the intervention and condition fields (with synonyms); <code>broad</code> also matches titles, keywords and descriptions.</>],
+  ["match_mode", "\"strict\" | \"broad\"", "\"strict\"", <>How drugs and conditions match. <code>strict</code>: a drug must be an intervention name (or one of its other names, synonyms included), and a condition matches as an exact phrase. <code>broad</code>: a drug may also match titles, keywords and descriptions, and a condition&apos;s words may match separately.</>],
   ["sponsor_role", "\"lead\" | \"any\"", "\"lead\"", <><code>lead</code>: the lead sponsor only. <code>any</code>: lead sponsor or collaborator.</>],
   ["mode", "\"live\" | \"fast\"", "\"live\"", <><code>live</code>: fetch the matching trials from ClinicalTrials.gov now. <code>fast</code>: read them from our daily-synced copy of ClinicalTrials.gov, after ClinicalTrials.gov&apos;s own search has picked the trials and a live count has confirmed their number. Both give the same answer. When a check fails, or fast mode is off, the question is answered live and <code>meta.notes</code> says why; <code>meta.data_source</code> says which mode answered (<a href="#fast-mode">fast mode</a>).</>],
   ["citations", "\"sample\" | \"full\"", "\"sample\"", <><code>sample</code>: up to <code>citations_per_datum</code> citations inline per data point. <code>full</code>: every citation inline, as long as the whole response has at most 2,000; above that it falls back to a sample, and <code>meta.citations</code> says so (<a href="#per-datum-citations">details</a>).</>],
@@ -335,7 +336,7 @@ export default function DocsPage() {
 
           <section id="overview" aria-labelledby="overview-h">
             <h2 id="overview-h">Overview</h2>
-            <p>The API reads a plain-English question, such as &quot;Which countries have the most recruiting trials for lung cancer?&quot;, plans the matching ClinicalTrials.gov searches, runs them live, and counts the results. It returns a <strong>visualization spec</strong>: the chart type, a title, which data field goes on which axis, and the data itself.</p>
+            <p>The API reads a plain-English question, such as &quot;Which countries have the most recruiting trials for lung cancer?&quot;, plans the matching ClinicalTrials.gov searches, runs them live (or, in <a href="#fast-mode">fast mode</a>, reads the trials from our daily copy), and counts the results. It returns a <strong>visualization spec</strong>: the chart type, a title, which data field goes on which axis, and the data itself.</p>
             <p>Every data point carries <strong>citations</strong>: the trials it counts, with the exact record field and value that put each trial there. Nothing in the chart is a number you have to take on trust.</p>
             <dl className="docs-facts">
               <dt>Base URL</dt><dd><code>{api}</code></dd>
@@ -399,7 +400,7 @@ export default function DocsPage() {
             </ul>
             <p><strong>Full citations.</strong> With <code>&quot;citations&quot;: &quot;full&quot;</code>, every data point carries all its citations, as long as the response holds at most 2,000 in total. Above that you get the usual sample instead, and <code>meta.citations</code> says why. Either way, <code>meta.citations</code> reports what you asked for and what you got:</p>
             <CodeBlock label="meta.citations" code={CITATIONS_META_SAMPLE} />
-            <p>Trials-per-year charts counted year by year only read a sample of each year, so they always answer with a sample (<code>reason</code> starts with <code>counted per year</code>). For any data point, <a href="#citations">citations paging</a> lists every trial.</p>
+            <p>Trials-per-year charts counted year by year read only a sample of each year&apos;s trials, so they always answer with a sample (<code>reason</code> starts with <code>counted per year</code>). <a href="#citations">Citations paging</a> still lists every trial of every data point.</p>
             <p>Each citation has the trial&apos;s <code>nct_id</code>, <code>url</code> and <code>title</code>, and <code>evidence</code>: the record fields that put the trial in this bucket, as <code>{"{"} field, excerpt {"}"}</code>. <code>field</code> is a path in the ClinicalTrials.gov study record (e.g. <code>protocolSection.designModule.phases[0]</code>) and <code>excerpt</code> is its exact value. The server checks every excerpt against the record it read before answering.</p>
 
             <h3 id="meta">Key meta fields</h3>
@@ -452,7 +453,7 @@ export default function DocsPage() {
               <li><strong>A live count confirms every answer.</strong> The number of trials from our copy must equal ClinicalTrials.gov&apos;s count for the same search, at the same data version.</li>
               <li><strong>Anything else answers live:</strong> our copy is still syncing a new release, a new search term is very large, or the counts disagree. <code>meta.notes</code> says why.</li>
             </ul>
-            <p><code>GET /health</code> reports <code>fast_mode.status</code>: <code>ready</code>, <code>syncing</code>, <code>not_loaded</code> or <code>off</code>. <code>meta.api_queries</code> keeps the live search URLs in both modes, so every number can still be checked on ClinicalTrials.gov.</p>
+            <p><code>GET /health</code> reports <code>fast_mode.status</code>: <code>ready</code>, <code>syncing</code>, <code>not_loaded</code>, <code>off</code>, or <code>unknown</code> when ClinicalTrials.gov can&apos;t be reached to compare versions. <code>meta.api_queries</code> keeps the live search URLs in both modes, so every number can still be checked on ClinicalTrials.gov.</p>
           </section>
 
           <section id="citations" aria-labelledby="citations-h">
@@ -467,6 +468,7 @@ export default function DocsPage() {
             <CodeBlock label="First page" code={curl(api, "/v1/results/d70db059-8f32-49a2-9fdc-231f5e3fd056/citations", { query: { datum: "PHASE1", page_size: 50 } })} />
             <CodeBlock label="Response 200 (one citation shown)" code={CITATIONS_SAMPLE} />
             <p><code>next_cursor</code> is <code>null</code> on the last page. Results are kept for 24 hours; after that this endpoint returns <code>410 expired</code>.</p>
+            <p>A row counted per year (a trials-per-year chart on a broad question) holds only a sample of its trials at first. On first read, the server pages the rest of that year&apos;s trials from ClinicalTrials.gov, so a first page can take a few seconds. It keeps them, so later pages and repeat reads are quick.</p>
           </section>
 
           <section id="options" aria-labelledby="options-h">
