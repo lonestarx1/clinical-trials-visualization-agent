@@ -1,9 +1,9 @@
 """Async client for the ClinicalTrials.gov API v2 (design Q6, Q8).
 
-All calls share one rate limiter (requests per minute + max in flight).
+All calls share one rate limiter (requests per minute, a burst, max in flight).
 Retries 429/5xx/timeouts/connection errors with capped, jittered exponential
-backoff and Retry-After; never retries 400/404. A circuit breaker fails fast
-after repeated failures.
+backoff and Retry-After (a 429 without one waits `throttle_wait`); never retries
+400/404. A circuit breaker fails fast after repeated failures.
 """
 
 import asyncio
@@ -144,6 +144,7 @@ class CtgovClient:
         breaker_threshold: int = 5,
         breaker_cooldown: float = 30.0,
         version_ttl: float = 600.0,
+        throttle_wait: float = 10.0,
     ) -> None:
         self._base = base_url.rstrip("/")
         self._http = http
@@ -158,6 +159,7 @@ class CtgovClient:
         self._failures = 0
         self._open_until = 0.0
         self._version_ttl = version_ttl
+        self._throttle_wait = throttle_wait
         self._version: tuple[float, VersionInfo] | None = None
 
     # ---------- public API ----------
@@ -253,6 +255,8 @@ class CtgovClient:
                     raise CtgovBadRequest(f"HTTP {response.status_code}: {response.text[:300]}")
                 problem = f"HTTP {response.status_code}"
                 retry_after = _retry_after(response)
+                if retry_after is None and response.status_code == 429:
+                    retry_after = self._throttle_wait  # no header: wait out the rate window
 
             if attempt + 1 < self._max_attempts:
                 delay = retry_after
