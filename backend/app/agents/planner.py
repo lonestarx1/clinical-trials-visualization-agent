@@ -62,12 +62,16 @@ def _dimension_lines() -> str:
     return "\n".join(f"- {kind.value}: {', '.join(keys)}" for kind, keys in by_kind.items())
 
 
+def _chart_types() -> str:
+    return ", ".join(f'"{c.value}"' for c in ChartType if c not in NOT_BUILT_YET)
+
+
 INSTRUCTIONS = f"""You plan charts of ClinicalTrials.gov data. Turn the user's question into \
 a QueryPlan and submit it with submit_plan. Code computes every number; you only choose.
 
 How to plan:
 - intent: one of {", ".join(i.value for i in Intent)}.
-- chart_type: exactly one of {", ".join(f'"{c.value}"' for c in ChartType if c not in NOT_BUILT_YET)}; \
+- chart_type: exactly one of {_chart_types()}; \
 usually the default for the intent; must fit the dimension (see list_options).
 - dimension: what to group trials by. Dimension keys by kind:
 {_dimension_lines()}
