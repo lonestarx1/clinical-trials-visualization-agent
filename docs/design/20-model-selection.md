@@ -10,7 +10,7 @@ The system calls an LLM in three places (Q2). Each has different needs, so one m
 |---|---|---|
 | **Guard** (Q5b) | Classify a request as `ok` / `off_topic` / `malicious` | Catch every attack (high recall), few false alarms, **low latency** (fail-closed, runs on every request) |
 | **Planner** (Q3) | Multi-step tool calling, map language to registry enums, respect structured fields, produce a valid plan | **Plan accuracy** first, then latency; the most demanding task |
-| **Narrator** (Q2, Q4b) | Write the **chart title** and the **one-sentence summary** together, in **one call**, using fact-sheet placeholders | Instruction following (placeholders, no banned claims); low cost |
+| **Narrator** (Q2, Q4b) | Write the **chart title** in **one call**, using fact-sheet placeholders (until 2026-10-24 also a one-sentence summary, now removed) | Instruction following (placeholders, no banned claims); low cost |
 | **Fallback** (Q8) | Take over any stage when the primary model fails | A **different model family** than the primaries, so one provider-side model incident doesn't take out both |
 
 ## Candidates
@@ -42,7 +42,7 @@ These numbers go into `pricing.yaml` with `version` and `last_verified: 2026-10-
 Assumptions:
 - **Guard:** ~600 input / ~20 output tokens (+ a few hundred reasoning tokens on reasoning models)
 - **Planner:** ~15k input across ~4 tool turns / ~0.8k visible output, plus ~2k reasoning tokens on reasoning models
-- **Narrator:** ~1.5k input / ~150 output
+- **Narrator:** ~1.5k input / ~150 output with the summary; title only (since 2026-10-24) about half the output
 
 | Planner candidate | Est. cost / question | Notes |
 |---|---|---|
@@ -64,10 +64,7 @@ Assumptions:
 
 **Not yet measured meaningfully.** The 2026-10-24 key check (one "Reply OK" call per model) took ~2-3 s for every model, which mostly reflects connection overhead, not task latency. Real p50/p95 latency per stage is measured in the bake-off below, with the actual prompts and tools.
 
-**Title and summary share one model and one call.**
-- **Why one call:** both come from the same fact sheet and must agree with each other.
-- **Why not a separate title model:** a second call would double the narration latency and cost, for no quality gain.
-- **Scoring:** the bake-off scores titles and summaries separately (check pass rate, readability spot check). If titles ever lagged, the narrator could be split without other changes.
+~~**Title and summary share one model and one call.**~~ **Superseded 2026-10-24:** the narrator writes only the title ([Q4b revision](04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)): free-text summaries were hallucination-prone, the assignment only requires a title, and dropping it saves output tokens and narrator time. The bake-off scores titles only (check pass rate, readability spot check).
 
 ## Starting defaults (until the bake-off runs)
 
@@ -75,7 +72,7 @@ Assumptions:
 |---|---|---|
 | Guard | `gpt-5.4-nano` | Cheapest current-generation model; classification is a narrow task |
 | Planner | `gpt-5.4-mini` | Current generation, reasoning, mid price; tool calling + enum mapping is the hardest task |
-| Narrator (**title + summary**) | `gpt-5.4-nano` | Placeholders + checks make the task simple; cost matters more than nuance |
+| Narrator (**title**; summary removed 2026-10-24) | `gpt-5.4-nano` | Placeholders + checks make the task simple; cost matters more than nuance |
 | Fallback (all stages) | `gpt-4.1-mini` | Different family (non-reasoning GPT-4.1) from the GPT-5.4 primaries; cheap and fast |
 
 ## Model settings (fully configurable)

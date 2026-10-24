@@ -1,7 +1,7 @@
 """Grouped trials -> visualization spec + chart metadata (design Q3, Q9, Q10, Q12, Q14).
 
-Titles and summaries here are templates. The narrator (M2) replaces them,
-and falls back to these when its output fails the checks (Q4b).
+Titles here are templates. The narrator (M2) replaces them, and falls back to
+these when its output fails the checks (Q4b). There is no summary (Q4b revision).
 """
 
 import math
@@ -345,7 +345,6 @@ def _bars(
     viz = Visualization(
         type=chart_type,
         title=_title(plan, dim),
-        summary=_summary(rows, dim, measure, len(placed)),
         encoding=encoding,
         data=rows,
     )
@@ -405,7 +404,6 @@ def counted_time_series(
     viz = Visualization(
         type=ChartType.TIME_SERIES,
         title=_title(plan, dim),
-        summary=_summary(rows, dim, "trial_count", counts.within),
         encoding={"x": _x_channel(dim, sort), "y": _y_channel(plan)},
         data=rows,
     )
@@ -471,7 +469,6 @@ def _histogram(
     viz = Visualization(
         type=ChartType.HISTOGRAM,
         title=f"Distribution of {dim.label.lower()}",
-        summary=f"{len(known):,} trials have a reported {dim.label.lower()}.",
         encoding={
             "x": Channel(field="bin_start", type="quantitative", label=dim.label),
             "y": Channel(
@@ -515,7 +512,6 @@ def _scatter(
     viz = Visualization(
         type=ChartType.SCATTER_PLOT,
         title=f"{x_dim.label} vs {y_dim.label.lower()}",
-        summary=f"{len(rows):,} trials have both values.",
         encoding={
             "x": Channel(field=x_dim.key, type="quantitative", label=x_dim.label),
             "y": Channel(field=y_dim.key, type="quantitative", label=y_dim.label),
@@ -557,7 +553,6 @@ def _metric(
     viz = Visualization(
         type=ChartType.METRIC,
         title=label + " in matching trials" if plan.measure != "trial_count" else "Matching trials",
-        summary=f"{m.value:g} {unit}.",
         encoding={"value": Channel(field="value", type="quantitative", label=label, unit=unit)},
         data=[row],
     )
@@ -596,12 +591,3 @@ def _title(plan: QueryPlan, dim: Dimension) -> str:
     if plan.groups:
         title += ": " + " vs ".join(g.label for g in plan.groups)
     return title
-
-
-def _summary(rows: list[dict[str, Any]], dim: Dimension, measure: str, trials: int) -> str:
-    top = max(rows, key=lambda r: r[measure], default=None)
-    if top is None or not top[measure]:
-        return f"{trials:,} trials matched."
-    where = f" ({top['group']})" if "group" in top else ""  # comparison groups only
-    value = f"{top[measure]:,.0f}" if float(top[measure]).is_integer() else f"{top[measure]:,.1f}"
-    return f"{trials:,} trials matched; {top[dim.key]}{where} has the highest value ({value})."

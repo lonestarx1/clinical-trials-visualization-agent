@@ -65,7 +65,7 @@ export const Chart = forwardRef<ChartHandle, { viz: Visualization; theme: Theme;
     }
     return (
       <div ref={box} className="chart" style={{ height: height(viz) }} role="img"
-        aria-label={`${viz.title}. ${viz.summary} Use the table view for the values.`} />
+        aria-label={`${viz.title}. Use the table view for the values.`} />
     );
   },
 );

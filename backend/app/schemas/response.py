@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.registry import ChartType
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "2.0"  # 2.0: visualization.summary removed
 
 Status = Literal["ok", "no_matching_trials", "out_of_scope", "could_not_interpret"]
 
@@ -25,7 +25,6 @@ class Channel(BaseModel):
 class Visualization(BaseModel):
     type: ChartType
     title: str
-    summary: str
     encoding: dict[str, Channel]
     # Flat records keyed by the encoding fields, plus `key`, `citation_count`,
     # `citations` and `citations_truncated` on every data point.

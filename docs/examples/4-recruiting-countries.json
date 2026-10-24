@@ -6,13 +6,12 @@
   "http_status": 200,
   "seconds": 9.3,
   "response": {
-    "schema_version": "1.0",
+    "schema_version": "2.0",
     "result_id": "1d138d77-311c-4c55-a9b3-e5156a845510",
     "status": "ok",
     "visualization": {
       "type": "bar_chart",
       "title": "ClinicalTrials.gov Lung Cancer Trials by Country",
-      "summary": "Bar chart of number of trials across 10 countries (top China with 875 trials; low Canada with 135); total 2,182 trials.",
       "encoding": {
         "x": {
           "field": "country",

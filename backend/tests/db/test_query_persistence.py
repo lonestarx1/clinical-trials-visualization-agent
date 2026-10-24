@@ -30,7 +30,7 @@ QUESTION = {
     "citations_per_datum": 1,
 }
 OK = text({"verdict": "ok", "reason": ""})
-NARRATION = text({"title": "Breast cancer trials by phase", "summary": "{total} trials."})
+NARRATION = text({"title": "Breast cancer trials by phase"})
 
 
 class Models:

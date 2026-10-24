@@ -99,11 +99,11 @@ def test_appendix_question(case: Case) -> None:
     assert response.status_code == 200, response.text
     body = response.json()
 
-    assert body["schema_version"] == "1.0"
+    assert body["schema_version"] == "2.0"
     assert body["status"] == "ok"
     viz, meta = body["visualization"], body["meta"]
     assert viz["type"] == case.chart_type
-    assert viz["title"] and viz["summary"]
+    assert viz["title"] and "summary" not in viz
 
     interpretation = meta["interpretation"]
     assert interpretation["dimension"] == case.dimension

@@ -42,7 +42,7 @@ If **any** search behind a chart fails after retries (e.g. one group of an "A vs
 
 | Situation | Behaviour |
 |---|---|
-| Narration fails its checks after 1 retry | Template title/summary from the fact sheet; `meta.narration.fallback = true` (Q4b) |
+| Narration fails its checks after 1 retry | Template title from the fact sheet (the summary was removed 2026-10-24); `meta.narration.fallback = true` (Q4b) |
 | Only the chart type is incompatible at the gate | Default chart type for the intent; noted in `meta` (Q3) |
 | Sync request exceeds its time budget | Converted to a **background job** (202 + `job_id`), not a 504 timeout (Q6) |
 | Guard unavailable | **No** fallback: fail closed (503) |

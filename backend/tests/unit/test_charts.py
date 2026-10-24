@@ -396,7 +396,25 @@ def test_full_citation_lists_for_networks() -> None:
     assert len(result.full_citations["drug:anastrozole|drug:pembrolizumab"]) == 1
 
 
-def test_template_summary_formats_large_numbers() -> None:
-    """The template is the narrator's fallback; it showed '4228' and '1171' in the UI."""
-    result = chart(plan(dimension="sponsor_class", measure="total_enrollment"))
-    assert "1,301" in result.visualization.summary
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {},
+        {"intent": "trend", "chart_type": "time_series", "dimension": "start_year"},
+        {"intent": "numeric_distribution", "chart_type": "histogram", "dimension": "enrollment"},
+        {
+            "intent": "numeric_relationship",
+            "chart_type": "scatter_plot",
+            "dimension": "enrollment",
+            "dimension_2": "duration_months",
+        },
+        {"intent": "single_number", "chart_type": "metric", "dimension": None},
+        {"intent": "network", "chart_type": "network_graph", "dimension": "drug"},
+    ],
+    ids=["bar", "time_series", "histogram", "scatter", "metric", "network"],
+)
+def test_charts_have_a_template_title_and_no_summary(overrides: dict[str, Any]) -> None:
+    """The AI summary was removed (Q4b revision): only the title is narrated."""
+    viz = chart(plan(**overrides)).visualization
+    assert viz.title
+    assert "summary" not in viz.model_dump()

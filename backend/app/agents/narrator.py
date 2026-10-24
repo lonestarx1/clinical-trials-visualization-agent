@@ -1,9 +1,10 @@
-"""Narrator (design Q4b V5-V9): the AI writes the title and summary, code supplies the numbers.
+"""Narrator (design Q4b V5-V9): the AI writes the chart title, code supplies the numbers.
 
 The model sees only a fact sheet computed from the chart and writes with
 {placeholders}; code fills them in, so numbers are correct by construction.
 The rendered text is then checked (numbers, names, banned claims, length).
-After one failed retry, the deterministic template from the chart builder is used.
+After one failed retry, the deterministic template title from the chart builder is used.
+There is no AI summary: free text can imply what the chart doesn't show (Q4b revision).
 """
 
 import json
@@ -26,7 +27,7 @@ from app.schemas.response import Visualization
 
 log = logging.getLogger(__name__)
 
-TITLE_MAX, SUMMARY_MAX = 90, 200
+TITLE_MAX = 90
 BANNED = [
     "effective",
     "effectiveness",
@@ -62,27 +63,24 @@ _VOCABULARY = (
     [p.label for p in Phase] + [s.label for s in Status if " " in s.label] + list(COUNTRIES)
 )
 
-INSTRUCTIONS = f"""You write the title and a one-sentence summary for a chart of \
-ClinicalTrials.gov data.
+INSTRUCTIONS = f"""You write the title for a chart of ClinicalTrials.gov data.
 
 Rules:
-- Use {{placeholders}} for every number and count, written exactly as {{fact_name}} with a \
-name from "facts" (e.g. {{total}}, {{max_value}}). Never type a number yourself.
-- Summarise the main pattern (e.g. the largest category, or the trend); don't list every \
-category.
+- Say what the chart shows: the measure, the dimension and the scope.
+- If you use a number, write it as a {{placeholder}}, exactly {{fact_name}} with a name from \
+"facts" (e.g. {{total}}). Never type a number yourself.
 - Only mention categories that appear in the chart labels or the facts.
-- Describe what the chart shows. No judgements about drugs, treatments or sponsors, and no \
-medical conclusions (never words like "effective", "safe", "best", "promising").
-- Title: at most {TITLE_MAX} characters; don't start it with "ClinicalTrials.gov".
-- Summary: one sentence, at most {SUMMARY_MAX} characters.
-- Return JSON: {{"title": "...", "summary": "..."}}."""
+- No judgements about drugs, treatments or sponsors, and no medical conclusions (never \
+words like "effective", "safe", "best", "promising").
+- At most {TITLE_MAX} characters; don't start it with "ClinicalTrials.gov".
+- Return JSON: {{"title": "..."}}."""
 
 SCHEMA = {
     "name": "narration",
     "schema": {
         "type": "object",
-        "properties": {"title": {"type": "string"}, "summary": {"type": "string"}},
-        "required": ["title", "summary"],
+        "properties": {"title": {"type": "string"}},
+        "required": ["title"],
         "additionalProperties": False,
     },
 }
@@ -90,13 +88,11 @@ SCHEMA = {
 
 class _Text(BaseModel):
     title: str
-    summary: str
 
 
 @dataclass
 class Narration:
     title: str
-    summary: str
     model: str | None
     attempts: int
     fallback: bool
@@ -310,13 +306,11 @@ async def narrate(
             errors = ["the reply was not the requested JSON"]
         else:
             errors = check_text(out.title, facts, plan, viz, max_length=TITLE_MAX)
-            errors += check_text(out.summary, facts, plan, viz, max_length=SUMMARY_MAX)
             if not errors:
-                title = _without_source(render(out.title, facts))
-                return Narration(title, render(out.summary, facts), model, attempt, False)
+                return Narration(_without_source(render(out.title, facts)), model, attempt, False)
         items += reply.output_items
         items.append(
             {"role": "user", "content": "Fix these problems and answer again: " + "; ".join(errors)}
         )
         log.info("narration attempt %d failed: %s", attempt, errors)
-    return Narration(viz.title, viz.summary, model, attempt, True, errors)
+    return Narration(viz.title, model, attempt, True, errors)

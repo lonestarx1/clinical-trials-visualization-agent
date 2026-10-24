@@ -1,8 +1,23 @@
-# Design Q4b: Validating AI Output (plan, title, summary)
+# Design Q4b: Validating AI Output (plan, title)
 
-Status: **Decided** (2026-10-24, with the user). All 9 checks adopted.
+Status: **Decided** (2026-10-24, with the user). All 9 checks adopted. **Revised** the same day: the AI summary was removed (see [the revision](#revision-2026-10-24-the-ai-summary-is-removed) below).
 
-The AI produces exactly three things: the **QueryPlan** (planning agent), the **title**, and the **summary** (narration). Each one passes through code checks before it's used.
+The AI produces exactly two things: the **QueryPlan** (planning agent) and the chart **title** (narration). Each one passes through code checks before it's used. (The first version also had the AI write a one-sentence **summary**; that was removed.)
+
+## Revision (2026-10-24): the AI summary is removed
+
+Decided with the user after live testing.
+
+**Decision:** the narrator writes **only the chart title**. The one-sentence summary under the title is gone: from the narrator prompt and its JSON schema, from the template fallback, from the response (`visualization.summary`) and from the web UI. This supersedes the summary parts of this file, Q2 D2.3, the narration row in Q3, the `summary` field in Q12, the summary row in Q17 and the "title + summary in one call" narrator in Q20.
+
+**Why:**
+- **Free-text summaries are hallucination-prone.** Even with the fact sheet, placeholders and the V6-V8 checks, a full sentence can imply patterns, comparisons or causes that the chart doesn't show. The checks catch wrong numbers, unknown names and banned words, not a misleading framing. Live testing also produced awkward, repetitive sentences.
+- **The assignment only requires a human-readable `title`** (P3-7, `docs/assignment.md` 3.2). The summary added risk without adding required value.
+- **Cheaper and faster:** fewer output tokens and less narrator time. The chart itself, the data table, the counting rule and the "How this was answered" notes already explain the result.
+
+**What stays:** the title is still AI-written, with the same code checks: the fact sheet and placeholders (V5, numbers only come from placeholders), the number check (V6), the name check (V7, names must be in the chart or the filters), the banned evaluative words (V8), the length limit (90 characters) and the repeated-phrase check (a placeholder wrapped in its own words). If narration still fails after one retry, the **deterministic template title** is used (V9).
+
+**Compatibility:** removing a response field breaks clients, so `schema_version` goes from `"1.0"` to `"2.0"`. The stored-result code version goes to `0.6.0`, so cached answers that still carry a summary aren't reused.
 
 ## A. Plan checks (code gate after the planning agent)
 
@@ -13,7 +28,7 @@ The AI produces exactly three things: the **QueryPlan** (planning agent), the **
 | V3 | **Non-empty search:** each entity filter must match > 0 trials (via `count_trials`, cached) | Typos, nonsense terms | Error to agent with the count; at the gate: structured "no matching trials" response |
 | V4 | **Unrequested filters need a stated reason:** any filter not traceable to the query or fields (e.g. a year range, a status) needs a matching entry in `assumptions[]` | Hidden, silent narrowing of the question | Error to agent; at the gate: reject the plan |
 
-## B. Narration (title + summary)
+## B. Narration (title; the summary was removed in the 2026-10-24 revision)
 
 ### V5: Fact sheet (the core mechanism)
 
@@ -33,7 +48,7 @@ After aggregation, code computes a **fact sheet** from the chart data. Each fact
 | `median`, `p25`, `p75`, `n_points` | ... | histogram / scatter |
 | `applied_filters` | {drugs: [...], years: ...} | all |
 
-The narrator gets **only** the fact sheet (plus chart type and dimension labels). It writes the title and summary using **placeholders**, e.g.:
+The narrator gets **only** the fact sheet (plus chart type and dimension labels). It writes the title (originally also the summary) using **placeholders**, e.g.:
 
 > `"Pembrolizumab trials peaked at {max_value} in {max_bucket}"`
 
@@ -46,9 +61,9 @@ Code replaces the placeholders with the fact values. **The numbers are correct b
 | V6 | **Leftover number check:** any number written literally (not via a placeholder) must equal a fact value (tolerance for rounding/percent formatting). Years must be within the data or filter range. | Made-up or misremembered numbers | Retry, then fallback |
 | V7 | **Name check:** every category/entity named in the text must exist in the chart's data labels or the applied filters | Mentioning things not in the chart | Retry, then fallback |
 | V8 | **Banned claims:** deny-list of evaluative or medical-conclusion words ("effective", "best", "safe", "proves", "cure", "superior", ...) and unknown placeholders | Clinical conclusions the data can't support | Retry, then fallback |
-| V9 | **Failure policy:** one retry with the specific errors; if it still fails, fall back to a **template** title/summary built from the same facts, and `meta.narration.fallback = true` with the reasons | Persistent narration failure | Always returns valid text |
+| V9 | **Failure policy:** one retry with the specific errors; if it still fails, fall back to a **template** title built from the same facts (originally also a template summary), and `meta.narration.fallback = true` with the reasons | Persistent narration failure | Always returns valid text |
 
-Additional structural limits: title ≤ ~90 characters; summary is 1 sentence, ≤ ~200 characters. Only known placeholders are allowed.
+Additional structural limits: title ≤ ~90 characters. Only known placeholders are allowed. ~~Summary is 1 sentence, ≤ ~200 characters.~~ (superseded 2026-10-24: the AI summary was removed, see [Q4b revision](04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed))
 
 ## Traceability
 

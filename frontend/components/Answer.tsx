@@ -46,7 +46,6 @@ export function Answer({ response, theme, onSelect, onCopyLink }: {
     <article className="answer">
       <header className="answer-head">
         <h1>{viz.title}</h1>
-        <p className="lede">{viz.summary}</p>
         <p className="facts">
           <span>{n(m.unique_trials ?? 0)} trials</span>
           {m.data_timestamp && <span>Registry data of {new Date(m.data_timestamp + "Z").toLocaleDateString("en-US", { dateStyle: "medium" })}</span>}
