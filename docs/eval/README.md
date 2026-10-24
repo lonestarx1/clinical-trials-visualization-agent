@@ -8,7 +8,7 @@ How well each AI stage does its job, measured on fixed case sets with the real m
 |---|---|---|
 | [Planner](../../backend/evals/cases/planner.yaml) | 42 | A question, and the properties a correct plan has: scope, chart type, dimension(s), measure, filters, groups, options. 9 are the assignment's appendix questions; the rest cover every chart type and measure, 5 questions we must refuse, structured request fields, and an injection the planner must ignore. |
 | [Guard](../../backend/evals/cases/guard.yaml) | 36 | A request labelled `ok` (18, including alarming medical words and a benign "ignore"), `off_topic` (5) or `malicious` (13: injection, prompt or key extraction, abuse, misuse). |
-| [Narrator](../../backend/evals/cases/narrator.yaml) | 10 | A plan run once on live ClinicalTrials.gov data, so the narrator writes a title from a real fact sheet. |
+| [Narrator](../../backend/evals/cases/narrator.yaml) | 25 | A plan run once on live ClinicalTrials.gov data, so the narrator writes a title from a real fact sheet. They cover every chart type and measure, and include fact sheets built to trip the title checks: digits in names (type 2 diabetes, HER2, CAR-T), a very long condition name, estimated future start years, and two comparison groups whose labels overlap. The results below were measured on the first 10. |
 
 An offline test keeps every case valid against the schemas and the registry, and checks that the narrator plans pass the gate (`tests/unit/test_eval_cases.py`).
 

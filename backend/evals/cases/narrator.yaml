@@ -87,3 +87,138 @@
     filters: {conditions: [sickle cell disease]}
     dimension: phase
     measure: total_enrollment
+- id: N-11
+  question: Is there a relationship between enrollment and number of sites in phase 3 psoriasis trials?
+  plan:
+    scope: in_scope
+    intent: numeric_relationship
+    chart_type: scatter_plot
+    filters: {conditions: [psoriasis], phases: [PHASE3]}
+    dimension: site_count
+    dimension_2: enrollment
+- id: N-12
+  question: Which drugs are tested together with trastuzumab in breast cancer trials?
+  plan:
+    scope: in_scope
+    intent: network
+    chart_type: network_graph
+    filters: {drugs: [trastuzumab], conditions: [breast cancer]}
+    dimension: drug
+- id: N-13
+  question: Show a network of conditions and drugs for phase 2 lupus trials.
+  plan:
+    scope: in_scope
+    intent: network
+    chart_type: network_graph
+    filters: {conditions: [lupus], phases: [PHASE2]}
+    dimension: condition
+    dimension_2: drug
+- id: N-14
+  question: How long do completed cystic fibrosis trials last, in months?
+  plan:
+    scope: in_scope
+    intent: numeric_distribution
+    chart_type: histogram
+    filters: {conditions: [cystic fibrosis], statuses: [COMPLETED]}
+    dimension: duration_months
+- id: N-15
+  question: How many distinct lead sponsors have run ustekinumab trials?
+  plan:
+    scope: in_scope
+    intent: single_number
+    chart_type: metric
+    filters: {drugs: [ustekinumab]}
+    measure: distinct_count
+    options: {count_entity: sponsor}
+- id: N-16
+  question: What is the median enrollment by phase for psoriatic arthritis trials?
+  plan:
+    scope: in_scope
+    intent: distribution
+    chart_type: bar_chart
+    filters: {conditions: [psoriatic arthritis]}
+    dimension: phase
+    measure: median_enrollment
+- id: N-17
+  question: Compare lead sponsor types for Duchenne muscular dystrophy vs spinal muscular atrophy trials.
+  plan:
+    scope: in_scope
+    intent: comparison
+    chart_type: grouped_bar_chart
+    groups:
+      - {label: Duchenne muscular dystrophy, filters: {conditions: [Duchenne muscular dystrophy]}}
+      - {label: Spinal muscular atrophy, filters: {conditions: [spinal muscular atrophy]}}
+    dimension: sponsor_class
+- id: N-18
+  question: What are the top 5 intervention types in fibromyalgia trials?
+  plan:
+    scope: in_scope
+    intent: top_n
+    chart_type: bar_chart
+    filters: {conditions: [fibromyalgia]}
+    dimension: intervention_type
+    options: {top_n: 5}
+- id: N-19
+  question: How many distinct countries hosted adalimumab trials that started each year from 2010 to 2020?
+  plan:
+    scope: in_scope
+    intent: trend
+    chart_type: time_series
+    filters: {drugs: [adalimumab], start_year_min: 2010, start_year_max: 2020}
+    dimension: start_year
+    measure: distinct_count
+    options: {count_entity: country}
+- id: N-20
+  question: By phase, how many psoriasis trials have Novartis as lead sponsor or collaborator?
+  plan:
+    scope: in_scope
+    intent: distribution
+    chart_type: bar_chart
+    filters: {conditions: [psoriasis], sponsors: [Novartis], sponsor_role: any}
+    dimension: phase
+- id: N-21
+  question: Which drugs are most often tested in recruiting type 2 diabetes trials?
+  plan:
+    scope: in_scope
+    intent: distribution
+    chart_type: bar_chart
+    filters: {conditions: [type 2 diabetes], statuses: [RECRUITING]}
+    dimension: drug
+    options: {top_n: 10}
+- id: N-22
+  question: Which lead sponsors run the most chronic inflammatory demyelinating polyneuropathy trials?
+  plan:
+    scope: in_scope
+    intent: distribution
+    chart_type: bar_chart
+    filters: {conditions: [chronic inflammatory demyelinating polyneuropathy]}
+    dimension: sponsor
+    options: {top_n: 10}
+- id: N-23
+  question: How many CAR-T trials started, or are expected to start, each year from 2018 to 2027?
+  plan:
+    scope: in_scope
+    intent: trend
+    chart_type: time_series
+    filters: {drugs: [CAR-T], start_year_min: 2018, start_year_max: 2027}
+    dimension: start_year
+- id: N-24
+  question: How are HER2-positive breast cancer trials in China distributed across phases?
+  plan:
+    scope: in_scope
+    intent: distribution
+    chart_type: bar_chart
+    filters: {conditions: [HER2-positive breast cancer], countries: [China]}
+    dimension: phase
+- id: N-25
+  question: Compare phases of recruiting trials in non-small cell lung cancer vs small cell lung cancer.
+  plan:
+    scope: in_scope
+    intent: comparison
+    chart_type: grouped_bar_chart
+    groups:
+      - label: Non-small cell lung cancer
+        filters: {conditions: [non-small cell lung cancer], statuses: [RECRUITING]}
+      - label: Small cell lung cancer
+        filters: {conditions: [small cell lung cancer], statuses: [RECRUITING]}
+    dimension: phase
