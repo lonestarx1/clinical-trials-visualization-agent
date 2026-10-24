@@ -2,6 +2,14 @@
 
 Ask a question about clinical trials in plain words and get back a chart you can check. The backend turns the question into a structured, frontend-ready **visualization spec**, computed from live [ClinicalTrials.gov API](https://clinicaltrials.gov/data-api/api) data, with **citations for every data point**: the NCT ID plus the exact record field and value that put the trial there. A web app renders the specs and lets you click any bar, point or link to see the trials behind it.
 
+**Contents**
+
+- [Live demo](#live-demo) · [Run it locally](#run-it-locally-with-docker-compose)
+- [Why it's interesting](#why-its-interesting) · [What's built](#whats-built) · [Web app](#web-app) · [How it works](#how-it-works)
+- [API](#api): [endpoints](#endpoints), [`POST /v1/query`](#post-v1query), [response](#response) · [Examples](#examples-real-outputs)
+- [Key design decisions](#key-design-decisions) · [Testing and validation](#testing-and-validation) · [Limitations](#limitations)
+- [Deployment](#deployment) · [Development](#development) · [Configuration](#configuration) · [Documentation](#documentation)
+
 ## Live demo
 
 The whole system is deployed, so you can try it without installing anything:
