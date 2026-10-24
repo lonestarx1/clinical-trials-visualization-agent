@@ -55,6 +55,14 @@ def compatibility_errors(plan: QueryPlan) -> list[str]:
     kind = dim.kind if dim else None
     if chart in NOT_BUILT_YET:
         return [f"{chart} is not available yet; choose another chart type."]
+    if plan.measure == "distinct_count":
+        if chart in (ChartType.HISTOGRAM, ChartType.SCATTER_PLOT, ChartType.NETWORK_GRAPH):
+            return [
+                f"distinct_count can't be shown as {chart}; use bar_chart, grouped_bar_chart, "
+                "time_series or metric."
+            ]
+        if plan.dimension and plan.dimension in (plan.options.count_entity, plan.dimension_2):
+            return ["distinct_count: count_entity must differ from the dimension."]
     if chart is ChartType.METRIC:
         return ["metric takes no dimension."] if dim else []
     if dim is None:
@@ -274,6 +282,44 @@ def _unrequested(plan: QueryPlan, request: QueryRequest) -> list[str]:
     return found
 
 
+# ---------- the plan must count what the question counts ----------
+
+_ENTITY_WORDS = {
+    "sponsor": "sponsors|companies",
+    "collaborator": "collaborators",
+    "drug": "drugs",
+    "condition": "conditions|diseases",
+    "country": "countries",
+    "site": "sites|hospitals",
+    "investigator": "investigators",
+}
+_COUNTED = {
+    entity: re.compile(
+        r"\b(?:number of|how many|count of|count the)\s+(?:distinct\s+|unique\s+|different\s+)?"
+        rf"(?:lead\s+)?(?:{words})\b",
+        re.IGNORECASE,
+    )
+    for entity, words in _ENTITY_WORDS.items()
+}
+
+
+def _measure_mismatch(plan: QueryPlan, request: QueryRequest) -> list[str]:
+    """A question that counts entities ("how many sponsors") needs a plan that counts them."""
+    errors = []
+    for entity, pattern in _COUNTED.items():
+        if not pattern.search(request.query):
+            continue
+        counted = plan.measure == "distinct_count" and plan.options.count_entity == entity
+        if counted or plan.dimension == entity:
+            continue
+        errors.append(
+            f"The question counts {entity}s, but the plan counts {plan.measure}. Use measure "
+            f"distinct_count with options.count_entity={entity} (and options.min_trials for "
+            '"more than N trials"), or set scope out_of_scope with the reason.'
+        )
+    return errors
+
+
 # ---------- the gate ----------
 
 
@@ -306,6 +352,7 @@ def check_plan(raw: dict[str, Any], request: QueryRequest, *, final: bool = Fals
             result.plan, result.chart_type_source = plan, "fallback"
     result.errors += compat
     result.errors += _grounding_errors(plan, request)
+    result.errors += _measure_mismatch(plan, request)
 
     unrequested = _unrequested(plan, request)
     if unrequested and not plan.assumptions:
