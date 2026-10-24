@@ -1,0 +1,147 @@
+{
+ "protocolSection": {
+  "identificationModule": {
+   "nctId": "NCT04135092",
+   "orgStudyIdInfo": {
+    "id": "209950"
+   },
+   "organization": {
+    "fullName": "National Institutes of Health Clinical Center (CC)",
+    "class": "NIH"
+   },
+   "briefTitle": "Single Patient Protocol: A Phase II Study Using the Administration of Autologous T-Cells Genetically Engineered to Express T-Cell Receptors Reactive Against Mutated Neoantigens in a Patient With Metastatic Cancer Plus the Administration of Pembrolizumab",
+   "officialTitle": "Single Patient Protocol: A Phase II Study Using the Administration of Autologous T-Cells Genetically Engineered to Express T-Cell Receptors Reactive Against Mutated Neoantigens in a Patient With Metastatic Cancer Plus the Administration of Pembrolizumab"
+  },
+  "statusModule": {
+   "statusVerifiedDate": "2020-09",
+   "overallStatus": "NO_LONGER_AVAILABLE",
+   "studyFirstSubmitDate": "2019-10-21",
+   "studyFirstSubmitQcDate": "2019-10-21",
+   "studyFirstPostDateStruct": {
+    "date": "2019-10-22",
+    "type": "ACTUAL"
+   },
+   "lastUpdateSubmitDate": "2020-09-03",
+   "lastUpdatePostDateStruct": {
+    "date": "2020-09-04",
+    "type": "ACTUAL"
+   }
+  },
+  "sponsorCollaboratorsModule": {
+   "responsibleParty": {
+    "type": "SPONSOR"
+   },
+   "leadSponsor": {
+    "name": "National Institutes of Health Clinical Center (CC)",
+    "class": "NIH"
+   }
+  },
+  "descriptionModule": {
+   "briefSummary": "Single Patient Expanded Access",
+   "detailedDescription": "Background:\n\nPlease refer to National Cancer Institute Surgery Branch (NCI-SB) protocol 18-C-0049, Amendment F.\n\nObjective:\n\nUnder Individual Patient Expanded Access, to treat a patient with metastatic prostate cancer with autologous peripheral blood lymphocytes (PBL) that have been transduced with genes encoding T-cell receptors that recognize the mutated TP53 shared oncogene in the autologous cancer.\n\nEligibility:\n\n* Must have measurable, metastatic disease as assessed per RECIST v1.1 criteria.\n* Must sign the informed consent document.\n* Willing to sign Durable Power of Attorney Form.\n* Must have all regulatory approvals prior to start of treatment.\n\nDesign:\n\n* Please refer to NCI-SB protocol 18-C-0049, Amendment F.\n* The patient will be treated with a non-myeloablative, lymphodepleting preparative regimen of cyclophosphamide and fludarabine, followed by the infusion of autologous transduced PBL and then high-dose aldesleukin. The patient will also receive pembrolizumab on Day -2 prior to cell administration and additional doses every 3 weeks following cell infusion until the time of disease progression."
+  },
+  "designModule": {
+   "studyType": "EXPANDED_ACCESS",
+   "expandedAccessTypes": {
+    "individual": true
+   }
+  },
+  "armsInterventionsModule": {
+   "interventions": [
+    {
+     "type": "BIOLOGICAL",
+     "name": "Individual Patient TCR Transduced PBL",
+     "description": "Day 0: Cells will be infused at a dose not to exceed .5e11 in 400 mL IV on the Patient Care Unit over 20-30 minutes (2-4 days after the last dose of fludarabine)."
+    },
+    {
+     "type": "DRUG",
+     "name": "Cyclophosphamide",
+     "description": "Days -7 and -6: Cyclophosphamide 60 mg/kg/day x 2 days IV in 250 mL D5W infused simultaneously with mesna 15 mg/kg/day over 1 hour x 2 days."
+    },
+    {
+     "type": "DRUG",
+     "name": "Fludarabine",
+     "description": "Days -7 to -3: Fludarabine 25 mg/m2 /day IVPB daily over 30 minutes for 5 days."
+    },
+    {
+     "type": "DRUG",
+     "name": "Aldesleukin",
+     "description": "Aldesleukin 720,000 IU/kg IV (based on total body weight) over 15 minutes every eight hours (+/- 1 hour) beginning within 24 hours of cell infusion and continuing for up to 4 days (maximum 10 doses)."
+    },
+    {
+     "type": "DRUG",
+     "name": "Pembrolizumab",
+     "description": "Pembrolizumab 2 mg /kg IV over approximately 30 minutes on Day -2 and then every 3 weeks until time of disease progression."
+    }
+   ]
+  },
+  "eligibilityModule": {
+   "eligibilityCriteria": "Inclusion Criteria:\n\n* Measurable (per RECIST v1.1 criteria), metastatic prostate cancer.\n* Refractory to approved standard systemic therapy.\n* Ability of subject to understand and the willingness to sign a written informed consent document.\n* Willing to sign a Durable Power of Attorney Form.\n* Willing to practice birth control from the time of enrollment on this study and for four months after treatment.\n* Subject must be co-enrolled on protocol 03-C-0277.\n\nExclusion Criteria:\n\nNot applicable.",
+   "stdAges": [
+    "CHILD",
+    "ADULT",
+    "OLDER_ADULT"
+   ]
+  }
+ },
+ "derivedSection": {
+  "miscInfoModule": {
+   "versionHolder": "2026-10-23"
+  },
+  "interventionBrowseModule": {
+   "meshes": [
+    {
+     "id": "D003520",
+     "term": "Cyclophosphamide"
+    },
+    {
+     "id": "C024352",
+     "term": "fludarabine"
+    },
+    {
+     "id": "C082598",
+     "term": "aldesleukin"
+    },
+    {
+     "id": "C582435",
+     "term": "pembrolizumab"
+    }
+   ],
+   "ancestors": [
+    {
+     "id": "D010752",
+     "term": "Phosphoramide Mustards"
+    },
+    {
+     "id": "D009588",
+     "term": "Nitrogen Mustard Compounds"
+    },
+    {
+     "id": "D009150",
+     "term": "Mustard Compounds"
+    },
+    {
+     "id": "D006846",
+     "term": "Hydrocarbons, Halogenated"
+    },
+    {
+     "id": "D006838",
+     "term": "Hydrocarbons"
+    },
+    {
+     "id": "D009930",
+     "term": "Organic Chemicals"
+    },
+    {
+     "id": "D063088",
+     "term": "Phosphoramides"
+    },
+    {
+     "id": "D009943",
+     "term": "Organophosphorus Compounds"
+    }
+   ]
+  }
+ },
+ "hasResults": false
+}

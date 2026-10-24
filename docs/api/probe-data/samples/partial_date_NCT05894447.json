@@ -1,0 +1,270 @@
+{
+ "protocolSection": {
+  "identificationModule": {
+   "nctId": "NCT05894447",
+   "orgStudyIdInfo": {
+    "id": "22-10025226"
+   },
+   "organization": {
+    "fullName": "Weill Medical College of Cornell University",
+    "class": "OTHER"
+   },
+   "briefTitle": "Naptumomab Estafenatox in Combination With Pembrolizumab Preceded by Obinutuzumab in Patients With Urothelial Cancers",
+   "officialTitle": "A Phase 1 Trial of Naptumomab Estafenatox (NAP) in Combination With Pembrolizumab (Pembro) Preceded by Obinutuzumab (Obi) in Patients With Urothelial Cancers"
+  },
+  "statusModule": {
+   "statusVerifiedDate": "2024-04",
+   "overallStatus": "WITHDRAWN",
+   "whyStopped": "Insufficient funding",
+   "expandedAccessInfo": {
+    "hasExpandedAccess": false
+   },
+   "startDateStruct": {
+    "date": "2023-11",
+    "type": "ESTIMATED"
+   },
+   "primaryCompletionDateStruct": {
+    "date": "2025-12",
+    "type": "ESTIMATED"
+   },
+   "completionDateStruct": {
+    "date": "2028-06",
+    "type": "ESTIMATED"
+   },
+   "studyFirstSubmitDate": "2023-05-30",
+   "studyFirstSubmitQcDate": "2023-05-30",
+   "studyFirstPostDateStruct": {
+    "date": "2023-06-08",
+    "type": "ACTUAL"
+   },
+   "lastUpdateSubmitDate": "2024-04-11",
+   "lastUpdatePostDateStruct": {
+    "date": "2024-04-12",
+    "type": "ACTUAL"
+   }
+  },
+  "sponsorCollaboratorsModule": {
+   "responsibleParty": {
+    "type": "SPONSOR"
+   },
+   "leadSponsor": {
+    "name": "Weill Medical College of Cornell University",
+    "class": "OTHER"
+   },
+   "collaborators": [
+    {
+     "name": "NeoTX Therapeutics Ltd.",
+     "class": "INDUSTRY"
+    }
+   ]
+  },
+  "oversightModule": {
+   "oversightHasDmc": true,
+   "isFdaRegulatedDrug": true,
+   "isFdaRegulatedDevice": false
+  },
+  "descriptionModule": {
+   "briefSummary": "The main purpose of this study is to test the safety and tolerability of naptumomab estafenatox (NAP), the planned experimental (investigational) drug, in combination with pembrolizumab following a single pretreatment with Obinutuzumab (Obi), and determine its side effects and effects on urothelial cancer. It is hypothesized that adding NAP will make pembrolizumab more effective. Participants will receive 2 infusions of Obi prior to the treatment of NAP in combination with pembrolizumab. This treatment is given in 21-day cycles for 6 cycles with NAP administered daily for 4 consecutive days, Days 1-4, + pembrolizumab given on day 2 of each cycle. After these six cycles of therapy, participants will continue to receive pembrolizumab every 3 weeks, without NAP, for a total number of up to 34 pembrolizumab administrations since cycle 1. After the treatment of Obi is completed, participants will start NAP in combination with pembrolizumab and continue that treatment in a 28 day cycle period. NAP will be given for a total of 6 cycles and pembrolizumab will be given every 21 days for a total of up to 2 years. After stopping treatment, participants have follow-up visits or phone calls about every 12 weeks until the study is closed.",
+   "detailedDescription": "This is a Phase 1, open-label, prospective, dose-finding and cohort expansion study to assess the safety, tolerability, pharmacodynamics and preliminary antitumor activity of the combination of NAP/pembrolizumab following pretreatment with Obi in patients with urothelial cancers who are candidates for pembrolizumab treatment. and will not be used to determine eligibility for enrollment.\n\nThe study will test two doses of NAP 5 \u00b5g/kg/day (Dose Level 1) and 10 \u00b5g/kg/day (Dose Level 2), in combination with a fixed dose of pembrolizumab (200mg every 3 weeks). It is expected that full dose of both drugs can be safely combined. The purpose of this study is to define the recommended dose for phase 2 trials of the combination of NAP/pembrolizumab by employing a BOIN design for phase 1 trials. The BOIN design will find the highest dose for which the probability of a dose-limiting toxicity is less than 0.25. No dose level will have more than 12 patients. An initial cohort of 3 patients will be enrolled on Dose Level 1. After these patients have been observed for a DLT, the decision to escalate, de-escalate or remain at the current dose will be made according to the table in the statistical section of the protocol. The maximum tolerated dose (MTD) will be selected using isotonic regression that pools the information across doses. No intra-patient dose escalation is permitted. Patients who discontinue the study during the 21-day dose-limiting toxicity (DLT) observation period for reasons other than a DLT, or who do not receive a full cycle of NAP/pembrolizumab, will be replaced.\n\nEach patient will participate in 3 stages of the trial: a 21-day screening stage, followed by a treatment stage that may continue until evidence of progressive neoplastic disease, intolerance to treatment of fulfillment of any of the other criteria for treatment discontinuation as listed in Section 8.1 of the protocol, and a follow-up phase to determine the effect of protocol treatment on cancer progression. All patients will be seen at the end of treatment (EOT) visit 30 (+ 7) days after the last dose of protocol therapy."
+  },
+  "conditionsModule": {
+   "conditions": [
+    "Urothelial Carcinoma"
+   ],
+   "keywords": [
+    "Pembrolizumab",
+    "obinutuzumab",
+    "naptumomab estafenatox",
+    "Urothelial Cancer"
+   ]
+  },
+  "designModule": {
+   "studyType": "INTERVENTIONAL",
+   "phases": [
+    "PHASE1"
+   ],
+   "designInfo": {
+    "allocation": "NA",
+    "interventionModel": "SINGLE_GROUP",
+    "primaryPurpose": "TREATMENT",
+    "maskingInfo": {
+     "masking": "NONE"
+    }
+   },
+   "enrollmentInfo": {
+    "count": 0,
+    "type": "ACTUAL"
+   }
+  },
+  "armsInterventionsModule": {
+   "armGroups": [
+    {
+     "label": "Naptumomab estafenatox in combination with pembrolizumab preceded by Obinutuzumab",
+     "type": "EXPERIMENTAL",
+     "description": "The study will test two doses of NAP 5 \u00b5g/kg/day IV (Dose Level 1) and 10 \u00b5g/kg/day IV (Dose Level 2), in combination with a fixed dose of pembrolizumab (200mg IV every 3 weeks). NAP will be given on Days 1-4 of each 21 day cycle for 6 cycles. Pembrolizumab will be given on Day 2 of each 21-day treatment cycle for the first 6 cycles and then as monotherapy every 21 days for up to a total of 34 administrations. Two doses of Obinutuzumab 1,000 mg IV will be given before starting NAP and pembrolizumab on Days - 13 and -12.\n\nPembro 200 mg i.v. Day 2 of each 21-day treatment cycle for the first 6 cycles",
+     "interventionNames": [
+      "Drug: Naptumomab Estafenatox",
+      "Drug: Pembrolizumab",
+      "Drug: Obinutuzumab"
+     ]
+    }
+   ],
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "Naptumomab Estafenatox",
+     "description": "5 or 10 \u00b5g/kg IV naptumomab estafenatox will be given on the first four days of every 21-day treatment cycle for 6 cycles",
+     "armGroupLabels": [
+      "Naptumomab estafenatox in combination with pembrolizumab preceded by Obinutuzumab"
+     ]
+    },
+    {
+     "type": "DRUG",
+     "name": "Pembrolizumab",
+     "description": "200 mg IV pembrolizumab will be given on day 2 of each 21 day cycle for up to 24 cycles",
+     "armGroupLabels": [
+      "Naptumomab estafenatox in combination with pembrolizumab preceded by Obinutuzumab"
+     ],
+     "otherNames": [
+      "Keytruda"
+     ]
+    },
+    {
+     "type": "DRUG",
+     "name": "Obinutuzumab",
+     "description": "Two doses of 1,000 mg IV obinutuzumab given prior to starting pembrolizumab and naptumomab estafenatox",
+     "armGroupLabels": [
+      "Naptumomab estafenatox in combination with pembrolizumab preceded by Obinutuzumab"
+     ],
+     "otherNames": [
+      "Gazyva"
+     ]
+    }
+   ]
+  },
+  "outcomesModule": {
+   "primaryOutcomes": [
+    {
+     "measure": "Recommended Phase 2 Dose (RP2D) of the combination of NAP/pembrolizumab preceded by obinutuzumab to find the",
+     "description": "The RP2D will be determined based on the maximum tolerated dose (MTD) observed in the trial as well as other factors such as AE profiles observed, correlative analyses, etc. It will not be a dose level that is greater than the MTD. The MTD will be the highest dose that results in less than 25% dose limiting toxicities as described in the protocol based on the CTCAE v5.0.",
+     "timeFrame": "Day 21"
+    }
+   ],
+   "secondaryOutcomes": [
+    {
+     "measure": "Objective response rate (ORR) based on the RECIST 1.1 criteria",
+     "description": "The objective response rate will be determined as the number of patients with a confirmed PR or CR (via RECIST v1.1) divided by the total number of patients evaluable for objective response.",
+     "timeFrame": "Until disease progression or death, for a maximum of approximately 4 years"
+    },
+    {
+     "measure": "Median duration of response (DOR) in subjects who achieve an objective response (CR or PR)",
+     "description": "DOR is defined as the time from first evidence of response (CR or PR) to progressive disease or death, whichever occurs first. Progressive disease is defined per RECIST v1.1 criteria. The DOR will only be evaluated for patients with a confirmed response. Patients who had a confirmed response and are alive without documented disease progression will be censored at the time of their last disease evaluation. If more than 50% of the responders had experienced a progression/death, the median DOR will be estimated with a corresponding 95% CI.",
+     "timeFrame": "Until disease progression or death, whichever occurs first, for a maximum of approximately 4 years"
+    },
+    {
+     "measure": "Progression-free survival (PFS)",
+     "description": "PFS is defined as the time from start of study treatment to progression or death from any cause. Living subjects with no PD will be censored at the date of the last evaluable response assessment.",
+     "timeFrame": "Until disease progression or death, whichever occurs first, for a maximum of approximately 4 years"
+    },
+    {
+     "measure": "6-month Progression-Free Survival (6-PFS)",
+     "description": "6- month PFS is defined as the time from start of study treatment to progression or death from any cause, as assessed at 6 months. Living subjects with no PD will be censored at the date of the last evaluable response assessment.",
+     "timeFrame": "6 months from treatment initiation"
+    },
+    {
+     "measure": "Number of adverse events (AEs) associated with the investigational drug combination",
+     "description": "Adverse reactions will be graded as per National Cancer Institute (NCI) Common Terminology Criteria (CTC) version 5.",
+     "timeFrame": "AEs will be assessed from the time of informed consent until 30 days after the last dose of study treatment."
+    },
+    {
+     "measure": "12-Month Progression-Free Survival (12-PFS)",
+     "description": "12-month Progression-Free Survival is defined as time from start of study treatment to progression or death from any cause, as assessed at 12 months. Living subjects with no PD will be censored at the date of the last evaluable response assessment.",
+     "timeFrame": "12 months from treatment initiation"
+    }
+   ]
+  },
+  "eligibilityModule": {
+   "eligibilityCriteria": "Inclusion Criteria:\n\n* All patients must provide signed informed consent prior to any study specific procedures that are not part of standard medical care\n* At least 18 years of age\n* Must have advanced or metastatic disease at the time of enrollment.\n* Must have histologically and/or cytologically confirmed evidence of predominantly transitional cell urothelial cancer (carcinomas of the renal pelvis, ureter, urinary bladder or urethra)\n* Must have received no more than 2 prior lines of therapy for advanced or metastatic disease; patients may have received adjuvant/neoadjuvant therapy which must have been completed prior to entry into the current trial\n* Must be willing and able to comply with scheduled visits, procedures, drug administration plan, etc. as outlined in the protocol\n* Have an estimated life expectancy of at least 12 weeks\n* COVID-19 vaccine is not mandatory. However, patients who have been vaccinated against COVID-19 prior to study entry, should fulfill the following conditions:\n\n  * The patient completed the primary series vaccination (initial 2 doses of the vaccine)\n  * At least 14 days have passed since the last dose (primary or booster) before receiving Obi pretreatment\n\nExclusion Criteria:\n\n* Active infection requiring treatment within 3 days of enrollment\n* Other active neoplastic disease (cancer) requiring concurrent anti-neoplastic treatment\n* Known, suspected or documented parenchymal brain metastases unless patient is stable after being treated with surgery and/or radiation\n* Active or previously documented autoimmune or inflammatory disorders such as, but not limited to rheumatoid arthritis, systemic lupus erythematosus, uveitis, ulcerative colitis, Crohn's syndrome, Wegener's syndrome, multiple sclerosis, myasthenia gravis, scleroderma, and sarcoidosis\n\nThe following are exceptions to this criterion:\n\n* Vitiligo or psoriasis not requiring systemic treatment (within the last 2 years)\n* Endocrinopathies (e.g., following Hashimoto syndrome) stable on hormone replacement or do not require any therapy\n\n  * History of primary immunodeficiency\n  * History or prior allogeneic organ transplant 7. The use of immunosuppressive agents within 28 days of enrollment (D-13; obinutuzumab pretreatment) including, but not limited to, cyclosporine, mycophenolate, azathioprine, methotrexate, adalimumab, infliximab, vedolizumab, tofacitinib, dupilumab, rituximab, etc. and including pharmacologic doses of glucocorticoids defined as glucocorticoid equivalents of \\>10 mg/day of prednisone (with the exception of systemic steroids given as a premedication before each of the study medications, or used prior to administration of radiographic contrast material in subjects with allergies) are not acceptable within 14 days prior to enrollment. Subjects are permitted to receive topical, intranasal, inhalational, and intra-ocular glucocorticoids\n  * Have received a live attenuated vaccine within 28 days prior to the first dose of Obi\n  * HIV infection that is not considered well-controlled\n  * Pregnant or breastfeeding\n  * Participants of reproductive potential who are not willing to employ effective birth control from screening to 90 days after the last dose of study treatment\n  * Participation in an investigational drug study within the past 4 weeks\n  * Major surgery or trauma within 4 weeks of study entry (D-13; obinutuzumab pre-treatment)\n  * Previous treatment with one of the study drugs (NAP, pembro or Obi)\n  * Certain cardiovascular conditions like current or recent CHF, myocardial infarction, acute coronary syndrome, ongoing angina pectoris, severe peripheral vascular disease, or CVA (stroke). Your doctor will discuss eligibility with you in more detail\n  * Known allergy or hypersensitivity to any of the study drugs or any of the study drug excipients\n  * History of progressive multifocal leukoencephalopathy (PML)",
+   "healthyVolunteers": false,
+   "sex": "ALL",
+   "minimumAge": "18 Years",
+   "stdAges": [
+    "ADULT",
+    "OLDER_ADULT"
+   ]
+  },
+  "contactsLocationsModule": {
+   "overallOfficials": [
+    {
+     "name": "Cora Sternberg, M.D.",
+     "affiliation": "Weill Medical College of Cornell University",
+     "role": "PRINCIPAL_INVESTIGATOR"
+    }
+   ],
+   "locations": [
+    {
+     "facility": "Weill Cornell Medicine/NewYork-Presbyterian Hospital",
+     "city": "New York",
+     "state": "New York",
+     "zip": "10021",
+     "country": "United States",
+     "geoPoint": {
+      "lat": 40.71427,
+      "lon": -74.00597
+     }
+    }
+   ]
+  },
+  "ipdSharingStatementModule": {
+   "ipdSharing": "NO"
+  }
+ },
+ "derivedSection": {
+  "miscInfoModule": {
+   "versionHolder": "2026-10-23"
+  },
+  "conditionBrowseModule": {
+   "meshes": [
+    {
+     "id": "D002295",
+     "term": "Carcinoma, Transitional Cell"
+    }
+   ],
+   "ancestors": [
+    {
+     "id": "D002277",
+     "term": "Carcinoma"
+    },
+    {
+     "id": "D009375",
+     "term": "Neoplasms, Glandular and Epithelial"
+    },
+    {
+     "id": "D009370",
+     "term": "Neoplasms by Histologic Type"
+    },
+    {
+     "id": "D009369",
+     "term": "Neoplasms"
+    }
+   ]
+  },
+  "interventionBrowseModule": {
+   "meshes": [
+    {
+     "id": "C543500",
+     "term": "naptumomab estafenatox"
+    },
+    {
+     "id": "C582435",
+     "term": "pembrolizumab"
+    },
+    {
+     "id": "C543332",
+     "term": "obinutuzumab"
+    }
+   ]
+  }
+ },
+ "hasResults": false
+}

@@ -1,0 +1,353 @@
+{
+ "all_studies": {
+  "params": {},
+  "status": 200,
+  "total": 608415,
+  "sec": 0.35,
+  "err": null
+ },
+ "intr_pembrolizumab": {
+  "params": {
+   "query.intr": "pembrolizumab"
+  },
+  "status": 200,
+  "total": 2993,
+  "sec": 0.33,
+  "err": null
+ },
+ "intr_pembrolizumab_since2015": {
+  "params": {
+   "query.intr": "pembrolizumab",
+   "filter.advanced": "AREA[StartDate]RANGE[2015-01-01,MAX]"
+  },
+  "status": 200,
+  "total": 2928,
+  "sec": 0.31,
+  "err": null
+ },
+ "cond_breast_cancer": {
+  "params": {
+   "query.cond": "breast cancer"
+  },
+  "status": 200,
+  "total": 16944,
+  "sec": 0.36,
+  "err": null
+ },
+ "cond_lung_cancer": {
+  "params": {
+   "query.cond": "lung cancer"
+  },
+  "status": 200,
+  "total": 14657,
+  "sec": 0.37,
+  "err": null
+ },
+ "cond_lung_cancer_quoted": {
+  "params": {
+   "query.cond": "\"lung cancer\""
+  },
+  "status": 200,
+  "total": 13423,
+  "sec": 0.34,
+  "err": null
+ },
+ "cond_alzheimer": {
+  "params": {
+   "query.cond": "alzheimer disease"
+  },
+  "status": 200,
+  "total": 4327,
+  "sec": 0.36,
+  "err": null
+ },
+ "cond_diabetes_t2": {
+  "params": {
+   "query.cond": "type 2 diabetes"
+  },
+  "status": 200,
+  "total": 12017,
+  "sec": 0.39,
+  "err": null
+ },
+ "cond_breast_recruiting": {
+  "params": {
+   "query.cond": "breast cancer",
+   "filter.overallStatus": "RECRUITING"
+  },
+  "status": 200,
+  "total": 2457,
+  "sec": 0.37,
+  "err": null
+ },
+ "intr_nivolumab": {
+  "params": {
+   "query.intr": "nivolumab"
+  },
+  "status": 200,
+  "total": 2036,
+  "sec": 0.32,
+  "err": null
+ },
+ "intr_keytruda": {
+  "params": {
+   "query.intr": "keytruda"
+  },
+  "status": 200,
+  "total": 2993,
+  "sec": 0.35,
+  "err": null
+ },
+ "intr_mk3475": {
+  "params": {
+   "query.intr": "MK-3475"
+  },
+  "status": 200,
+  "total": 2993,
+  "sec": 0.33,
+  "err": null
+ },
+ "adv_intrname_pembrolizumab": {
+  "params": {
+   "filter.advanced": "AREA[InterventionName]pembrolizumab"
+  },
+  "status": 200,
+  "total": 2582,
+  "sec": 0.37,
+  "err": null
+ },
+ "adv_intrnamesearch_pembrolizumab": {
+  "params": {
+   "filter.advanced": "AREA[InterventionNameSearch]pembrolizumab"
+  },
+  "status": 200,
+  "total": 2652,
+  "sec": 0.37,
+  "err": null
+ },
+ "adv_intrname_keytruda": {
+  "params": {
+   "filter.advanced": "AREA[InterventionName]keytruda"
+  },
+  "status": 200,
+  "total": 2582,
+  "sec": 0.31,
+  "err": null
+ },
+ "adv_intrname_none_pembrolizumab": {
+  "params": {
+   "filter.advanced": "EXPANSION[None]AREA[InterventionName]pembrolizumab"
+  },
+  "status": 200,
+  "total": 305,
+  "sec": 0.33,
+  "err": null
+ },
+ "adv_condition_lung_cancer": {
+  "params": {
+   "filter.advanced": "AREA[Condition]\"lung cancer\""
+  },
+  "status": 200,
+  "total": 10676,
+  "sec": 0.37,
+  "err": null
+ },
+ "adv_startdate_range_iso": {
+  "params": {
+   "filter.advanced": "AREA[StartDate]RANGE[2015-01-01,MAX]"
+  },
+  "status": 200,
+  "total": 410312,
+  "sec": 0.36,
+  "err": null
+ },
+ "adv_startdate_range_us": {
+  "params": {
+   "filter.advanced": "AREA[StartDate]RANGE[01/01/2015,MAX]"
+  },
+  "status": 200,
+  "total": 410312,
+  "sec": 0.33,
+  "err": null
+ },
+ "adv_startdate_year": {
+  "params": {
+   "filter.advanced": "AREA[StartDate]2022"
+  },
+  "status": 200,
+  "total": 37730,
+  "sec": 0.37,
+  "err": null
+ },
+ "adv_startdate_missing": {
+  "params": {
+   "filter.advanced": "AREA[StartDate]MISSING"
+  },
+  "status": 200,
+  "total": 5375,
+  "sec": 0.35,
+  "err": null
+ },
+ "adv_phase_code": {
+  "params": {
+   "filter.advanced": "AREA[Phase]PHASE3"
+  },
+  "status": 200,
+  "total": 50082,
+  "sec": 0.34,
+  "err": null
+ },
+ "adv_phase_label": {
+  "params": {
+   "filter.advanced": "AREA[Phase]\"Phase 3\""
+  },
+  "status": 200,
+  "total": 50082,
+  "sec": 0.33,
+  "err": null
+ },
+ "adv_phase_missing": {
+  "params": {
+   "filter.advanced": "AREA[Phase]MISSING"
+  },
+  "status": 200,
+  "total": 144290,
+  "sec": 0.35,
+  "err": null
+ },
+ "adv_phase_na": {
+  "params": {
+   "filter.advanced": "AREA[Phase]NA"
+  },
+  "status": 200,
+  "total": 239565,
+  "sec": 0.33,
+  "err": null
+ },
+ "adv_phase_size2": {
+  "params": {
+   "filter.advanced": "AREA[Phase:size] 2"
+  },
+  "status": 200,
+  "total": 24793,
+  "sec": 0.59,
+  "err": null
+ },
+ "adv_leadclass_industry": {
+  "params": {
+   "filter.advanced": "AREA[LeadSponsorClass]INDUSTRY"
+  },
+  "status": 200,
+  "total": 133187,
+  "sec": 0.36,
+  "err": null
+ },
+ "adv_locstatus_code": {
+  "params": {
+   "filter.advanced": "AREA[LocationStatus]RECRUITING"
+  },
+  "status": 200,
+  "total": 120010,
+  "sec": 0.31,
+  "err": null
+ },
+ "adv_locstatus_label": {
+  "params": {
+   "filter.advanced": "AREA[LocationStatus]Recruiting"
+  },
+  "status": 200,
+  "total": 120010,
+  "sec": 0.31,
+  "err": null
+ },
+ "overall_recruiting": {
+  "params": {
+   "filter.overallStatus": "RECRUITING"
+  },
+  "status": 200,
+  "total": 64983,
+  "sec": 0.29,
+  "err": null
+ },
+ "adv_search_location_us_recruiting": {
+  "params": {
+   "filter.advanced": "SEARCH[Location](AREA[LocationCountry]United States AND AREA[LocationStatus]Recruiting)"
+  },
+  "status": 200,
+  "total": 26520,
+  "sec": 0.34,
+  "err": null
+ },
+ "adv_numinterventions_ge2": {
+  "params": {
+   "filter.advanced": "AREA[NumInterventions]RANGE[2,MAX]"
+  },
+  "status": 200,
+  "total": 288821,
+  "sec": 0.36,
+  "err": null
+ },
+ "adv_studytype_obs": {
+  "params": {
+   "filter.advanced": "AREA[StudyType]OBSERVATIONAL"
+  },
+  "status": 200,
+  "total": 142101,
+  "sec": 0.36,
+  "err": null
+ },
+ "adv_obs_phase_missing": {
+  "params": {
+   "filter.advanced": "AREA[StudyType]OBSERVATIONAL AND AREA[Phase]MISSING"
+  },
+  "status": 200,
+  "total": 142101,
+  "sec": 0.32,
+  "err": null
+ },
+ "spons_merck": {
+  "params": {
+   "query.spons": "Merck"
+  },
+  "status": 200,
+  "total": 5240,
+  "sec": 0.36,
+  "err": null
+ },
+ "lead_merck_full": {
+  "params": {
+   "query.lead": "\"Merck Sharp & Dohme LLC\""
+  },
+  "status": 200,
+  "total": 2191,
+  "sec": 0.31,
+  "err": null
+ },
+ "err_bad_advanced": {
+  "params": {
+   "filter.advanced": "AREA[NoSuchField]foo"
+  },
+  "status": 400,
+  "total": null,
+  "sec": 0.36,
+  "err": "Error parsing query in advanced filter: Unknown area name: `NoSuchField`"
+ },
+ "err_bad_syntax": {
+  "params": {
+   "filter.advanced": "AREA[Phase](PHASE3"
+  },
+  "status": 400,
+  "total": null,
+  "sec": 0.32,
+  "err": "Error parsing query in advanced filter: missing ')' at '<EOF>'"
+ },
+ "err_bad_status": {
+  "params": {
+   "filter.overallStatus": "RUNNING"
+  },
+  "status": 400,
+  "total": null,
+  "sec": 0.31,
+  "err": "Invalid value in parameter `overallStatus`: `RUNNING`"
+ }
+}

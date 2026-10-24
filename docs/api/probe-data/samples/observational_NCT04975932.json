@@ -1,0 +1,267 @@
+{
+ "protocolSection": {
+  "identificationModule": {
+   "nctId": "NCT04975932",
+   "orgStudyIdInfo": {
+    "id": "TACE-ICIs-RWS"
+   },
+   "organization": {
+    "fullName": "Zhongda Hospital",
+    "class": "OTHER"
+   },
+   "briefTitle": "Efficacy and Safety of TACE in Combination With ICIs for HCC: a Real-world Study",
+   "officialTitle": "Efficacy and Safety of Transarterial Chemoembolization in Combination With Immune Checkpoint Inhibitors for Hepatocellular Carcinoma: a Real-world Study",
+   "acronym": "CHANCE001"
+  },
+  "statusModule": {
+   "statusVerifiedDate": "2023-07",
+   "overallStatus": "COMPLETED",
+   "expandedAccessInfo": {
+    "hasExpandedAccess": false
+   },
+   "startDateStruct": {
+    "date": "2021-07-01",
+    "type": "ACTUAL"
+   },
+   "primaryCompletionDateStruct": {
+    "date": "2022-05-31",
+    "type": "ACTUAL"
+   },
+   "completionDateStruct": {
+    "date": "2023-02-08",
+    "type": "ACTUAL"
+   },
+   "studyFirstSubmitDate": "2021-07-02",
+   "studyFirstSubmitQcDate": "2021-07-22",
+   "studyFirstPostDateStruct": {
+    "date": "2021-07-26",
+    "type": "ACTUAL"
+   },
+   "lastUpdateSubmitDate": "2023-07-12",
+   "lastUpdatePostDateStruct": {
+    "date": "2023-07-14",
+    "type": "ACTUAL"
+   }
+  },
+  "sponsorCollaboratorsModule": {
+   "responsibleParty": {
+    "type": "PRINCIPAL_INVESTIGATOR",
+    "investigatorFullName": "Gao-jun Teng",
+    "investigatorTitle": "President",
+    "investigatorAffiliation": "Zhongda Hospital"
+   },
+   "leadSponsor": {
+    "name": "Zhongda Hospital",
+    "class": "OTHER"
+   }
+  },
+  "oversightModule": {
+   "isFdaRegulatedDrug": false,
+   "isFdaRegulatedDevice": false
+  },
+  "descriptionModule": {
+   "briefSummary": "The purpose of this study is to evaluate the safety and efficacy of transarterial chemoembolization (TACE) in combination with immune checkpoint inhibitors (ICIs) in patients with hepatocellular carcinoma (HCC) .",
+   "detailedDescription": "Transarterial chemoembolization (TACE) can induce immunogenic cell death and tumor-specific immune response which results in the release of tumor antigens and transform \"cold\" tumors with lacking immune effector cells into \"hot\" tumors with immune effector cells infiltration. This provides a theoretical basis for TACE combined with immune checkpoint inhibitors (ICIs) in hepatocellular carcinoma (HCC) patients. The purpose of this study is to evaluate the safety and efficacy of TACE in combination with ICIs in patients with HCC. This real-world study also explores the optimal combined treatment and outcome of HCC patients for providing further information for clinical practice and trials."
+  },
+  "conditionsModule": {
+   "conditions": [
+    "Hepatocellular Carcinoma"
+   ],
+   "keywords": [
+    "hepatocellular carcinoma",
+    "transarterial chemoembolization",
+    "immune checkpoint iInhibitors",
+    "real-world study"
+   ]
+  },
+  "designModule": {
+   "studyType": "OBSERVATIONAL",
+   "patientRegistry": false,
+   "designInfo": {
+    "observationalModel": "COHORT",
+    "timePerspective": "RETROSPECTIVE"
+   },
+   "enrollmentInfo": {
+    "count": 826,
+    "type": "ACTUAL"
+   }
+  },
+  "armsInterventionsModule": {
+   "armGroups": [
+    {
+     "label": "Study group: TACE+ICIs",
+     "description": "TACE: cTACE (conventional TACE) or dTACE (drug-eluting beads TACE); ICIs: atezolizumab, pembrolizumab, nivolumab, camrelizumab, tislelizumab, sintilimab or other ICIs",
+     "interventionNames": [
+      "Other: TACE+ICIs"
+     ]
+    },
+    {
+     "label": "Control group: TACE",
+     "description": "TACE: cTACE (conventional TACE) or dTACE (drug-eluting beads TACE);",
+     "interventionNames": [
+      "Procedure: TACE"
+     ]
+    }
+   ],
+   "interventions": [
+    {
+     "type": "OTHER",
+     "name": "TACE+ICIs",
+     "description": "TACE plus ICIs ( with or without molecular targeted therapies)",
+     "armGroupLabels": [
+      "Study group: TACE+ICIs"
+     ]
+    },
+    {
+     "type": "PROCEDURE",
+     "name": "TACE",
+     "description": "TACE without combination of ICIs ( with or without molecular targeted therapies)",
+     "armGroupLabels": [
+      "Control group: TACE"
+     ]
+    }
+   ]
+  },
+  "outcomesModule": {
+   "primaryOutcomes": [
+    {
+     "measure": "Progression free survival(PFS)",
+     "description": "The PFS is defined as the time from the initiation of any combination treatment to progression according to mRECIST or death from any cause. When pseudoprogression is suspected by investigator, tumor response will be re-assessed per iRECIST to confirm (also applicable for secondary endpoint of efficacy).",
+     "timeFrame": "up to approximately 1 years"
+    }
+   ],
+   "secondaryOutcomes": [
+    {
+     "measure": "Overall survival(OS)",
+     "description": "The OS is defined as the time from the initiation of any combination treatment to death from any cause.",
+     "timeFrame": "up to approximately 2 years"
+    },
+    {
+     "measure": "Time to Progression(TTP)",
+     "description": "The TTP is defined as the time from the initiation of any combination treatment to progression according to mRECIST. When pseudoprogression is suspected by investigator, tumor response will be re-assessed per iRECIST to confirm.",
+     "timeFrame": "up to approximately 1 years"
+    },
+    {
+     "measure": "Objective response rate(ORR)",
+     "description": "The ORR is defined as the proportion of patients with a documented complete response or partial response per mRECIST.",
+     "timeFrame": "6-8 week after TACE"
+    },
+    {
+     "measure": "Disease control rate(DCR)",
+     "description": "The DCR is defined as the proportion of patients with a documented complete response, partial response, or stable disease according to mRECIST.",
+     "timeFrame": "6-8 week after TACE"
+    },
+    {
+     "measure": "Adverse event(AE)",
+     "description": "Number and degree of the AEs according to CTCAE version 5.0.",
+     "timeFrame": "baseline to end of study (approximately 2 years)"
+    }
+   ]
+  },
+  "eligibilityModule": {
+   "eligibilityCriteria": "Inclusion Criteria:\n\n1. diagnosed with HCC by radiology, histology, or cytology;\n2. patients who underwent TACE combined with ICIs therapies ( with or without molecular targeted therapies) were included in the study group. For patients in the study group, ICIs therapies were received before the TACE or within 2 months after TACE and at least one cycle of immunotherapy has been received;\n3. during the same period, patients who underwent TACE without the combination of ICIs therapies ( with or without molecular targeted therapies) were included into the control group;\n4. patients who underwent TACE combined with ICIs therapies and molecular targeted therapies, molecular targeted therapies must be performed simultaneously with TACE or immunotherapy.\n\nExclusion Criteria:\n\n1. exceeding the time interval of the combination therapy defined above;\n2. missing follow-up data;",
+   "healthyVolunteers": false,
+   "sex": "ALL",
+   "minimumAge": "18 Years",
+   "stdAges": [
+    "ADULT",
+    "OLDER_ADULT"
+   ],
+   "studyPopulation": "Patients with HCC who are candidates for TACE combined with ICIs therapies under real-world practice conditions.",
+   "samplingMethod": "NON_PROBABILITY_SAMPLE"
+  },
+  "contactsLocationsModule": {
+   "overallOfficials": [
+    {
+     "name": "Gao-Jun Teng, MD",
+     "affiliation": "Zhongda hospital, Southeast university, Nanjing, China",
+     "role": "PRINCIPAL_INVESTIGATOR"
+    }
+   ],
+   "locations": [
+    {
+     "facility": "Gao-Jun Teng",
+     "city": "Nanjing",
+     "country": "China",
+     "geoPoint": {
+      "lat": 32.06167,
+      "lon": 118.77778
+     }
+    }
+   ]
+  },
+  "referencesModule": {
+   "references": [
+    {
+     "pmid": "36750721",
+     "type": "RESULT",
+     "citation": "Zhu HD, Li HL, Huang MS, Yang WZ, Yin GW, Zhong BY, Sun JH, Jin ZC, Chen JJ, Ge NJ, Ding WB, Li WH, Huang JH, Mu W, Gu SZ, Li JP, Zhao H, Wen SW, Lei YM, Song YS, Yuan CW, Wang WD, Huang M, Zhao W, Wu JB, Wang S, Zhu X, Han JJ, Ren WX, Lu ZM, Xing WG, Fan Y, Lin HL, Zhang ZS, Xu GH, Hu WH, Tu Q, Su HY, Zheng CS, Chen Y, Zhao XY, Fang ZT, Wang Q, Zhao JW, Xu AB, Xu J, Wu QH, Niu HZ, Wang J, Dai F, Feng DP, Li QD, Shi RS, Li JR, Yang G, Shi HB, Ji JS, Liu YE, Cai Z, Yang P, Zhao Y, Zhu XL, Lu LG, Teng GJ; CHANCE001 Investigators. Transarterial chemoembolization with PD-(L)1 inhibitors plus molecular targeted therapies for hepatocellular carcinoma (CHANCE001). Signal Transduct Target Ther. 2023 Feb 8;8(1):58. doi: 10.1038/s41392-022-01235-0."
+    },
+    {
+     "pmid": "37368105",
+     "type": "RESULT",
+     "citation": "Jin ZC, Zhong BY, Chen JJ, Zhu HD, Sun JH, Yin GW, Ge NJ, Luo B, Ding WB, Li WH, Chen L, Wang YQ, Zhu XL, Yang WZ, Li HL, Teng GJ; CHANCE Investigators. Real-world efficacy and safety of TACE plus camrelizumab and apatinib in patients with HCC (CHANCE2211): a propensity score matching study. Eur Radiol. 2023 Dec;33(12):8669-8681. doi: 10.1007/s00330-023-09754-2. Epub 2023 Jun 27."
+    }
+   ]
+  },
+  "ipdSharingStatementModule": {
+   "ipdSharing": "NO"
+  }
+ },
+ "derivedSection": {
+  "miscInfoModule": {
+   "versionHolder": "2026-10-23"
+  },
+  "conditionBrowseModule": {
+   "meshes": [
+    {
+     "id": "D006528",
+     "term": "Carcinoma, Hepatocellular"
+    }
+   ],
+   "ancestors": [
+    {
+     "id": "D000230",
+     "term": "Adenocarcinoma"
+    },
+    {
+     "id": "D002277",
+     "term": "Carcinoma"
+    },
+    {
+     "id": "D009375",
+     "term": "Neoplasms, Glandular and Epithelial"
+    },
+    {
+     "id": "D009370",
+     "term": "Neoplasms by Histologic Type"
+    },
+    {
+     "id": "D009369",
+     "term": "Neoplasms"
+    },
+    {
+     "id": "D008113",
+     "term": "Liver Neoplasms"
+    },
+    {
+     "id": "D004067",
+     "term": "Digestive System Neoplasms"
+    },
+    {
+     "id": "D009371",
+     "term": "Neoplasms by Site"
+    },
+    {
+     "id": "D004066",
+     "term": "Digestive System Diseases"
+    },
+    {
+     "id": "D008107",
+     "term": "Liver Diseases"
+    }
+   ]
+  }
+ },
+ "hasResults": false
+}

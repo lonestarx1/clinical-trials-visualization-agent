@@ -1,0 +1,329 @@
+{
+ "protocolSection": {
+  "identificationModule": {
+   "nctId": "NCT05834413",
+   "orgStudyIdInfo": {
+    "id": "22Y31920400"
+   },
+   "organization": {
+    "fullName": "Shanghai University of Traditional Chinese Medicine",
+    "class": "OTHER"
+   },
+   "briefTitle": "Clinical Study on the Prevention of Driver Gene Negative Ib-IIIb Lung Cancer Recurrence and Metastasis by Staged Chinese Herbal Medicine Combined With Chemotherapy and Immune Checkpoint Inhibitors",
+   "officialTitle": "Clinical Study on the Prevention of Driver Gene Negative Ib-IIIb Lung Cancer Recurrence and Metastasis by Staged Chinese Herbal Medicine Combined With Chemotherapy and Immune Checkpoint Inhibitors"
+  },
+  "statusModule": {
+   "statusVerifiedDate": "2025-11",
+   "overallStatus": "RECRUITING",
+   "expandedAccessInfo": {
+    "hasExpandedAccess": false
+   },
+   "startDateStruct": {
+    "date": "2023-05-01",
+    "type": "ACTUAL"
+   },
+   "primaryCompletionDateStruct": {
+    "date": "2027-06-30",
+    "type": "ESTIMATED"
+   },
+   "completionDateStruct": {
+    "date": "2027-06-30",
+    "type": "ESTIMATED"
+   },
+   "studyFirstSubmitDate": "2023-03-23",
+   "studyFirstSubmitQcDate": "2023-04-17",
+   "studyFirstPostDateStruct": {
+    "date": "2023-04-28",
+    "type": "ACTUAL"
+   },
+   "lastUpdateSubmitDate": "2026-05-08",
+   "lastUpdatePostDateStruct": {
+    "date": "2026-05-13",
+    "type": "ACTUAL"
+   }
+  },
+  "sponsorCollaboratorsModule": {
+   "responsibleParty": {
+    "type": "PRINCIPAL_INVESTIGATOR",
+    "investigatorFullName": "Ling Xu",
+    "investigatorTitle": "Chief Physician",
+    "investigatorAffiliation": "Shanghai University of Traditional Chinese Medicine"
+   },
+   "leadSponsor": {
+    "name": "Shanghai University of Traditional Chinese Medicine",
+    "class": "OTHER"
+   },
+   "collaborators": [
+    {
+     "name": "Shanghai Pulmonary Hospital, Shanghai, China",
+     "class": "OTHER"
+    },
+    {
+     "name": "Shanghai Chest Hospital",
+     "class": "OTHER"
+    },
+    {
+     "name": "Fudan University",
+     "class": "OTHER"
+    },
+    {
+     "name": "Shanghai Zhongshan Hospital",
+     "class": "OTHER"
+    },
+    {
+     "name": "Ruijin Hospital",
+     "class": "OTHER"
+    }
+   ]
+  },
+  "oversightModule": {
+   "oversightHasDmc": true,
+   "isFdaRegulatedDrug": false,
+   "isFdaRegulatedDevice": false
+  },
+  "descriptionModule": {
+   "briefSummary": "This project adopts a prospective, multicenter, randomized controlled clinical study to investigate the treatment of TCM in postoperative patients with driver gene negative lung cancer, according to two phases of postoperative adjuvant therapy: (i) chemotherapy phase immunotherapy phase. In this study, 367 patients (183 in the control group and 184 in the trial group) will be observed over 4 years, and the quality of life, toxic effects and safety of this therapy will be investigated. This study will provide evidence-based evidence for the establishment and optimization of a new model of postoperative staged TCM with adjuvant chemo-immunotherapy for lung cancer.",
+   "detailedDescription": "With the discovery of lung cancer driver genes, postoperative adjuvant therapy for lung cancers has been revolutionized. ADJUVANT, EVAN, EVIDNECE and IMPACT, have successively conducted efficacy and safety studies in the field of postoperative adjuvant therapy after generation EGFR-TKI. Adjuvant targeted therapy is also recommended by guidelines based on the significant improvement of DFS in mutation-positive patients. Unfortunately, 55% of NSCLC patients are driver gene-negative. Research in postoperative mutation-negative patients is relatively lagging behind. Chemotherapy remains the treatment of choice at this time. How to delay recurrence of metastasis in this population needs further study. Studies have shown that 1 year of adjuvant atezolizumab after chemotherapy in postoperative driver gene-negative patients significantly prolongs median DFS. For any PD-L1-expressing stage II-IIIa patients, adjuvant atezolizumab therapy has a median DFS of 42.3 months. Atezolizumab is recommended in the NCCN 2021 edition of clinical guidelines for patients with stage IIb-IIIa TPS \u2265 1%. In recent years, there has been great progress in the study of combined adjuvant therapy of Chinese medicine after lung cancer surgery. At present, research on TCM in the field of postoperative lung cancer is mainly focused on combined chemotherapy, which can reduce the occurrence of adverse events, improve quality of life, prevent recurrence and metastasis, and increase survival rate. More and higher-grade clinical evidence is needed to explore and validate the combination of TCM with immunotherapy.\n\nUsing a multicenter, randomized, double-blind, controlled prospective study, 367 patients with stage Ib-IIIb driver gene-negative NSCLC after undergoing radical surgery will be randomly divided into experimental and control groups, and postoperative adjuvant therapy will be administered in two phases: (i) chemotherapy phase: observation group (chemotherapy + TCM 1), control group (chemotherapy + TCM 1 placebo); (ii) immunization phase: observation group (ICIs + TCM2), control group (ICIs + TCM2 placebo). Treatment cycles will be 4 cycles of chemotherapy and 12 cycles of immunotherapy, and the indication for discontinuation will be the end of treatment or the patient's intolerance of treatment. Patients will be followed up regularly thereafter. The primary efficacy assessments are: disease-free survival (DFS); secondary efficacy assessments are: (1) quality of life: EORTC QLQ-LC43(V 4.0) scale; (2) changes in clinical signs of TCM; (3) biological indicators: ctDNA-MRD, peripheral blood immune factor series, plasma exosomal PD-L1; (4) overall survival (OS). An assessment of the toxic side effects and safety of the treatment regimen is also made by using CTC AE (V5.0). This regimen is expected to prolong disease-free survival and reduce toxic side effects. The study will provide evidence to optimize and promote the protocol of postoperative TCM combined with immunotherapy for lung cancer."
+  },
+  "conditionsModule": {
+   "conditions": [
+    "Lung Cancer"
+   ],
+   "keywords": [
+    "non-small cell lung cancer",
+    "traditional Chinese medicine",
+    "postoperative adjuvant therapy",
+    "immune checkpoint inhibitors"
+   ]
+  },
+  "designModule": {
+   "studyType": "INTERVENTIONAL",
+   "phases": [
+    "NA"
+   ],
+   "designInfo": {
+    "allocation": "RANDOMIZED",
+    "interventionModel": "PARALLEL",
+    "primaryPurpose": "TREATMENT",
+    "maskingInfo": {
+     "masking": "QUADRUPLE",
+     "whoMasked": [
+      "PARTICIPANT",
+      "CARE_PROVIDER",
+      "INVESTIGATOR",
+      "OUTCOMES_ASSESSOR"
+     ]
+    }
+   },
+   "enrollmentInfo": {
+    "count": 367,
+    "type": "ESTIMATED"
+   }
+  },
+  "armsInterventionsModule": {
+   "armGroups": [
+    {
+     "label": "chemotherapy plus TCM 1&ICIs plusTCM2",
+     "type": "EXPERIMENTAL",
+     "description": "Phase1\uff1a Chemotherapy\uff1aProposed platinum-containing two-drug adjuvant chemotherapy, vincristine/paclitaxel/docetaxel/pemetrexed/gemcitabine plus cisplatin/carboplatin within 8 weeks after surgery, according to CSCO guidelines (2022).\n\nTCM1 granules\uff1aoral granules, \"HeWeiYangXueFang\" , twice a day, every 21 days for 4 cycles.\n\nPhase 2\uff1a One of the following agents may be selected after chemotherapy \uff1aNivolumab/Pembrolizumab/Durvalumab/Atezolizumab/ Camrelizumab/Dupilumab/Sintilimab/Tislelizumab.A total of 12 cycles will be performed or the patient will discontinue the drug due to intolerable toxic side effects.\n\nTCM2 granules\uff1aoral granules, \"FeiPingFang\" , twice a day, every 21 days for 12 cycles.",
+     "interventionNames": [
+      "Drug: chemotherapy plus TCM 1&ICIs plusTCM2"
+     ]
+    },
+    {
+     "label": "chemotherapy plus TCM 1 placebo&ICIs plus TCM2 placebo",
+     "type": "PLACEBO_COMPARATOR",
+     "description": "Phase1\uff1a Chemotherapy\uff1aProposed platinum-containing two-drug adjuvant chemotherapy, vincristine/paclitaxel/docetaxel/pemetrexed/gemcitabine plus cisplatin/carboplatin within 8 weeks after surgery, according to CSCO guidelines (2022).\n\nPlacebo1 granules: oral granules, which the taste and smell are similar to experimental TCM granules and has no therapeutic effect , twice a day, every 21 days for 4 cycles.\n\nPhase 2\uff1aOne of the following agents may be selected after chemotherapy\uff1aNivolumab/Pembrolizumab/Durvalumab/Atezolizumab/ Camrelizumab/Dupilumab/Sintilimab/Tislelizumab.A total of 12 cycles will be performed or the patient will discontinue the drug due to intolerable toxic side effects.\n\nPlacebo2 granules: oral granules, which the taste and smell are similar to experimental TCM granules and has no therapeutic effect, twice a day, every 21 days for 12 cycles.",
+     "interventionNames": [
+      "Drug: chemotherapy plus TCM 1placebo &ICIs plus TCM2 placebo"
+     ]
+    }
+   ],
+   "interventions": [
+    {
+     "type": "DRUG",
+     "name": "chemotherapy plus TCM 1&ICIs plusTCM2",
+     "description": "In China,TCM herbs are given on the basis of the TCM syndrome differentiation as diagnosed by the TCM herbal specialist. Prescriptions formulated into granules origin from Professor Liu Jia-xiang and Xu Ling. Package of granules is made into two types with functions such as tonifying the stomach and nourishing the blood recipe, benefiting Qi Yin and detoxification and resolving masses recipe. The herbal treatment is adapted to the syndromes.\n\nChemotherapy\uff1aVincristine/paclitaxel/docetaxel/pemetrexed/gemcitabine plus cisplatin/carboplatin\uff1aadministrated for patients with NSCLC requiring post-operative adjuvant therapy.\n\nICIs\uff1aNivolumab/Pembrolizumab/Durvalumab/Atezolizumab/ Camrelizumab/Dupilumab/Sintilimab/Tislelizumab\uff1aadministrated for patients with NSCLC requiring post-operative adjuvant therapy.",
+     "armGroupLabels": [
+      "chemotherapy plus TCM 1&ICIs plusTCM2"
+     ]
+    },
+    {
+     "type": "DRUG",
+     "name": "chemotherapy plus TCM 1placebo &ICIs plus TCM2 placebo",
+     "description": "Chemotherapy\uff1aVincristine/paclitaxel/docetaxel/pemetrexed/gemcitabine plus cisplatin/carboplatin\uff1aadministrated for patients with NSCLC requiring post-operative adjuvant therapy.\n\nICIs\uff1aNivolumab/Pembrolizumab/Durvalumab/Atezolizumab/ Camrelizumab/Dupilumab/Sintilimab/Tislelizumab\uff1aadministrated for patients with NSCLC requiring post-operative adjuvant therapy.",
+     "armGroupLabels": [
+      "chemotherapy plus TCM 1 placebo&ICIs plus TCM2 placebo"
+     ]
+    }
+   ]
+  },
+  "outcomesModule": {
+   "primaryOutcomes": [
+    {
+     "measure": "Disease-free Survival(DFS)",
+     "description": "Time from patient enrollment to date of objective tumour recurrence from any cause.",
+     "timeFrame": "5 years"
+    }
+   ],
+   "secondaryOutcomes": [
+    {
+     "measure": "Overall Survival(OS)",
+     "description": "The time from patient enrollment to date of any documented death from any cause.",
+     "timeFrame": "5 years"
+    },
+    {
+     "measure": "Quality of Life Measurement Scale (EORTC QLQ-C30)",
+     "description": "EORTC QLQ-C30 is assessed using and developed by the European Organzation for Research and Treatment of Cancer\uff08EORTC\uff09.QOL is evaluated by comparing changes in the quality of life scales before enrollment and every 1 month after treatment.The maximum score of QLQ-C30 scale is 100 and the minimum score is 0.Higher scores in functional areas and overall health represent better quality of life.Higher scores in the symptom area mean poorer quality of life.",
+     "timeFrame": "5 years"
+    },
+    {
+     "measure": "Quality of Life Measurement Specific Module Scale for Patients with Lung Cancer (EORTC QLQ-LC13)",
+     "description": "QOL is evaluated by comparing changes in the quality of life scales before enrollment and every 1 month after treatment.The maximum score of QLQ-LC13 scale is 100 and the minimum score is 0.Higher scores mean poorer quality of life.",
+     "timeFrame": "5 years"
+    },
+    {
+     "measure": "TCM Symptoms Changes",
+     "description": "TCM symptoms changes are according to the lung cancer symptom classification quantization table in \"Guiding Principles for Clinical Research of Traditional Chinese Medicine in the Treatment of Lung Cancer (2002 Edition)\".\n\n1. Significant improvement: clinical syndrome scores decreased by\u2265 70%.\n2. Partial improvement: clinical syndrome scores decreased b\u226530%;\n3. No improvement: clinical syndrome scores no change, or change\\<30%;\n4. Exacerbation: clinical syndrome scores increases by\u226530%.",
+     "timeFrame": "5 years"
+    },
+    {
+     "measure": "Laboratory Indicator Evaluation Criteria",
+     "description": "Refer to the \"Guidelines for Clinical Research of New Drugs in Traditional Chinese Medicine (Trial)\" (China Medical Science and Technology Press, 2002) to develop evaluation criteria:\n\nImprove: Any increase after treatment is \u226510% before treatment, or from abnormal to normal; Decrease: Anyone who falls \u226510% after treatment or changes from normal to abnormal after treatment; Stable: Anyone who rises or falls less than 10% after treatment compared with before treatment.",
+     "timeFrame": "5 years"
+    },
+    {
+     "measure": "Circulating Exosome PD-L1",
+     "description": "The circulating exosome PD-L1 evaluation will be measured before treatment, during chemotherapy, before immunotherapy, during immunotherapy, after treatment, and every 6 months during the follow-up period.",
+     "timeFrame": "5 years"
+    },
+    {
+     "measure": "Molecular Residual Disease Circulating Tumor DNA(ctDNA-MRD)",
+     "description": "The ctDNA-MRD evaluation will be measured before treatment, during chemotherapy, before immunotherapy, during immunotherapy, after treatment, and every 6 months during the follow-up period.",
+     "timeFrame": "5 years"
+    },
+    {
+     "measure": "Safety Assessment Evaluated According to Common Toxicity Criteria",
+     "description": "Percentage of Participants with Adverse Events. Safety assessment is evaluated according to common terminology criteria for adverse events(CTCAE) 5.0.",
+     "timeFrame": "5 years"
+    }
+   ]
+  },
+  "eligibilityModule": {
+   "eligibilityCriteria": "Inclusion Criteria:\n\n1. Patients who underwent complete surgical resection (R0) with postoperative pathology confirmed as stage Ib to IIIb non-small cell lung cancer.\n2. Patients whose tissue or blood specimens tested negative for driver genes.\n3. Patients who received their first chemotherapy within 8 weeks postoperatively.\n4. Age \u2265 18 years \u2264 74 years, regardless of gender.\n5. Eastern Cooperative Oncology Group performance status (ECOG PS) \u2264 2 points.\n6. absolute neutrophil value \\>1.5\u00d7109 /L, platelet count \\>80\u00d7109 /L, hemoglobin \\>90mg/dL; no abnormal liver and kidney function test results.\n7. Understand and agree to participate in this study and sign the informed consent form.\n\nExclusion Criteria:\n\n1. Having unresectable or metastatic disease, pathology reports without a clear pathological diagnosis, showing the presence of residual lesions at the microscopic surgical margins, and surgical residual lesions.\n2. Any medical condition with a life expectancy of less than 5 years, except for risk of recurrent lung cancer.\n3. Current malignant disease or history of malignant disease (except resected NSCLC), combined with serious diseases of the heart, liver, kidney and hematopoietic system, diagnosed and/or requiring treatment within the past three years.\n4. With a history of psychiatric disorders that are not easily controlled.\n5. Patients who are pregnant or lactating.\n6. Patients who are allergic to therapeutic drugs.",
+   "healthyVolunteers": false,
+   "sex": "ALL",
+   "minimumAge": "18 Years",
+   "maximumAge": "74 Years",
+   "stdAges": [
+    "ADULT",
+    "OLDER_ADULT"
+   ]
+  },
+  "contactsLocationsModule": {
+   "centralContacts": [
+    {
+     "name": "Ling Xu, MD & PhD",
+     "role": "CONTACT",
+     "phone": "86+021-65161782-1662",
+     "email": "xulq67@aliyun.com"
+    }
+   ],
+   "overallOfficials": [
+    {
+     "name": "Ling Ling, MD & PhD",
+     "affiliation": "Shanghai University of Traditional Chinese Medicine",
+     "role": "PRINCIPAL_INVESTIGATOR"
+    }
+   ],
+   "locations": [
+    {
+     "facility": "YueYang Hosptial of Intergrated Traditional Chinese and Western Medicine,Shanghai University of Traditional Chinese Medicine",
+     "status": "RECRUITING",
+     "city": "Shanghai",
+     "state": "Shanghai Municipality",
+     "zip": "200437",
+     "country": "China",
+     "contacts": [
+      {
+       "name": "Yin",
+       "role": "CONTACT",
+       "phone": "86+021-65161782-6160",
+       "email": "yyyyllwyh@163.com"
+      }
+     ],
+     "geoPoint": {
+      "lat": 31.22222,
+      "lon": 121.45806
+     }
+    }
+   ]
+  }
+ },
+ "derivedSection": {
+  "miscInfoModule": {
+   "versionHolder": "2026-10-23"
+  },
+  "conditionBrowseModule": {
+   "meshes": [
+    {
+     "id": "D008175",
+     "term": "Lung Neoplasms"
+    },
+    {
+     "id": "D002289",
+     "term": "Carcinoma, Non-Small-Cell Lung"
+    }
+   ],
+   "ancestors": [
+    {
+     "id": "D012142",
+     "term": "Respiratory Tract Neoplasms"
+    },
+    {
+     "id": "D013899",
+     "term": "Thoracic Neoplasms"
+    },
+    {
+     "id": "D009371",
+     "term": "Neoplasms by Site"
+    },
+    {
+     "id": "D009369",
+     "term": "Neoplasms"
+    },
+    {
+     "id": "D008171",
+     "term": "Lung Diseases"
+    },
+    {
+     "id": "D012140",
+     "term": "Respiratory Tract Diseases"
+    },
+    {
+     "id": "D002283",
+     "term": "Carcinoma, Bronchogenic"
+    },
+    {
+     "id": "D001984",
+     "term": "Bronchial Neoplasms"
+    }
+   ]
+  },
+  "interventionBrowseModule": {
+   "meshes": [
+    {
+     "id": "D004358",
+     "term": "Drug Therapy"
+    }
+   ],
+   "ancestors": [
+    {
+     "id": "D013812",
+     "term": "Therapeutics"
+    }
+   ]
+  }
+ },
+ "hasResults": false
+}
