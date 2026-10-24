@@ -1,0 +1,89 @@
+# Narrator evaluation set (design Q20): plans run once against live ClinicalTrials.gov, so the
+# narrator writes titles from real fact sheets. Kept narrow, so they fetch few pages.
+
+- id: N-01
+  question: How are pembrolizumab trials in melanoma distributed across phases?
+  plan:
+    scope: in_scope
+    intent: distribution
+    chart_type: bar_chart
+    filters: {drugs: [pembrolizumab], conditions: [melanoma]}
+    dimension: phase
+- id: N-02
+  question: How many nivolumab trials started each year from 2015 to 2024?
+  plan:
+    scope: in_scope
+    intent: trend
+    chart_type: time_series
+    filters: {drugs: [nivolumab], start_year_min: 2015, start_year_max: 2024}
+    dimension: start_year
+- id: N-03
+  question: Compare phases for melanoma trials involving pembrolizumab vs nivolumab.
+  plan:
+    scope: in_scope
+    intent: comparison
+    chart_type: grouped_bar_chart
+    groups:
+      - {label: Pembrolizumab, filters: {drugs: [pembrolizumab], conditions: [melanoma]}}
+      - {label: Nivolumab, filters: {drugs: [nivolumab], conditions: [melanoma]}}
+    dimension: phase
+- id: N-04
+  question: Which countries have the most recruiting lung cancer trials?
+  plan:
+    scope: in_scope
+    intent: geographic
+    chart_type: bar_chart
+    filters: {conditions: [lung cancer], statuses: [RECRUITING]}
+    dimension: country
+    options: {top_n: 10}
+- id: N-05
+  question: How many glioblastoma trials are recruiting?
+  plan:
+    scope: in_scope
+    intent: single_number
+    chart_type: metric
+    filters: {conditions: [glioblastoma], statuses: [RECRUITING]}
+- id: N-06
+  question: What is the distribution of enrollment in phase 3 asthma trials?
+  plan:
+    scope: in_scope
+    intent: numeric_distribution
+    chart_type: histogram
+    filters: {conditions: [asthma], phases: [PHASE3]}
+    dimension: enrollment
+- id: N-07
+  question: Show a network of sponsors and drugs for phase 3 multiple myeloma trials.
+  plan:
+    scope: in_scope
+    intent: network
+    chart_type: network_graph
+    filters: {conditions: [multiple myeloma], phases: [PHASE3]}
+    dimension: sponsor
+    dimension_2: drug
+- id: N-08
+  question: How many lead sponsors ran 3 or more pembrolizumab trials in each year from 2015 to 2020?
+  plan:
+    scope: in_scope
+    intent: trend
+    chart_type: time_series
+    filters: {drugs: [pembrolizumab], start_year_min: 2015, start_year_max: 2020}
+    dimension: start_year
+    measure: distinct_count
+    options: {count_entity: sponsor, min_trials: 3}
+- id: N-09
+  question: Show semaglutide trials by recruitment status.
+  plan:
+    scope: in_scope
+    intent: distribution
+    chart_type: bar_chart
+    filters: {drugs: [semaglutide]}
+    dimension: status
+- id: N-10
+  question: What is the total enrollment by phase for sickle cell disease trials?
+  plan:
+    scope: in_scope
+    intent: distribution
+    chart_type: bar_chart
+    filters: {conditions: [sickle cell disease]}
+    dimension: phase
+    measure: total_enrollment

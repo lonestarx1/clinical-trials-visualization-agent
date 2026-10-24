@@ -1,4 +1,4 @@
-.PHONY: up down logs test test-db test-live test-e2e test-web lint fmt infra-bootstrap infra-plan infra-apply deploy infra-destroy
+.PHONY: up down logs test test-db test-live test-e2e test-web eval bakeoff lint fmt infra-bootstrap infra-plan infra-apply deploy infra-destroy
 
 BACKEND := cd backend &&
 TEST_DB := postgresql+asyncpg://ctviz:ctviz@127.0.0.1:5433/ctviz_test
@@ -29,11 +29,17 @@ test-live: ## Live ClinicalTrials.gov checks (about 25 throttled calls)
 test-e2e: ## Acceptance tests against the running stack (real API and AI)
 	$(BACKEND) uv run pytest -m e2e
 
+eval: ## AI evaluation set with the configured models (real OpenAI calls; ARGS="--runs 3 --label baseline")
+	$(BACKEND) uv run python -m evals.run $(ARGS)
+
+bakeoff: ## Model bake-off: every design Q20 candidate per stage, 3 runs per case (real OpenAI calls)
+	$(BACKEND) uv run python -m evals.run --bakeoff --runs 3 --label model-selection $(ARGS)
+
 test-web: ## Frontend: typecheck + adapter tests
 	cd frontend && npm run typecheck && npm test
 
 lint:
-	$(BACKEND) uv run ruff check . && uv run ruff format --check . && uv run mypy app
+	$(BACKEND) uv run ruff check . && uv run ruff format --check . && uv run mypy app evals
 
 fmt:
 	$(BACKEND) uv run ruff format . && uv run ruff check --fix .

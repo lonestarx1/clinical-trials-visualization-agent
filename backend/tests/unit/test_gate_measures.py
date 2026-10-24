@@ -67,6 +67,29 @@ def test_trials_per_sponsor_is_not_a_sponsor_count(query: str) -> None:
     assert result.errors == []
 
 
+@pytest.mark.parametrize(
+    ("dimension", "dimension_2"), [("enrollment", "site_count"), ("site_count", "enrollment")]
+)
+def test_the_number_of_sites_per_trial_is_not_a_site_count(
+    dimension: str, dimension_2: str
+) -> None:
+    """Found by the AI eval (B-04): a scatter of enrollment against each trial's number of
+    sites was rejected three times, and the planner gave up with a refusal."""
+    plan = {
+        "scope": "in_scope",
+        "intent": "numeric_relationship",
+        "chart_type": "scatter_plot",
+        "filters": {"conditions": ["COVID-19"], "phases": ["PHASE3"]},
+        "dimension": dimension,
+        "dimension_2": dimension_2,
+    }
+    query = (
+        "Is there a relationship between enrollment and the number of sites in phase 3 "
+        "COVID-19 trials?"
+    )
+    assert gate(query, plan).errors == []
+
+
 def test_out_of_scope_plans_are_not_checked_for_the_measure() -> None:
     plan = TREND | {"scope": "out_of_scope", "scope_reason": "no such measure"}
     assert gate(SCREENSHOT, plan).errors == []
