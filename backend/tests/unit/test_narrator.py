@@ -148,3 +148,28 @@ def test_no_share_of_total_for_comparisons() -> None:
     facts = fact_sheet(plan, result.visualization, result.meta)
     assert "share_of_max" not in facts
     assert facts["max_group"] in ("A", "B")
+
+
+def test_fact_sheet_for_a_network() -> None:
+    plan = QueryPlan.model_validate(
+        {
+            "scope": "in_scope",
+            "intent": "network",
+            "chart_type": "network_graph",
+            "dimension": "drug",
+        }
+    )
+    result = build_chart(plan, [(None, STUDIES)], now_year=2026)
+    facts = fact_sheet(plan, result.visualization, result.meta)
+    assert (facts["n_nodes"], facts["n_edges"], facts["total"]) == ("15", "29", "5")
+    assert (facts["top_node"], facts["top_node_degree"]) == ("pembrolizumab", "14")
+    assert facts["strongest_link"].count(" - ") == 1
+    assert (
+        _check_for(plan, result, "{n_nodes} drugs, {n_edges} links; {top_node} is most connected.")
+        == []
+    )
+
+
+def _check_for(plan: QueryPlan, result: Any, template: str) -> list[str]:
+    facts = fact_sheet(plan, result.visualization, result.meta)
+    return check_text(template, facts, plan, result.visualization, max_length=200)

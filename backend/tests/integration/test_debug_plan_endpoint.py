@@ -133,3 +133,11 @@ def test_mostly_estimated_years_are_flagged() -> None:
     plan = PA3 | {"intent": "trend", "chart_type": "time_series", "dimension": "start_year"}
     warnings = post({"plan": plan}).json()["meta"]["warnings"]
     assert warnings == ["Most trials in 2026 have estimated (planned) dates."]
+
+
+def test_network_plans_run_end_to_end() -> None:
+    plan = PA3 | {"intent": "network", "chart_type": "network_graph", "dimension": "drug"}
+    body = post({"plan": plan}).json()
+    assert body["visualization"]["type"] == "network_graph"
+    assert body["meta"]["network"]["edges"] == 29
+    assert body["meta"]["warnings"] == []
