@@ -138,8 +138,11 @@ def test_mesh_terms_without_a_drug_intervention_are_ignored() -> None:
     assert keys("future_start", "drug") == ["dabrafenib", "trametinib", "pembrolizumab"]
 
 
+def test_mesh_terms_also_match_other_names() -> None:
+    assert keys("multi_phase", "drug") == ["vactosertib"]  # name TEW-7197, otherNames vactosertib
+
+
 def test_drugs_without_a_matching_mesh_term_keep_their_cleaned_name() -> None:
-    assert keys("multi_phase", "drug") == ["tew-7197"]  # MeSH says vactosertib: no shared word
     assert keys("missing_start", "drug")[0] == "individual patient tcr transduced pbl"
 
 
