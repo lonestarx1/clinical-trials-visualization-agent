@@ -1,6 +1,6 @@
 # Design Q10: Missing, Partial and Estimated Values
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 Principle: **nothing is silently dropped.** Every excluded trial is counted and explained in `meta.excluded`, as a list of `{reason, count}`.
 

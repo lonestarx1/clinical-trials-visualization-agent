@@ -1,6 +1,6 @@
 # Design Q16: Database Schema (Postgres)
 
-Status: **Decided** (2026-10-24, approved by the user; `llm_usage` added on the user's request)
+Status: **Decided** (2026-10-24)
 
 Postgres is the only datastore (Q8, Q15). It holds the API response cache, plan cache, results + citations, background jobs, traces, and data versions. The exact DDL is generated from SQLAlchemy models + Alembic migrations during implementation and must match this design.
 

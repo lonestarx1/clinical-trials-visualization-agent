@@ -1,6 +1,6 @@
 # Design Q6: How We Get the Data (retrieval strategy)
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Decisions
 

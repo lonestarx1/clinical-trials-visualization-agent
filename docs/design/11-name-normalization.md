@@ -1,6 +1,6 @@
 # Design Q11: Name Normalisation
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Principle
 

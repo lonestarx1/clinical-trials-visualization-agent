@@ -1,6 +1,6 @@
 # Design Q14: Deep Citations
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## What a citation proves
 

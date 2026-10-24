@@ -1,6 +1,6 @@
 # Design Q5: Structured Request Fields and How They Merge with the Question
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Fields (PDF names; entity fields accept a string or a list = OR)
 

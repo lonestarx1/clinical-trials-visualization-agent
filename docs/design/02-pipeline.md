@@ -1,6 +1,6 @@
 # Design Q2: Overall Pipeline
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Stages
 

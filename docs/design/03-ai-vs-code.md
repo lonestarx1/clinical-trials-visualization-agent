@@ -1,6 +1,6 @@
 # Design Q3: What the AI Decides vs What Code Decides
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Rule of thumb
 

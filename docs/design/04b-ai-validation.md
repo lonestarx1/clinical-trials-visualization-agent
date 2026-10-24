@@ -1,6 +1,6 @@
 # Design Q4b: Validating AI Output (plan, title)
 
-Status: **Decided** (2026-10-24, with the user). All 9 checks adopted. **Revised** the same day: the AI summary was removed (see [the revision](#revision-2026-10-24-the-ai-summary-is-removed) below).
+Status: **Decided** (2026-10-24). All 9 checks adopted. **Revised** the same day: the AI summary was removed (see [the revision](#revision-2026-10-24-the-ai-summary-is-removed) below).
 
 The AI produces exactly two things: the **QueryPlan** (planning agent) and the chart **title** (narration). Each one passes through code checks before it's used. (The first version also had the AI write a one-sentence **summary**; that was removed.)
 

@@ -1,6 +1,6 @@
 # Design Q15: Code Structure, Stack, Agent Framework, Packaging
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Stack
 

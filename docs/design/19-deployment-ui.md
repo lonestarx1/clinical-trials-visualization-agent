@@ -1,6 +1,6 @@
 # Design Q19: Deployment and Demo UI
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Frontend (Next.js, one codebase for Docker Compose and Vercel)
 

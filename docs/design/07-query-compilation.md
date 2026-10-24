@@ -1,6 +1,6 @@
 # Design Q7: Compiling Plan Filters into API Searches
 
-Status: **Decided** (2026-10-24, with the user). Based on live-probe findings (`docs/api/live-probe.md` §3).
+Status: **Decided** (2026-10-24). Based on live-probe findings (`docs/api/live-probe.md` §3).
 
 ## Filter -> API mapping
 

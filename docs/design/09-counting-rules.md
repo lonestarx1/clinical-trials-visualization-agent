@@ -1,6 +1,6 @@
 # Design Q9: Counting Rules for Multi-Valued Fields
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 Live data shows most dimensions are multi-valued: 17% of pembrolizumab trials have 2 phases, trials have up to 54 drugs, 101 conditions and 1,660 sites (live-probe §5). Every dimension declares its counting rule in the registry, and every response states it in `meta`.
 
