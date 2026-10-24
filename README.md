@@ -233,3 +233,7 @@ All settings come from environment variables (or `.env`); only `OPENAI_API_KEY` 
 - [System design (Q1-Q21)](docs/design/README.md)
 - [Infrastructure and deployment](infra/README.md)
 - [Implementation plan](docs/implementation-plan.md)
+
+---
+
+Built by [Adriel](https://engineeradriel.com).
