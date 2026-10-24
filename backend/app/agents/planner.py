@@ -191,13 +191,14 @@ async def plan_request(
         for call in state["pending"]:
             started = time.perf_counter()
             output = await run_tool(call)
-            result.tool_calls.append(
-                {
-                    "tool": call.name,
-                    "ms": round((time.perf_counter() - started) * 1000),
-                    "ok": "error" not in output and output.get("accepted", True) is not False,
-                }
-            )
+            entry: dict[str, Any] = {
+                "tool": call.name,
+                "ms": round((time.perf_counter() - started) * 1000),
+                "ok": "error" not in output and output.get("accepted", True) is not False,
+            }
+            if output.get("errors") or output.get("error"):
+                entry["errors"] = output.get("errors") or [output["error"]]
+            result.tool_calls.append(entry)
             items.append(
                 {
                     "type": "function_call_output",
