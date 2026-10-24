@@ -157,6 +157,10 @@ def test_broad_questions_become_background_jobs(
     assert job["status"] == "succeeded", job
     assert job["result"]["visualization"]["type"] == "bar_chart"
     assert job["result"]["result_id"]
+    # The job's total adds the request's planning time to its own run (not the queue wait).
+    timings = job["result"]["meta"]["timings_ms"]
+    assert {"plan", "count", "retrieve", "aggregate", "total"} <= set(timings)
+    assert timings["total"] >= sum(v for k, v in timings.items() if k != "total")
 
 
 def test_daily_budget_is_enforced(client: tuple[TestClient, Models]) -> None:

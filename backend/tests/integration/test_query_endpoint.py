@@ -29,12 +29,20 @@ def _api_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "test-key-not-real")
 
 
-def post(body: dict[str, Any], guard: list[Any], planner: list[Any], narrator: list[Any]) -> Any:
+def post(
+    body: dict[str, Any],
+    guard: list[Any],
+    planner: list[Any],
+    narrator: list[Any],
+    *,
+    delay: float = 0.0,
+) -> Any:
+    """`delay` slows the guard and the planner, so the planning time is measurable."""
     app = create_app()
     ctgov, _ = recorded_client()
     llms = StageLLMs(
-        ScriptedLLM(*guard, stage="guard"),
-        ScriptedLLM(*planner, stage="planner"),
+        ScriptedLLM(*guard, stage="guard", delay=delay),
+        ScriptedLLM(*planner, stage="planner", delay=delay),
         ScriptedLLM(*narrator, stage="narrator"),
     )
     app.dependency_overrides[get_ctgov] = lambda: ctgov
@@ -150,6 +158,36 @@ def test_an_unsupported_measure_says_so_and_suggests_a_question() -> None:
         "reason": "average trial duration isn't a measure we can compute",
         "suggestion": "How are trial durations distributed for trials started since 2015?",
     }
+
+
+def test_total_time_counts_from_the_request_including_planning() -> None:
+    response, _ = post(
+        QUESTION, [OK], [calls(("submit_plan", {"plan": PA3}))], [NARRATION], delay=0.15
+    )
+    timings = response.json()["meta"]["timings_ms"]
+    stages = ("plan", "count", "retrieve", "aggregate", "narrate")
+    assert set(timings) == {*stages, "total"}
+    assert timings["plan"] >= 150  # the guard and the planner run side by side
+    assert timings["total"] >= sum(timings[s] for s in stages)
+
+
+def test_out_of_scope_reports_its_planning_time() -> None:
+    plan = {
+        "scope": "out_of_scope",
+        "scope_reason": "asks whether a drug works",
+        "intent": "single_number",
+        "chart_type": "metric",
+    }
+    response, _ = post(
+        {"query": "Does pembrolizumab work?"},
+        [OK],
+        [calls(("submit_plan", {"plan": plan}))],
+        [],
+        delay=0.15,
+    )
+    timings = response.json()["meta"]["timings_ms"]
+    assert set(timings) == {"plan", "total"}
+    assert timings["total"] >= timings["plan"] >= 150
 
 
 def test_narration_failure_falls_back_to_the_template() -> None:
