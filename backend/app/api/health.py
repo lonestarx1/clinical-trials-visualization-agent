@@ -3,7 +3,7 @@ from functools import partial
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.ctgov.client import CtgovClient, CtgovError, VersionInfo
 from app.store.db import check_database
@@ -15,14 +15,22 @@ DataVersion = Callable[[], Awaitable[VersionInfo]]
 
 
 class HealthChecks(BaseModel):
-    database: Literal["ok", "error"]
-    ctgov: Literal["ok", "error"]
+    database: Literal["ok", "error"] = Field(description="Postgres answers a query.")
+    ctgov: Literal["ok", "error"] = Field(
+        description="ClinicalTrials.gov answers its version endpoint. Reported only: it "
+        "does not change `status`."
+    )
 
 
 class Health(BaseModel):
-    status: Literal["ok", "unavailable"]
-    checks: HealthChecks
-    data_timestamp: str | None  # ClinicalTrials.gov data version (cached /version)
+    status: Literal["ok", "unavailable"] = Field(
+        description="`ok` when the database is reachable, else `unavailable` (with 503)."
+    )
+    checks: HealthChecks = Field(description="Result of each check.")
+    data_timestamp: str | None = Field(  # ClinicalTrials.gov data version (cached /version)
+        description="ClinicalTrials.gov data version; null when it cannot be reached.",
+        examples=["2026-10-23T09:00:04"],
+    )
 
 
 async def _unavailable() -> bool:
