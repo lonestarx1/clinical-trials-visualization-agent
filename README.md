@@ -70,7 +70,7 @@ Language models are good at reading questions and bad at counting. This project 
 - **Results:** all 9 example questions from the assignment's appendix pass end to end against live data.
 - **Deployment:** Kubernetes (k3s) on AWS, defined in Terraform.
 
-**Planned:** a measured evaluation set for the AI stages and a model bake-off per stage. The current models are starting defaults. See [how it was built](docs/implementation-plan.md#whats-planned).
+**Planned:** a measured evaluation set for the AI stages and a model bake-off per stage. The current models are starting defaults. Later, once the agents can change things or other agents call the API, task-scoped authorization with [Tenuo](https://tenuo.ai/). See [how it was built](docs/implementation-plan.md#whats-planned).
 
 ## Web app
 
