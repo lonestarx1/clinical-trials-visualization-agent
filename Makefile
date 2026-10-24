@@ -1,7 +1,7 @@
 .PHONY: up down logs test test-db test-live test-e2e test-web lint fmt
 
 BACKEND := cd backend &&
-LOCAL_DB := postgresql+asyncpg://ctviz:ctviz@127.0.0.1:5433/ctviz
+TEST_DB := postgresql+asyncpg://ctviz:ctviz@127.0.0.1:5433/ctviz_test
 
 up: ## Build and start the stack, wait until healthy
 	@test -f .env || (echo "Missing .env: cp .env.example .env and set OPENAI_API_KEY" && exit 1)
@@ -18,9 +18,10 @@ logs:
 test: ## Offline tests (no network, no AI)
 	$(BACKEND) uv run pytest
 
-test-db: ## Database tests against the Compose Postgres
+test-db: ## Database tests against the Compose Postgres (own database: the app's workers would take test jobs)
 	docker compose up -d --wait postgres
-	$(BACKEND) DATABASE_URL=$(LOCAL_DB) uv run pytest -m db
+	docker compose exec -T postgres sh -c 'psql -U ctviz -d ctviz -tAc "select 1 from pg_database where datname = '"'"'ctviz_test'"'"'" | grep -q 1 || createdb -U ctviz ctviz_test'
+	$(BACKEND) DATABASE_URL=$(TEST_DB) uv run pytest -m db
 
 test-live: ## Live ClinicalTrials.gov checks (about 25 throttled calls)
 	$(BACKEND) uv run pytest -m live
