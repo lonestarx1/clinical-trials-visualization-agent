@@ -2,11 +2,13 @@
 
 import logging
 import uuid
+from http import HTTPStatus
 from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.agents.guard import SafetyCheckUnavailable
 from app.ctgov.client import CtgovBadRequest, CtgovUnavailable, InconsistentResults
@@ -66,17 +68,43 @@ def error_body(exc: Exception, trace_id: str) -> dict[str, Any]:
 
 
 def error_response(
-    status: int, code: str, message: str, details: Any = None, trace_id: str | None = None
+    status: int,
+    code: str,
+    message: str,
+    details: Any = None,
+    trace_id: str | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     trace_id = trace_id or str(uuid.uuid4())
     body = {"error": {"code": code, "message": message, "details": details, "trace_id": trace_id}}
-    return JSONResponse(status_code=status, content=body)
+    return JSONResponse(status_code=status, content=body, headers=headers)
 
 
 async def _invalid(request: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, RequestValidationError)
     details = [{"loc": [str(p) for p in err["loc"]], "msg": err["msg"]} for err in exc.errors()]
     return error_response(422, "invalid_request", "The request is not valid.", details)
+
+
+_HTTP_MESSAGES = {
+    401: "Authentication required.",
+    404: "Not found.",
+    405: "Method not allowed.",
+}
+
+
+async def _http(request: Request, exc: Exception) -> JSONResponse:
+    """Routing and auth errors (unknown path 404, wrong method 405, 401): the same body.
+
+    The code is the status phrase in snake_case (`not_found`, `method_not_allowed`,
+    `unauthorized`); the framework's own detail ("Not Found") is replaced by a sentence.
+    """
+    assert isinstance(exc, StarletteHTTPException)
+    status = HTTPStatus(exc.status_code)
+    code = status.phrase.lower().replace(" ", "_").replace("-", "_")
+    message = _HTTP_MESSAGES.get(exc.status_code, f"{status.phrase}.")
+    headers = dict(exc.headers) if exc.headers else None
+    return error_response(exc.status_code, code, message, headers=headers)
 
 
 async def _upstream(request: Request, exc: Exception) -> JSONResponse:
@@ -119,6 +147,7 @@ def install_error_handlers(app: FastAPI) -> None:
     for kind in (NotFound, Expired, TooManyJobs, BudgetExceeded):
         app.add_exception_handler(kind, _known)
     app.add_exception_handler(RequestValidationError, _invalid)
+    app.add_exception_handler(StarletteHTTPException, _http)
     app.add_exception_handler(CtgovUnavailable, _upstream)
     app.add_exception_handler(InconsistentResults, _upstream)
     app.add_exception_handler(RejectedByPolicy, _rejected)
