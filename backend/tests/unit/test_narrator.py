@@ -74,6 +74,14 @@ def test_evaluative_claims_are_banned(word: str) -> None:
     assert any(word in e for e in _check(f"Phase 2 looks {word}."))
 
 
+@pytest.mark.parametrize(
+    "template", ["{facts.total} trials.", "{max value} trials.", "{} trials.", "{total"]
+)
+def test_malformed_placeholders_are_rejected(template: str) -> None:
+    """Found in a live run: the model wrote {facts.min_bucket}, which went out unrendered."""
+    assert any("placeholder" in e for e in _check(template))
+
+
 def test_unknown_placeholders_and_length() -> None:
     assert any("unknown placeholder" in e for e in _check("{nonsense} trials."))
     assert any("too long" in e for e in _check("x" * 201))
