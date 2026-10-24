@@ -85,9 +85,9 @@ async def ids(sessions: Sessions, s: Search) -> set[str]:
         ({"sponsor_classes": ["NIH"]}, {"NCT2"}),
         ({"age_groups": ["CHILD"]}, {"NCT4"}),
         ({"sexes": ["FEMALE"]}, {"NCT3"}),
-        # Measured (live cross-check): the API's AREA[Sex]ALL matches every trial.
-        ({"sexes": ["ALL"]}, {"NCT1", "NCT2", "NCT3", "NCT4", "NCT5"}),
-        ({"sexes": ["ALL"], "phases": ["PHASE1"]}, {"NCT3"}),
+        # "ALL" means open to all sexes: the compiler quotes it, as the API needs (live probe).
+        ({"sexes": ["ALL"]}, {"NCT1", "NCT2", "NCT4", "NCT5"}),
+        ({"sexes": ["ALL"], "phases": ["PHASE1"]}, set()),
         ({"healthy_volunteers": True}, {"NCT1"}),
         ({"healthy_volunteers": False}, {"NCT4"}),
         ({"has_results": True}, {"NCT2"}),
