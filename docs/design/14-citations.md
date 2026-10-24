@@ -19,7 +19,7 @@ Every number in a chart is backed by the trials that produced it. For each trial
 }
 ```
 
-- `excerpt` keeps the PDF's key name and is the **raw API value, copied exactly**. It's never summarised or produced by the AI.
+- `excerpt` keeps the assignment's key name and is the **raw API value, copied exactly**. It's never summarised or produced by the AI.
 - `field` is the JSON path of that value in the API record.
 - **Network edges** have **two** evidence items (one per end), e.g. `leadSponsor.name` + an intervention MeSH term.
 - **Enrollment measures** add `designModule.enrollmentInfo.count` (+ `type`).

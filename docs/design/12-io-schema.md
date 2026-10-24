@@ -7,7 +7,7 @@ Status: **Decided** (2026-10-24). The detailed field-level schema is generated f
 **Our own schema, in Vega-Lite style**, not real Vega-Lite specs.
 
 - **Why our own:** Vega-Lite can't express network graphs. With our own schema, every chart type, including networks, shares one consistent envelope, and we control citations, metadata and versioning.
-- **Why Vega-Lite style:** the channel names (`x`, `y`, `color`) and field descriptors (`field`, `type`) are familiar to frontend engineers. The PDF example uses the same idea (`encoding.x.field`).
+- **Why Vega-Lite style:** the channel names (`x`, `y`, `color`) and field descriptors (`field`, `type`) are familiar to frontend engineers. The assignment's example uses the same idea (`encoding.x.field`).
 - Considered: emitting real Vega-Lite for the non-network charts. Rejected for now (two formats to maintain); a Vega-Lite **export** for non-network charts is listed as future work.
 
 ## Endpoints
@@ -89,7 +89,7 @@ When `status` isn't `ok`, `visualization` is `null` and `meta` explains why (e.g
 | `metric` | `value` (quantitative, with `unit`) | `[{ "value": 2457, "label": "Recruiting breast cancer trials", "citations": [...] }]` |
 
 Notes:
-- Data rows are **flat records** whose keys are named in `encoding` (as in the PDF example). Exceptions: `network_graph` (nodes/edges) and `histogram` (fixed bin keys, declared in `encoding`).
+- Data rows are **flat records** whose keys are named in `encoding` (as in the assignment's example). Exceptions: `network_graph` (nodes/edges) and `histogram` (fixed bin keys, declared in `encoding`).
 - Field names are stable snake_case and are listed in `encoding`. The renderer never has to guess a key.
 - Citation format is decided in Q14.
 
