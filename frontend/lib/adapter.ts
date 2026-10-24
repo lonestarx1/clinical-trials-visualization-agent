@@ -192,7 +192,7 @@ export function toChart(viz: Visualization, theme: Theme = LIGHT): Chart {
             roam: true,
             draggable: true,
             top: 56, bottom: 16, left: 16, right: 16,
-            force: { repulsion: 180, edgeLength: [40, 130], gravity: 0.22, friction: 0.25 },
+            force: { repulsion: 320, edgeLength: [60, 170], gravity: 0.11, friction: 0.2 },
             categories: groups.map((g, i) => ({ name: name(g), itemStyle: { color: seriesColor(theme, i) } })),
             label: { position: "right", fontSize: 12, color: theme.ink },
             labelLayout: { hideOverlap: true },

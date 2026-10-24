@@ -131,7 +131,10 @@ describe("network legend", () => {
     if (chart.kind !== "echarts") throw new Error("expected echarts");
     const graph = (chart.option.series as any[])[0];
     expect(graph.top).toBeGreaterThanOrEqual(48);
-    expect(graph.force.gravity).toBeGreaterThanOrEqual(0.2);
+    // enough pull to stay in the card, enough push to keep labels apart (tuned on screenshots)
+    expect(graph.force.gravity).toBeGreaterThanOrEqual(0.08);
+    expect(graph.force.gravity).toBeLessThanOrEqual(0.15);
+    expect(graph.force.repulsion).toBeGreaterThanOrEqual(250);
   });
 });
 
