@@ -234,7 +234,7 @@ async def execute(
         chart, studies, retrieve_ms, aggregate_start = await _downloaded(
             prepared, ctgov, base_url, citations_per_datum, now, progress
         )
-    verify_citations(chart.visualization, studies)
+    await asyncio.to_thread(verify_citations, chart.visualization, studies)
     return await _finish_chart(prepared, chart, retrieve_ms, aggregate_start, stored, narrator)
 
 
@@ -272,15 +272,24 @@ async def _downloaded(
     retrieve_ms = _ms(retrieve_start)
 
     aggregate_start = time.perf_counter()
-    chart = build_chart(
-        plan,
-        [(s.group, r.studies) for s, r in zip(searches, results, strict=True)],
-        now_year=now.year,
-        citations_per_datum=citations_per_datum,
-    )
-    studies = {
-        s["protocolSection"]["identificationModule"]["nctId"]: s for r in results for s in r.studies
-    }
+
+    def aggregate() -> tuple[ChartResult, dict[str, dict[str, Any]]]:
+        chart = build_chart(
+            plan,
+            [(s.group, r.studies) for s, r in zip(searches, results, strict=True)],
+            now_year=now.year,
+            citations_per_datum=citations_per_datum,
+        )
+        studies = {
+            s["protocolSection"]["identificationModule"]["nctId"]: s
+            for r in results
+            for s in r.studies
+        }
+        return chart, studies
+
+    # CPU-bound (seconds for large questions): run it off the event loop so other requests
+    # keep being served. Threads share the GIL, but the loop still gets its turn every few ms.
+    chart, studies = await asyncio.to_thread(aggregate)
     return chart, studies, retrieve_ms, aggregate_start
 
 
