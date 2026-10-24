@@ -161,9 +161,7 @@ Never cut: input validation, the plan gate, narration checks, citation exactness
 
 - ~~An evaluation set for the AI stages and a model bake-off per stage.~~ **Done 2026-10-25** ([`docs/eval/`](eval/README.md), [Q20 results](design/20-model-selection.md#bake-off-results-2026-10-25)).
 - **A live end-to-end set of about 60 questions** ([Q18](design/18-testing.md)), with a report of the results. Today's end-to-end suite has 11.
-- **Remaining live checks against ClinicalTrials.gov:**
-  - whether every visible change to a trial updates its `LastUpdatePostDate` (which cache revalidation relies on);
-  - how `/stats/field/values` counts, and its 250-value cap.
+- ~~Remaining live checks against ClinicalTrials.gov (O4, O5).~~ **Done 2026-10-25** ([live probe §9-10](api/live-probe.md#9-statsfieldvalues-counting-and-the-250-value-cap-open-item-o4)).
 - **Task-scoped authorization with [Tenuo](https://tenuo.ai/), once the agents can change things.** Today the planner's four tools only read (option lists, trial counts, plan checks), and the schemas, the validation gate and the step cap already limit them, so Tenuo would duplicate those checks. It becomes worth adding when:
   - the API is offered to other agents, for example as an MCP server: a signed warrant per task could limit which questions a caller may ask, how many ClinicalTrials.gov pages a question may fetch, and for how long;
   - tools gain side effects, such as saving, exporting or sending a chart: each call would be checked against the task's warrant before it runs, so a prompt injection can't widen what's allowed.

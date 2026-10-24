@@ -187,3 +187,43 @@ No official limit is published (see contract §6), and we saw **no rate-limit he
 So the limit is about **10 requests per ~10 s window** (~60/min) per IP. **Concurrency is not limited**: a burst is fine as long as it stays inside the window. The `429` carries **no `Retry-After`** and no rate-limit headers. A count call takes ~0.35 s and a 1,000-trial page ~0.8-1.2 s.
 
 **What changed in the client:** 9 requests per 10 s (54 a minute), up to 9 at once (a sliding window, 10% under the measured limit), and a `429` without `Retry-After` waits 10 s instead of the 1 s first backoff. Measured on the live API, 16 count calls went from 22.8 s to 10.4 s, and 17 per-year counts from 24.3 s to 10.4 s.
+
+## 9. `/stats/field/values`: counting and the 250-value cap (open item O4)
+
+Measured 2026-10-25 (data timestamp `2026-10-23T09:00:04`, 608,415 studies), about 25 calls.
+
+| Field | Type | Unique values | `topValues` returned | Sum of counts | Missing |
+|---|---|---|---|---|---|
+| `Phase` | ENUM | 6 | 6 | 488,918 | 144,290 |
+| `OverallStatus` | ENUM | 14 | 14 | 608,415 | 0 |
+| `LeadSponsorClass` | ENUM | 9 | 9 | 607,427 | 988 |
+| `LocationCountry` | STRING | 226 | 226 | 787,289 | 61,012 |
+| `LeadSponsorName` | STRING | 52,529 | **250** | 241,288 | 0 |
+| `Condition` | STRING | 134,756 | **250** | 316,724 | 1,026 |
+
+**Counting:**
+- `studiesCount` is a number of **studies**, the same as a search. For `Phase` NA, PHASE2 and PHASE1, `OverallStatus` COMPLETED, UNKNOWN and RECRUITING, and `LeadSponsorClass` OTHER, INDUSTRY and OTHER_GOV, it equals `countTotal` for `AREA[field]value` exactly.
+- A study with several values counts once under each value. The phase counts plus the missing ones add up to 633,208, more than the 608,415 studies (multi-phase trials). The country counts add up to 787,289.
+- `missingStudiesCount` equals `AREA[field]MISSING` exactly.
+
+**The cap:** ENUM fields return every value. STRING fields return at most the **top 250** by count, so 52,529 lead sponsors come back as 250.
+
+**STRING values are raw strings, not search terms.** `Condition` "Breast Cancer" has 8,945 studies in the stats (that exact string), but the search `AREA[Condition]"Breast Cancer"` finds 15,214, because it also matches longer condition strings that contain the phrase. `LeadSponsorName` "GlaxoSmithKline" happens to agree (3,647 both ways).
+
+**Unscoped only:** adding a query parameter (`query.cond=melanoma`) returns `400`. The endpoint describes the whole registry, never a filtered subset.
+
+**What this means for strategy S1 (Q6):** S1 is exact, in one call, only for **unscoped questions over an ENUM field** (phase, status, sponsor class, study type and similar). It doesn't fit STRING fields (raw strings, top 250 only) or any question with a filter. S2 (one count per bucket) already answers those questions exactly at some calls' cost, so S1 stays unbuilt: it would only speed up a narrow set of questions.
+
+## 10. Does every change bump `LastUpdatePostDate`? (open item O5)
+
+**No, not for derived data.** Measured 2026-10-25:
+
+- **Derived data is rebuilt with every release.** Records last updated in December 2005 (e.g. NCT00145262, NCT00271141) carry `derivedSection.miscInfoModule.versionHolder` = `2026-10-23`, the current data version, while their `LastUpdatePostDate` stays 2005.
+- **Their MeSH terms are current.** NCT00145262, last updated in 2005, is tagged with the MeSH heading "Chronic Limb-Threatening Ischemia". Four trials last updated in January to May 2021 carry "Post-Acute COVID-19 Syndrome", a heading MeSH added in its 2022 edition (e.g. NCT04694768, last updated 2021-01-05, condition "Post COVID-19 Syndrome").
+
+So the registry re-maps conditions and interventions to MeSH, and recomputes other derived fields, **without bumping `LastUpdatePostDate`**. A condition or drug search (which uses the MeSH terms and their synonyms) can therefore gain or lose a trial that wasn't edited. The sponsor-submitted fields, such as status, phase and dates, are only changed by an update, which does bump the date.
+
+**What this means for revalidation (Q8):**
+- Check 1 (no trial changed since) can miss a re-mapped trial.
+- Check 2 (the total count is unchanged) still catches any re-mapping that changes the count, but not a swap where one trial leaves and another joins.
+- MeSH re-mapping is rare (mostly the yearly MeSH update), so the risk is small but real. The **7-day safety ceiling stays**: no stored answer is reused for more than 7 days without being recomputed.

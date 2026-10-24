@@ -67,7 +67,7 @@ The data-source interface (D6.6) makes this a contained change.
 
 | Strategy | When | Calls |
 |---|---|---|
-| **S1. Global stats** (`/stats/field/values`) | Unscoped, single categorical dimension (phase, status, country, sponsor class, ...) | 1 (**to verify:** counting semantics, top-250 cap) |
+| **S1. Global stats** (`/stats/field/values`) | Unscoped, single categorical dimension (phase, status, country, sponsor class, ...) | 1. **Checked live** ([live probe §9](../api/live-probe.md#9-statsfieldvalues-counting-and-the-250-value-cap-open-item-o4)): exact for ENUM fields only, unscoped only; STRING fields are raw strings, top 250. Not built: S2 covers these questions |
 | **S2. Count per bucket** (`countTotal` per category) | Categorical/time dimension with a known, bounded set of values, especially large scopes | one per bucket |
 | **S3. Fetch and aggregate** (minimal `fields`) | Everything that needs per-trial data: networks, histograms, scatter, enrollment measures, open-ended top-N, citations | one per 1,000 trials |
 
