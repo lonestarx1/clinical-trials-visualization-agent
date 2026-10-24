@@ -92,18 +92,19 @@ async def finish_run(
     upserted: int = 0,
     removed: int = 0,
     error: str | None = None,
+    data_timestamp: str | None = None,
 ) -> None:
-    await session.execute(
-        update(SyncRun)
-        .where(SyncRun.run_id == run_id)
-        .values(
-            status=status,
-            upserted=upserted,
-            removed=removed,
-            error=error,
-            finished_at=datetime.now(UTC),
-        )
-    )
+    """Close a run. `data_timestamp` replaces the run's when it caught up to newer data."""
+    values: dict[str, Any] = {
+        "status": status,
+        "upserted": upserted,
+        "removed": removed,
+        "error": error,
+        "finished_at": datetime.now(UTC),
+    }
+    if data_timestamp is not None:
+        values["data_timestamp"] = _ts(data_timestamp)
+    await session.execute(update(SyncRun).where(SyncRun.run_id == run_id).values(**values))
 
 
 async def last_success(session: AsyncSession) -> SyncRun | None:
