@@ -2,19 +2,44 @@
 
 Ask a question about clinical trials in plain words and get back a chart you can check. The backend turns the question into a structured, frontend-ready **visualization spec**, computed from live [ClinicalTrials.gov API](https://clinicaltrials.gov/data-api/api) data, with **citations for every data point**: the NCT ID plus the exact record field and value that put the trial there. A web app renders the specs and lets you click any bar, point or link to see the trials behind it.
 
-```
-POST /v1/query  {"query": "How are breast cancer trials distributed across phases?"}
--> 200 {"status": "ok", "visualization": {"type": "bar_chart", "title": ..., "encoding": ..., "data": [...]}, "meta": {...}}
-```
+## Live demo
 
-**Try it live**
+The whole system is deployed, so you can try it without installing anything:
 
 | | |
 |---|---|
-| Web app | https://trials.cheiron.engineeradriel.com |
-| API guide | https://trials.cheiron.engineeradriel.com/docs |
-| API | https://api.cheiron.engineeradriel.com |
-| API reference | [Swagger UI](https://api.cheiron.engineeradriel.com/docs) and [ReDoc](https://api.cheiron.engineeradriel.com/redoc) |
+| **Web app** | https://trials.cheiron.engineeradriel.com |
+| **API** | https://api.cheiron.engineeradriel.com |
+| **API docs, in the web app** | https://trials.cheiron.engineeradriel.com/docs shows how to call the API, with examples taken from recorded responses. The API also serves the full OpenAPI reference: [Swagger UI](https://api.cheiron.engineeradriel.com/docs) and [ReDoc](https://api.cheiron.engineeradriel.com/redoc). |
+| **Infrastructure** | Kubernetes (k3s) on AWS EC2, with a PostgreSQL database running in the cluster for this demo. Everything is defined in Terraform and Kustomize; see [Deployment](#deployment) and [`infra/`](infra/README.md). |
+| **Source code** | https://github.com/lonestarx1/clinical-trials-visualization-agent |
+
+**The git history shows how the project was built.** Nothing was squashed. Every change went through a pull request with small commits, in this order:
+
+1. Research and design: the requirements, the ClinicalTrials.gov API notes and the design questions, before any code.
+2. Milestones M0 to M5: skeleton, data layer, charts, AI stages, networks, storage and jobs, then the web app.
+3. Fixes found by testing against live data, the UI overhaul, deployment and the docs.
+
+Features follow test-driven development: a failing `test:` commit, then the `feat:` or `fix:` commit that makes it pass. Browse the [merged pull requests](https://github.com/lonestarx1/clinical-trials-visualization-agent/pulls?q=is%3Apr+is%3Amerged) or run `git log --reverse`.
+
+## Run it locally with Docker Compose
+
+Requirements: Docker with Compose v2, and an OpenAI API key.
+
+```bash
+cp .env.example .env    # then set OPENAI_API_KEY
+make up                 # same as: docker compose up -d --build --wait (postgres + api + web), then opens http://localhost:3000
+curl -s localhost:8000/v1/query -H 'Content-Type: application/json' \
+  -d '{"query": "How are breast cancer trials distributed across phases?"}'
+# -> {"status": "ok", "visualization": {"type": "bar_chart", "title": ..., "encoding": ..., "data": [...]}, "meta": {...}}
+```
+
+- Web app: http://localhost:3000 (questions can be shared as `?q=...` links)
+- API guide: http://localhost:3000/docs
+- Interactive API reference (OpenAPI): http://localhost:8000/docs
+- Stop with `make down`.
+
+![An answer: the question stays at the top, the chart below it, every bar traceable to its trials](docs/screenshots/answer.png)
 
 ## Why it's interesting
 
@@ -38,23 +63,6 @@ Language models are good at reading questions and bad at counting. This project 
 - **Deployment:** Kubernetes (k3s) on AWS, defined in Terraform.
 
 **Planned:** a measured evaluation set for the AI stages and a model bake-off per stage. The current models are starting defaults. See [how it was built](docs/implementation-plan.md#whats-planned).
-
-## Quick start
-
-Requirements: Docker with Compose v2, and an OpenAI API key.
-
-```bash
-cp .env.example .env    # then set OPENAI_API_KEY
-make up                 # builds and starts postgres + api + web, waits until healthy, opens http://localhost:3000
-curl -s localhost:8000/v1/query -H 'Content-Type: application/json' \
-  -d '{"query": "Which countries have the most recruiting trials for lung cancer?"}'
-```
-
-- Web app: http://localhost:3000 (questions can be shared as `?q=...` links)
-- API guide: http://localhost:3000/docs
-- Interactive API reference (OpenAPI): http://localhost:8000/docs
-
-![An answer: the question stays at the top, the chart below it, every bar traceable to its trials](docs/screenshots/answer.png)
 
 ## Web app
 
