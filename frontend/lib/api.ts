@@ -26,10 +26,19 @@ export async function postQuery(body: Record<string, unknown>): Promise<QueryOut
   return { kind: "result", response: await res.json() };
 }
 
-export async function getJob(jobId: string): Promise<JobStatus> {
-  const res = await fetch(`/api/v1/jobs/${jobId}`, { cache: "no-store" });
+export async function getJob(jobId: string, signal?: AbortSignal): Promise<JobStatus> {
+  const res = await fetch(`/api/v1/jobs/${jobId}`, { cache: "no-store", signal });
   if (!res.ok) throw new Error((await readError(res)).message);
   return res.json();
+}
+
+/** Cancel a background job (the Stop button). Best effort: the server stops it within a second. */
+export async function cancelJob(jobId: string): Promise<void> {
+  try {
+    await fetch(`/api/v1/jobs/${jobId}`, { method: "DELETE", keepalive: true });
+  } catch {
+    // Offline or the page is closing: the job runs on, and its answer is kept for a later ask.
+  }
 }
 
 export interface CitationPage {
