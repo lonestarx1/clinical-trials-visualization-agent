@@ -50,7 +50,7 @@ As designed in Q21: a `registry` schema in the app's Postgres, one row per trial
 
 - **First load:** 608,415 trials (2026-10-25), 609 pages, about 11 minutes at the limit. Page tokens make one search's pages strictly sequential, so the load runs as several searches sliced by `StartDate` range (plus trials with no start date), each paging on its own, so together they keep the limiter busy.
 - **Daily update:** only the trials that changed, after each new `dataTimestamp` (below).
-- **Removals:** compare the API's total count with the mirror's (one call). When they differ, find the removed trials by **bisection with count calls** (per start year, then per month) and list IDs only in the ranges that differ, instead of a 609-page ID pass.
+- **Removals and repairs:** compare the API's total count with the mirror's (one call). When they differ, compare the count of each start-year slice (34 count calls; measured, the slices add up to the API's total exactly) and list IDs only in the slices that differ: trials gone from the API are deleted, and trials the mirror lacks (changed without a new `LastUpdatePostDate`, O5) are fetched again with their slice. Splitting a differing year by month is a later refinement.
 - **Weekly full re-sync**, at night (~11 minutes at the full rate): a safety net for changes that don't bump `LastUpdatePostDate` (open item O5). Its diff against the daily updates measures how often that happens.
 
 ### The daily update
@@ -61,9 +61,9 @@ ClinicalTrials.gov publishes one update per weekday, and `/version` gives its `d
 |---|---|
 | **Detect** | A sync loop in the API process asks `/version` every 10 minutes (the client caches it that long anyway). A `dataTimestamp` newer than the mirror's starts a sync |
 | **Lock** | The sync takes a Postgres advisory lock, so only one runs at a time, even while a rolling update briefly runs two pods |
-| **Fetch** | `AREA[LastUpdatePostDate]RANGE[<date of the last successful sync - 1 day>,MAX]`, with the registry's fields: ~1,000 trials, one or two pages |
+| **Fetch** | `AREA[LastUpdatePostDate]RANGE[<start of the last successful sync - 3 days>,MAX]`, with the registry's fields: ~1,000 trials, one or two pages |
 | **Save** | Upsert the trials into `registry.trials`, in one transaction |
-| **Removals** | In the same transaction: if the mirror now has more trials than the API's total, find the removed ones by bisection (above) and delete them |
+| **Reconcile** | In the same transaction: if the mirror's total differs from the API's, compare the slices and fix the ones that differ (above) |
 | **Check** | The mirror's count must equal the API's total. Only then write the `sync_runs` row with the new `dataTimestamp`, and commit. That row is what marks the mirror as current |
 | **Fail** | Roll back, keep the previous `dataTimestamp`, record the failed run, and retry after 1, 5, 15, 30 and then every 60 minutes. Log an error when an update is still not synced 3 hours after it appeared |
 
@@ -71,7 +71,7 @@ ClinicalTrials.gov publishes one update per weekday, and `/version` gives its `d
 
 **While a sync runs:** `fast` answers only when the mirror's synced `dataTimestamp` equals the API's current one. From the moment new data appears until the sync commits (a few minutes per weekday), `fast` requests fall back to `live` with a note. No answer mixes the old data with the new.
 
-**Missed updates:** the fetch always starts from the last *successful* sync, with a day of overlap, so a missed day (a restart, an outage) is covered by the next run, and a rerun saves the same trials again harmlessly. If the last successful sync is more than 7 days old, a full load runs instead.
+**Missed updates:** the fetch always starts from the last *successful* sync, with three days of overlap (`LastUpdatePostDate` is a date, so the overlap is cheap insurance), so a missed day (a restart, an outage) is covered by the next run, and a rerun saves the same trials again harmlessly. If the last successful sync is more than 7 days old, a full load runs instead.
 
 **First load:** the same steps without the `LastUpdatePostDate` filter, in `StartDate` slices, committing page by page. The mirror is not marked current until every slice is done and the total matches. If a new update appears during the load, a daily update runs right after it, from the load's start date.
 
@@ -97,7 +97,7 @@ Everything else is **structured**: enum codes (`AREA[Phase]PHASE2`, `filter.over
 **Lifecycle:**
 
 - **Resolve**, on first use: page through the term with `fields=NCTId`. One request per 1,000 trials, but small and quick ones.
-- **Refresh**, when the set is older than the last sync: one call, `<term> AND AREA[LastUpdatePostDate]RANGE[<set's last refresh - 1 day>,MAX]`, with `fields=NCTId`. It returns which of the changed trials match now. The new set is the old set, minus every changed trial, plus that answer. Measured: "breast cancer" (16,765 trials) had 186 changes in a week, which is one page.
+- **Refresh**, when the set is older than the last sync: one call, `<term> AND AREA[LastUpdatePostDate]RANGE[<set's last refresh - 3 days>,MAX]`, with `fields=NCTId`. It returns which of the changed trials match now. The new set is the old set, minus every changed trial, plus that answer. Measured: "breast cancer" (16,765 trials) had 186 changes in a week, which is one page.
 - **Re-resolve** in full on a schedule (weekly, for sets in use) and whenever a check fails (see Part 3). The API's synonym and MeSH tables can change without any trial changing; NLM publishes MeSH once a year.
 - **Pre-warm** the terms people ask about most at night: the example questions, and the most frequent MeSH conditions and drugs in the mirror. Most questions then find their sets ready.
 
@@ -174,7 +174,7 @@ ClinicalTrials.gov's [Terms and Conditions](https://clinicaltrials.gov/about-sit
 ## Rollout
 
 1. **Terms of use:** done, see above.
-2. **Mirror ingestion:** the sync loop, first load, daily update, removals by bisection, then the weekly re-sync. Off by default (`MIRROR_SYNC_ENABLED`). Measure O5.
+2. **Mirror ingestion:** the sync loop, first load, daily update, reconciling by slice, then the weekly re-sync. Off by default (`MIRROR_SYNC_ENABLED`). Measure O5.
 3. **`to_sql` and the cross-check suite:** for every registry enum value and every year, the mirror count equals the live count; for a sample of terms, the term set equals the live ID list.
 4. **Term sets:** resolve, refresh, re-resolve, pre-warm.
 5. **Shadow first:** with `FAST_MODE_SHADOW` on, every question is answered `live`, and the `fast` answer is computed too and compared. Keep it on until the drift log stays empty for a week of daily updates.
