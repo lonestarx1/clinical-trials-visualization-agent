@@ -43,7 +43,7 @@ Every protective limit **exists, is configurable via environment variables, and 
 | ClinicalTrials.gov burst | `CTGOV_RATE_BURST` | 9 | At most this many starts in any `burst * 60 / rate` s (10 s) |
 | ClinicalTrials.gov concurrency | `CTGOV_MAX_CONCURRENCY` | 9 | Queueing |
 | ClinicalTrials.gov count cache | `CTGOV_COUNT_CACHE_SECONDS` | 600 | Count calls repeat; 0 turns it off |
-| Mirror sync ([Q22](22-term-sets.md)) | `MIRROR_SYNC_ENABLED` | false | When on, the API process loads and updates the `registry` mirror |
+| Mirror sync ([Q22](22-term-sets.md)) | `MIRROR_SYNC_ENABLED` | false (on in the k3s deployment) | When on, the API process loads and updates the `registry` mirror |
 | Mirror sync rate | `MIRROR_SYNC_RATE_PER_MIN` | 27 | The sync's cap, inside the shared ClinicalTrials.gov limiter: half the budget, so questions keep the rest |
 | Synchronous time budget (estimated duration) | `SYNC_MAX_SECONDS` | 60 s | Becomes a background job |
 | Planner step limit | `PLANNER_MAX_STEPS` | 6 | `could_not_interpret` |
