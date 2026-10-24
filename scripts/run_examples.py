@@ -25,9 +25,9 @@ EXAMPLES = [
     ("4-recruiting-countries", {
         "query": "Which countries have the most recruiting trials for lung cancer?",
         "citations_per_datum": 3}),
-    ("5-enrollment-histogram", {
-        "query": "What is the distribution of enrollment sizes for Phase 3 Alzheimer's disease trials?",
-        "citations_per_datum": 3}),
+    ("5-drug-network", {
+        "query": "Which drugs frequently co-occur in combination studies for melanoma?",
+        "citations_per_datum": 2}),
 ]
 
 

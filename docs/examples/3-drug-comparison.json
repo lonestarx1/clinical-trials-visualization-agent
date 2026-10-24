@@ -4,15 +4,15 @@
     "citations_per_datum": 3
   },
   "http_status": 200,
-  "seconds": 15.5,
+  "seconds": 14.9,
   "response": {
     "schema_version": "1.0",
     "result_id": null,
     "status": "ok",
     "visualization": {
       "type": "grouped_bar_chart",
-      "title": "ClinicalTrials.gov trials by phase: pembrolizumab vs nivolumab",
-      "summary": "Across 4,228 trials, the highest count is 1,171 in Phase 2, with 16 in Phase 4, comparing pembrolizumab vs nivolumab by phase.",
+      "title": "ClinicalTrials.gov trial counts by phase for pembrolizumab vs nivolumab",
+      "summary": "Across 4,228 trials, counts peak at 1,171 in Phase 2 (Phase 2) and are lowest at 16 in Phase 4 (Phase 4), with Phase 1, Phase 1/Phase 2, Phase 3 next by phase.",
       "encoding": {
         "x": {
           "field": "phase",
@@ -889,7 +889,9 @@
           }
         ]
       },
-      "assumptions": [],
+      "assumptions": [
+        "Treat 'involving' as a drug filter on ClinicalTrials.gov records."
+      ],
       "warnings": [],
       "notes": [],
       "counting_rule": "Each trial is counted once; trials with two phases get a combined bucket (e.g. Phase 2/Phase 3).",
@@ -921,6 +923,7 @@
           "trials": 174
         }
       ],
+      "network": null,
       "citations": {
         "requested": "sample",
         "applied": "sample",
@@ -928,14 +931,14 @@
         "reason": null
       },
       "data_timestamp": "2026-10-23T09:00:04",
-      "retrieved_at": "2026-10-24T11:28:39+00:00",
+      "retrieved_at": "2026-10-24T11:48:49+00:00",
       "source": "clinicaltrials.gov",
       "guard": {
         "verdict": "ok",
         "model": "gpt-5.4-nano"
       },
       "planner": {
-        "steps": 3,
+        "steps": 2,
         "tool_calls": [
           {
             "tool": "submit_plan",
@@ -945,11 +948,6 @@
               "chart_type: Input should be 'bar_chart', 'grouped_bar_chart', 'time_series', 'histogram', 'scatter_plot', 'network_graph' or 'metric'",
               "options.citations_per_datum: Extra inputs are not permitted"
             ]
-          },
-          {
-            "tool": "check_plan",
-            "ms": 0,
-            "ok": true
           },
           {
             "tool": "submit_plan",
@@ -966,21 +964,21 @@
         "errors": []
       },
       "usage": {
-        "llm_calls": 5,
-        "input_tokens": 4999,
-        "output_tokens": 471,
-        "cost_usd": 0.002641,
+        "llm_calls": 4,
+        "input_tokens": 3542,
+        "output_tokens": 433,
+        "cost_usd": 0.002196,
         "models": [
           "gpt-5.4-mini",
           "gpt-5.4-nano"
         ]
       },
-      "trace_id": "b7ad2fef-2770-434b-9397-ebe898cc8768",
+      "trace_id": "1ef4249d-7157-4906-a216-4724f8a7054e",
       "timings_ms": {
-        "retrieve": 7913,
-        "aggregate": 61,
-        "narrate": 1126,
-        "total": 10847
+        "retrieve": 7956,
+        "aggregate": 72,
+        "narrate": 1492,
+        "total": 11263
       },
       "details": {}
     }
