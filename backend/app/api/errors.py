@@ -15,6 +15,7 @@ from app.ctgov.client import CtgovBadRequest, CtgovUnavailable, InconsistentResu
 from app.llm.client import LLMUnavailable
 from app.pipeline.citations import CitationMismatch
 from app.pipeline.query import BudgetExceeded, RejectedByPolicy, TooManyJobs
+from app.store.jobs import JobExpired
 from app.store.results import Expired, NotFound
 
 log = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ _PUBLIC: list[tuple[type[Exception], int, str, str]] = [
     (RequestValidationError, 422, "invalid_request", "The request is not valid."),
     (RejectedByPolicy, 400, "rejected_by_policy", "Request rejected by input policy."),
     (NotFound, 404, "not_found", "Not found."),
+    (JobExpired, 410, "expired", "This job has expired; please run the query again."),
     (Expired, 410, "expired", "This result has expired; please run the query again."),
     (TooManyJobs, 429, "too_many_requests", "Too many background jobs for this client."),
     (
