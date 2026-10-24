@@ -155,10 +155,11 @@ export default function Home() {
     <div className="app">
       <header className="topbar">
         <button className="brand" onClick={goHome} aria-label="Clinical Trials Explorer, start over">
-          <Logo />Clinical Trials Explorer
+          <Logo /><span className="brand-name">Clinical Trials Explorer</span>
         </button>
         <div className="topbar-actions">
           {/* On phones the answer view's top bar has no room for it; the home page keeps it. */}
+          <Link className={`ghost docs-link${view.kind !== "home" ? " wide-only" : ""}`} href="/examples">Examples</Link>
           <Link className={`ghost docs-link${view.kind !== "home" ? " wide-only" : ""}`} href="/docs">API<span className="wide-only"> docs</span></Link>
           {view.kind !== "home" && <button className="ghost new-question" onClick={goHome}>New<span className="wide-only"> question</span></button>}
           <ThemePicker selection={selection} onChoose={choose} />

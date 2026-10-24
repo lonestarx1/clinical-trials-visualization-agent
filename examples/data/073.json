@@ -1,0 +1,1 @@
+{"n":73,"question":"What will the weather be in Seoul tomorrow?","status":"out_of_scope","visualization":null,"unique_trials":null,"reason":"This tool only plans ClinicalTrials.gov queries, not weather forecasts.","suggestion":"How many clinical trials are recruiting in Seoul?"}

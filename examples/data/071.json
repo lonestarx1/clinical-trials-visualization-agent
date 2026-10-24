@@ -1,0 +1,1 @@
+{"n":71,"question":"What is the success rate of phase 3 oncology trials?","status":"out_of_scope","visualization":null,"unique_trials":null,"reason":"A success rate isn\u2019t something this tool computes from ClinicalTrials.gov trial records.","suggestion":"How many phase 3 oncology trials are there by status?"}
