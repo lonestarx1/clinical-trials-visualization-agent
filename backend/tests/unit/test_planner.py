@@ -68,6 +68,9 @@ async def test_gate_errors_go_back_to_the_agent() -> None:
     [feedback] = outputs(llm, 1)
     assert feedback["accepted"] is False
     assert any("trastuzumab" in e for e in feedback["errors"])
+    first = result.tool_calls[0]
+    assert (first["tool"], first["ok"]) == ("submit_plan", False)
+    assert any("trastuzumab" in e for e in first["errors"])  # kept in the trace (meta.planner)
 
 
 async def test_check_plan_does_not_end_the_loop() -> None:
