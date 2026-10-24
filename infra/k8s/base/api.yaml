@@ -64,6 +64,10 @@ spec:
               value: "false"
             - name: FORWARDED_ALLOW_IPS # trust X-Forwarded-For from the ingress (pod is cluster-internal)
               value: "*"
+            # Keep the registry mirror loaded and current, ready for fast mode (design Q22). The
+            # sync runs in this pod under the shared ClinicalTrials.gov limiter, at half its budget.
+            - name: MIRROR_SYNC_ENABLED
+              value: "true"
           readinessProbe:
             httpGet:
               path: /health

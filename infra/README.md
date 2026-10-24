@@ -27,6 +27,7 @@ The web app and the API run on Kubernetes. To keep the cost down, the cluster is
 - **One API replica, on purpose.** The API's client keeps to 9 ClinicalTrials.gov requests per 10 s, just under the ~10 measured per IP, and each replica has its own limiter. More replicas would share that budget, not add to it.
   - Rolling updates still have no downtime (`maxUnavailable: 0`).
   - Background jobs already work across replicas, thanks to the `SKIP LOCKED` queue and heartbeats.
+- **The mirror sync runs in the API pod** (`MIRROR_SYNC_ENABLED`, design Q22): a copy of ClinicalTrials.gov in Postgres's `registry` schema, ~1.2 GB, loaded once in ~25 minutes and then updated after each daily data update. It shares the API's limiter, at half its budget, and an advisory lock keeps it to one sync while a rolling update runs two pods.
 - **t3.medium (4 GB) with an 8 GB swap file on a 50 GB disk.** The largest question (273k trials) peaks at about 2 GB in the API, and k3s, Postgres and the web app take about 1.2 GB.
   - Kubernetes keeps pods off swap by default, so the kubelet runs with `LimitedSwap`. A pod's swap share is proportional to its memory request: the API requests 1.5 GiB of 4, which gives it about 3 GB of swap.
   - A larger node (`instance_type = "t3.large"`) avoids swapping entirely.
