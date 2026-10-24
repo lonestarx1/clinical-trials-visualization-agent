@@ -205,3 +205,13 @@ def test_default_charts() -> None:
 )
 def test_networks_and_scatter_plots_are_accepted(changes: dict[str, Any]) -> None:
     assert gate(BASE | changes).errors == []
+
+
+def test_series_splits() -> None:
+    trend = BASE | {"intent": "trend", "chart_type": "time_series", "dimension": "start_year"}
+    assert gate(trend | {"dimension_2": "phase"}).errors == []
+    assert (
+        gate(BASE | {"chart_type": "grouped_bar_chart", "dimension_2": "study_type"}).errors == []
+    )
+    errors = gate(trend | {"dimension_2": "enrollment"}).errors
+    assert any("dimension_2" in e for e in errors)
