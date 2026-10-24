@@ -3,6 +3,8 @@
 It understands what the sync asks for: all trials, a `StartDate` range or `MISSING`, and a
 `LastUpdatePostDate` range; counts (`pageSize=1`), pages of `pageSize` with page tokens, and
 `/version`. Tests change `studies` and `data_timestamp` between syncs, like a daily update.
+Search terms (`query.cond`, a phrase in `filter.advanced`, ...) match the NCT IDs that tests
+put in `terms`, keyed like a term set ("query.cond|\"melanoma\""), ANDed with the rest.
 """
 
 import re
@@ -43,22 +45,39 @@ class FakeRegistry:
         self.fail_after: int | None = None  # fail every /studies call after this many
         self.calls = 0
         self.on_version: list[Callable[[], None]] = []  # run one before each /version answer
+        self.terms: dict[str, set[str]] = {}
 
     def put(self, *studies: dict[str, Any]) -> None:
         for s in studies:
             self.studies[s["protocolSection"]["identificationModule"]["nctId"]] = s
 
-    def _matching(self, advanced: str) -> list[dict[str, Any]]:
-        found = sorted(self.studies.values(), key=lambda s: str(_date(s, "StartDate")))
-        if not advanced:
-            return found
-        if advanced == "AREA[StartDate]MISSING":
+    def _term(self, key: str, found: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        ids = self.terms[key]
+        return [s for s in found if s["protocolSection"]["identificationModule"]["nctId"] in ids]
+
+    def _clause(self, clause: str, found: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if clause == "AREA[StartDate]MISSING":
             return [s for s in found if _date(s, "StartDate") is None]
-        match = _RANGE.fullmatch(advanced)
-        assert match, f"the fake doesn't understand {advanced!r}"
+        match = _RANGE.fullmatch(clause)
+        if match is None:
+            return self._term(f"filter.advanced|{clause}", found)
         piece, lo, hi = match.groups()
         lo, hi = ("0000-00-00" if lo == "MIN" else lo), ("9999-99-99" if hi == "MAX" else hi)
         return [s for s in found if (d := _date(s, piece)) is not None and lo <= d <= hi]
+
+    def _matching(self, params: httpx.QueryParams) -> list[dict[str, Any]]:
+        found = sorted(self.studies.values(), key=lambda s: str(_date(s, "StartDate")))
+        for param in ("query.cond", "query.intr", "query.lead", "query.spons"):
+            if param in params:
+                found = self._term(f"{param}|{params[param]}", found)
+        advanced = params.get("filter.advanced", "")
+        if advanced.startswith("(") and " AND " in advanced:  # a term narrowed by a date range
+            clauses = advanced[1:-1].split(" AND ")
+        else:
+            clauses = [advanced] if advanced else []
+        for clause in clauses:
+            found = self._clause(clause, found)
+        return found
 
     def handle(self, request: httpx.Request) -> httpx.Response:
         if request.url.path.endswith("/version"):
@@ -69,7 +88,7 @@ class FakeRegistry:
         if self.fail_after is not None and self.calls > self.fail_after:
             return httpx.Response(400, text="the fake was told to fail")
         params = request.url.params
-        found = self._matching(params.get("filter.advanced", ""))
+        found = self._matching(params)
         size = int(params["pageSize"])
         offset = int(params.get("pageToken", "0"))
         body: dict[str, Any] = {"studies": found[offset : offset + size]}
