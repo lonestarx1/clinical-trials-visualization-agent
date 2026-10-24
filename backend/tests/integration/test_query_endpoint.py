@@ -120,6 +120,28 @@ def test_out_of_scope() -> None:
     assert body["meta"]["details"] == {"reason": "asks whether a drug works"}
 
 
+def test_an_unsupported_measure_says_so_and_suggests_a_question() -> None:
+    plan = {
+        "scope": "out_of_scope",
+        "scope_reason": "average trial duration isn't a measure we can compute",
+        "scope_suggestion": "How are trial durations distributed for trials started since 2015?",
+        "intent": "single_number",
+        "chart_type": "metric",
+    }
+    response, _ = post(
+        {"query": "average trial duration per year since 2015"},
+        [OK],
+        [calls(("submit_plan", {"plan": plan}))],
+        [],
+    )
+    body = response.json()
+    assert body["status"] == "out_of_scope"
+    assert body["meta"]["details"] == {
+        "reason": "average trial duration isn't a measure we can compute",
+        "suggestion": "How are trial durations distributed for trials started since 2015?",
+    }
+
+
 def test_narration_failure_falls_back_to_the_template() -> None:
     response, _ = post(
         QUESTION, [OK], [calls(("submit_plan", {"plan": PA3}))], [LLMUnavailable("down")]
