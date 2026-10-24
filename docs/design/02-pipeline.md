@@ -23,6 +23,8 @@ request
  12. Respond + trace     code  meta: interpretation, filters, retrieval stats, model calls, timings
 ```
 
+**As built (2026-10-25):** the stages are as above. Stage 5 has two data sources: live (the default) and the opt-in fast mode (`mode: "fast"`, [Q22](22-term-sets.md)), where the API's search still picks the trials and a live count confirms their number, but the records come from the local mirror. Trials-per-year series may be counted per year instead of downloaded ([Q6](06-retrieval.md)). Stage 11 checks every citation excerpt against the record it came from.
+
 ## Decisions
 
 | # | Decision | Reason |

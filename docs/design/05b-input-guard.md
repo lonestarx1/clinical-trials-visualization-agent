@@ -18,6 +18,8 @@ The guard is **defence in depth**, not the main defence. An AI classifier can be
 | 1 | **Code checks** | Request schema and length limits (Q5); reject control characters; per-client rate limiting |
 | 2 | **AI guard** | A small, fast model (e.g. `gpt-5.4-nano`, configurable) labels the request: `ok` \| `off_topic` \| `malicious` |
 
+**As built (2026-10-25):** control characters are not rejected. In entity fields they become spaces, with quotes and backslashes, before a term enters a search (Q5, layer 2). The `query` is only trimmed: it goes to the models, never into a search. The per-client limits are 300 requests a minute and 10 active background jobs per IP (configurable). The guard is `gpt-5.4-nano` (5 s timeout, fallback model `gpt-4.1-mini`), tried twice before the 503.
+
 **Malicious** includes:
 - prompt injection ("ignore previous instructions...")
 - attempts to extract system prompts, keys or configuration

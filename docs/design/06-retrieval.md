@@ -6,14 +6,18 @@ Status: **Decided** (2026-10-24)
 
 | # | Decision |
 |---|---|
-| D6.1 | **Live data only.** Every answer is computed from the ClinicalTrials.gov API at request time (or from a cache of API responses). We do **not** mirror the full dataset locally. |
+| D6.1 | **Live data only.** Every answer is computed from the ClinicalTrials.gov API at request time (or from a cache of API responses). We do **not** mirror the full dataset locally. *Revised 2026-10-25:* a mirror is now built, for the opt-in fast mode only; live stays the default (see "As built" below). |
 | D6.2 | **Exact answers, no sampling.** We fetch the full relevant data for a question; we never estimate from a sample. |
 | D6.3 | **Cache** API responses (and, optionally, computed results) in **Postgres** (decided in Q8; Redis considered, see Q8/Q15). **Kept correct across the API's daily data updates** by tracking `dataTimestamp` (from `/version`) and **revalidating** cached searches with two cheap count calls instead of discarding everything (revised design in Q8). |
 | D6.4 | **Parallel slice fetching** with configurable concurrency (**default 2**), used only when the result is large enough to justify it. |
 | D6.5 | **Background jobs** for requests estimated to take **over ~60 s**: the API returns a job ID immediately; the client polls for the result. Job state is stored in the database. |
-| D6.6 | Retrieval sits behind a **data-source interface**, so a local mirror with incremental sync could be added later without changing other stages (documented as future work). |
+| D6.6 | Retrieval sits behind a **data-source interface**, so a local mirror with incremental sync could be added later without changing other stages (documented as future work; built since, [Q22](22-term-sets.md)). |
 
-**As built (2026-10-25):** strategy S3 (fetch and aggregate) answers most questions, and S2 answers trials-per-year series with one count call per year. Comparison groups are fetched concurrently through the shared rate limiter. Strategy S1 (`/stats/field/values`) and parallel slices within one search are designed below but not built. Code: [`backend/app/pipeline/run.py`](../../backend/app/pipeline/run.py), [`backend/app/ctgov/retrieval.py`](../../backend/app/ctgov/retrieval.py).
+**As built (2026-10-25):**
+- **Live is still the default answer path** (D6.1). A local mirror with a daily sync and term sets is built ([Q22](22-term-sets.md), PRs #38-#44), and an opt-in **fast mode** (`mode: "fast"`, PRs #45 and #47) reads the matching trials' records from it. The API's search still picks which trials match, and a live count must equal the mirror's count; if any check fails, the question is answered live and `meta.notes` says why. `meta.data_source` says which mode answered. Fast mode is off unless the server enables it. The mirror sits behind the D6.6 seam: the same aggregation code runs on its records.
+- **Strategies:** S3 (fetch and aggregate) answers most questions. S2 answers trials-per-year series only, with one count call per year, and only when that is quicker than downloading the pages. **Not built:** S1 (`/stats/field/values`), and S2 per category for categorical dimensions (`count_per_bucket` exists but is used only by the live cross-check tests).
+- **Parallelism:** comparison groups are fetched concurrently through the shared rate limiter. Parallel slices within one search are **not built** for answers; only the mirror's full load pages start-year slices, 4 at a time.
+- Code: [`backend/app/pipeline/run.py`](../../backend/app/pipeline/run.py), [`backend/app/ctgov/retrieval.py`](../../backend/app/ctgov/retrieval.py), [`backend/app/mirror/`](../../backend/app/mirror/).
 
 ## Why live
 
@@ -58,7 +62,7 @@ This option got real design time before we chose live retrieval. It is recorded 
 
 The data-source interface (D6.6) makes this a contained change.
 
-**Revisited on 2026-10-25** after a broad question took about 7 minutes: see [Q21](21-local-mirror-revisited.md). Still not built. The deciding issue is search accuracy: the API resolves synonyms, and a local copy can't yet. [Q22](22-term-sets.md) proposes a second, opt-in `fast` mode that keeps the API's search for membership and uses the mirror only for records; live retrieval stays the default.
+**Revisited on 2026-10-25** after a broad question took about 7 minutes: see [Q21](21-local-mirror-revisited.md). Q21 did not build it. The deciding issue is search accuracy: the API resolves synonyms, and a local copy can't yet. [Q22](22-term-sets.md) then designed a second, opt-in `fast` mode that keeps the API's search for membership and uses the mirror only for records. **Built since** (PRs #38-#45, #47): the mirror, its daily sync, term sets and fast mode. Live retrieval stays the default.
 
 ## How a request is fetched
 
@@ -67,7 +71,7 @@ The data-source interface (D6.6) makes this a contained change.
 
 | Strategy | When | Calls |
 |---|---|---|
-| **S1. Global stats** (`/stats/field/values`) | Unscoped, single categorical dimension (phase, status, country, sponsor class, ...) | 1. **Checked live** ([live probe §9](../api/live-probe.md#9-statsfieldvalues-counting-and-the-250-value-cap-open-item-o4)): exact for ENUM fields only, unscoped only; STRING fields are raw strings, top 250. Not built: S2 covers these questions |
+| **S1. Global stats** (`/stats/field/values`) | Unscoped, single categorical dimension (phase, status, country, sponsor class, ...) | 1. **Checked live** ([live probe §9](../api/live-probe.md#9-statsfieldvalues-counting-and-the-250-value-cap-open-item-o4)): exact for ENUM fields only, unscoped only; STRING fields are raw strings, top 250. **Not built** (see "As built" above) |
 | **S2. Count per bucket** (`countTotal` per category) | Categorical/time dimension with a known, bounded set of values, especially large scopes | one per bucket |
 | **S3. Fetch and aggregate** (minimal `fields`) | Everything that needs per-trial data: networks, histograms, scatter, enrollment measures, open-ended top-N, citations | one per 1,000 trials |
 
@@ -86,6 +90,8 @@ The data-source interface (D6.6) makes this a contained change.
 S1/S2 return counts only, so we can't produce per-trial citations for those values directly. Options (decided in Q14):
 - cite the exact **API query** that produced each count (reproducible), and/or
 - fetch a small sample of NCT IDs per bucket (`pageSize` = N), which costs extra calls.
+
+**As built (2026-10-25):** both. Each counted year cites a sample of its most recent trials (one extra call per year) and records its API query. `GET /v1/results/{result_id}/citations` pages the rest of a year's trials from the API on demand (PR #46, [Q14](14-citations.md)).
 
 ## Background jobs
 
@@ -112,7 +118,7 @@ S1/S2 return counts only, so we can't produce per-trial citations for those valu
 | Very broad term (100k+, unverified) | 100+ | 2.5+ min -> **job** | ~50 s |
 | Unscoped, needs per-trial data (608k) | 609 | ~15 min -> **job** | ~5 min -> **job** |
 
-Unscoped categorical questions avoid this cost through S1/S2.
+Unscoped categorical questions avoid this cost through S1/S2. *As built:* neither is used for categories, so such a question downloads every trial (S3, a background job) unless fast mode answers it (up to 300,000 trials by default).
 
 **Revision (2026-10-25): measured limit, and the quicker strategy.** The real limit is ~10 requests per ~10 s ([live probe §8](../api/live-probe.md)), and the limiter now allows a burst of 9, so the S2 count calls of a question mostly start at once. Pages still come one by one (page tokens), so the column "Conservative" above stays about right for S3. A trials-per-year series now uses S2 only when its count calls are quicker than downloading its pages: 30 trials over 20 years is one page, not 61 calls.
 

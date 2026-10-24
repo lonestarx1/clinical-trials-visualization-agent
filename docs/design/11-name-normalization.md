@@ -28,6 +28,15 @@ Live data showed that a trial's intervention MeSH list also contains **non-drug 
 
 `interventionBrowseModule.meshes` lists terms for the **trial as a whole**. It doesn't say which intervention entry each term came from. For counting trials per drug this is fine. For an edge such as "sponsor ↔ drug", the citation shows both the MeSH term and the trial's raw intervention names, so a reader can check the link.
 
+## As built (2026-10-25)
+
+Checked against [`extract.py`](../../backend/app/pipeline/extract.py) and [`networks.py`](../../backend/app/pipeline/networks.py). D11.3-D11.5 and D11.7 are as designed. Differences:
+- **D11.1 display:** bar charts show the first spelling seen; networks show the most common one.
+- **D11.2:** placebo, vehicle and sham are excluded, and the counting rule says "placebo excluded", but the number excluded is not reported in `meta`.
+- **D11.6:** only site-level principal and sub-investigators are used; trial-level `overallOfficials` are not. Credentials are removed by cutting the name at its first comma, so "Smith, John" becomes "Smith".
+
+**Known limitation: marking or hiding the queried entity in a network.** `is_query_entity` and `hide_query_entity` ([Q13](13-networks.md)) compare the filter text, case-folded, with the node keys (`networks.py`, lines 101-108). Node keys are MeSH terms and raw API names, not the user's words. So the queried entity is found only when the user's term equals the node's name: "pembrolizumab" matches, but "breast cancer" never matches "Breast Neoplasms", "Merck" never matches "Merck Sharp & Dohme LLC", and "USA" never matches "United States". The node is then neither flagged nor hidden. A fix would find the node through the matching trials' own values instead of the filter text.
+
 ## Requirement links
 
 P7-3 (real-world data), P4-4 (meaningful networks), P5-3 (exact excerpts: raw values kept), P3-11 (assumptions in meta).

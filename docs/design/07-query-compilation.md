@@ -15,6 +15,13 @@ Status: **Decided** (2026-10-24). Based on the [live probe](../api/live-probe.md
 | Start year range | `AREA[StartDate]RANGE[YYYY-01-01,YYYY-12-31]` | none | RANGE excludes studies with no start date; reported in `meta` |
 | Other enum dimensions (sponsor class, study type, allocation, masking, purpose, sex, age group, ...) | `AREA[<Piece>]<CODE>` | none | |
 
+**As built (2026-10-25)** ([`compiler.py`](../../backend/app/ctgov/compiler.py), [`essie.py`](../../backend/app/ctgov/essie.py)), differences from the table:
+- **Broad condition** compiles each word as its own quoted phrase, ANDed (`query.cond=("lung" AND "cancer")`), not an unquoted string, so user text is always quoted (D7.1).
+- **Phase** and other enum filters compile to one `AREA` per code: `(AREA[Phase]PHASE1 OR AREA[Phase]PHASE2)`. The code `ALL` (sex) is quoted, because Essie reads a bare `ALL` as "every trial".
+- **US state:** `AREA[LocationState]"x"`, with no alias table. **Healthy volunteers / has results:** `AREA[HealthyVolunteers]true`, `AREA[HasResults]false`.
+- **Comparison groups with statuses:** the search uses the statuses common to the shared and group filters; if none are common, the plan fails to compile.
+- Each search also keeps its filters as clauses, so fast mode can run the same search on the mirror ([Q22](22-term-sets.md)).
+
 ## Rules
 
 | # | Decision |

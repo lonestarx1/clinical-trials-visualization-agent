@@ -28,6 +28,8 @@ Status: **Decided** (2026-10-24)
 - Sorting, zero-filling empty time buckets, network pruning
 - **All numbers and all citations**
 
+**As built (2026-10-25), to be precise:** every number in the chart, its data and its citations is computed by code, and numbers in the title come from code-filled placeholders ([Q4b](04b-ai-validation.md#v5-fact-sheet-the-core-mechanism)). The AI does choose bounded values that shape the answer (a year range, `top_n`, `min_trials`), and it writes some free text that reaches the response unchecked: `assumptions`, `scope_reason` and `scope_suggestion` are copied into `meta` as written, and the labels of comparison groups it creates become series names. That text is never used to compute anything, but it is not checked against the data.
+
 ## Chart-type compatibility rules (enforced by code)
 
 | Chart type | Requires |

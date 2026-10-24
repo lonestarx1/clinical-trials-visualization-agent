@@ -41,6 +41,17 @@ Principle: **nothing is silently dropped.** Every excluded trial is counted and 
 | D10.11 | Outliers (e.g. enrollment 500,000) | **Kept** (they're real data). Histograms use an **overflow bin** ("≥ X", with X at a high percentile, e.g. P99) so one trial can't flatten the chart. The bin edges and the overflow rule are in `meta`. Optional log scale is a render hint. |
 | D10.12 | Duration (completion date − start date) | Needs both dates. Partial dates use the first day of the month/year, with the approximation noted. **Impossible values** (end before start) are excluded and counted as data errors. Estimated completion dates are flagged like estimated starts. |
 
+## As built (2026-10-25)
+
+Checked against [`extract.py`](../../backend/app/pipeline/extract.py), [`aggregate.py`](../../backend/app/pipeline/aggregate.py) and [`charts.py`](../../backend/app/pipeline/charts.py). D10.1-D10.4 and D10.7 are as designed; partial dates take their first 4 characters as the year. Differences:
+- **D10.5:** there is no month granularity (time dimensions are yearly), so the case never arises.
+- **D10.6:** the exclusion reason reads "start after 2026".
+- **D10.8:** as designed: `estimated_count` per time bucket, and a warning when most of a bucket's trials have estimated dates.
+- **D10.9:** time series are zero-filled. `show_empty` is **not built**: the plan accepts it, but no code reads it, so enum charts show only the values that occur.
+- **D10.10:** enrollment ESTIMATED vs ACTUAL is **not** reported per bucket. Scatter points carry `estimated: true` when either value is an estimate.
+- **D10.11:** the overflow bin starts at the nearest-rank P99, and `meta.notes` gives the bin width and the cut. There is no log-scale hint.
+- **D10.12:** histograms exclude negative durations and count them as "completion before start (data error)". Scatter plots drop them under the general "no ... reported" reason. Estimated completion dates are flagged only on scatter points.
+
 ## Requirement links
 
 P3-10, P3-11 (render metadata, assumptions), P7-3 (sensible handling of real-world API data), P7-8 (robustness), P7-13 (frontend-friendly).

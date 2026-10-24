@@ -17,6 +17,11 @@ Live data shows most dimensions are multi-valued: 17% of pembrolizumab trials ha
 | D9.7 | **Comparison groups** | Groups are separate searches. A trial that matches several groups (e.g. uses both pembrolizumab and nivolumab) counts in **each** group. `meta.group_overlap` reports the overlap count per pair of groups. | n/a |
 | D9.8 | **Enrollment measures with a multi-valued dimension** | A trial's full enrollment is attributed to every bucket it belongs to. To avoid misleading readers, the measure is labelled accordingly (e.g. "participants in trials with sites in X", not "participants in X"), and `meta` explains it. ESTIMATED vs ACTUAL enrollment is reported. | No |
 
+**As built (2026-10-25)** ([`aggregate.py`](../../backend/app/pipeline/aggregate.py), [`networks.py`](../../backend/app/pipeline/networks.py), [`charts.py`](../../backend/app/pipeline/charts.py)): D9.1-D9.5 and D9.7 are as designed. Two differences:
+- **D9.6:** a node's weight counts only the trials where the entity has at least one link in the network. In a drug co-occurrence network, a trial with a single drug adds to no node. `meta.network.trials_without_links` reports how many trials that leaves out. The counting-rule sentence ("distinct trials with that entity") doesn't say this.
+- **D9.8 is only partly built.** A trial's full enrollment does count in every bucket it belongs to, but the measure keeps its plain label ("Total enrollment"), `meta` doesn't explain the attribution, and ESTIMATED vs ACTUAL enrollment is not reported per bucket.
+- The `distinct_count` measure ([Q4a](04a-plan-schema.md)) is never additive.
+
 ## Frontend contract
 
 - **`meta.additive: true | false`** tells the renderer whether bars/series add up to the total. It decides whether percentages-of-total, stacking or pie-style views are valid.
