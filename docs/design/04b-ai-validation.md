@@ -1,12 +1,12 @@
-# Design Q4b: Validating AI Output (plan, title)
+# Design Q4b: Validating AI output (plan, title)
 
-Status: **Decided** (2026-10-24, with the user). All 9 checks adopted. **Revised** the same day: the AI summary was removed (see [the revision](#revision-2026-10-24-the-ai-summary-is-removed) below).
+Status: **Decided** (2026-10-24). All 9 checks adopted. **Revised** the same day: the AI summary was removed (see [the revision](#revision-2026-10-24-the-ai-summary-is-removed) below).
 
 The AI produces exactly two things: the **QueryPlan** (planning agent) and the chart **title** (narration). Each one passes through code checks before it's used. (The first version also had the AI write a one-sentence **summary**; that was removed.)
 
 ## Revision (2026-10-24): the AI summary is removed
 
-Decided with the user after live testing.
+Decided after live testing.
 
 **Decision:** the narrator writes **only the chart title**. The one-sentence summary under the title is gone: from the narrator prompt and its JSON schema, from the template fallback, from the response (`visualization.summary`) and from the web UI. This supersedes the summary parts of this file, Q2 D2.3, the narration row in Q3, the `summary` field in Q12, the summary row in Q17 and the "title + summary in one call" narrator in Q20.
 

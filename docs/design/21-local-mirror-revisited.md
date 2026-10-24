@@ -1,6 +1,6 @@
-# Design Q21: A Local Mirror, Revisited
+# Design Q21: A local mirror, revisited
 
-Status: **Revisited and not built** (2026-10-25, with the user). Q6's decision (D6.1, live data only) stands for this submission. This file records why we reopened it, what we designed, and the finding that settled it.
+Status: **Revisited and not built** (2026-10-25). Q6's decision (D6.1, live data only) stands for this submission. This file records why we reopened it, what we designed, and the finding that settled it.
 
 ## Why we reopened it
 
@@ -43,7 +43,7 @@ The live API does more than filter records: its search engine **resolves synonym
 | Condition "lung cancer" | Quoted `query.cond` searches conditions, titles, keywords and **MeSH terms with their ancestors and synonyms**: **13,423** trials | A match on the condition field alone (`AREA[Condition]`) finds **10,676**, missing **~2,750 trials (~20%)** |
 | Drug "Keytruda" / "MK-3475" | `InterventionNameSearch` adds **UMLS synonyms**, so the brand name, code and generic name (pembrolizumab) return the same trials | A local name match would return almost nothing for "Keytruda", since most records list "pembrolizumab" |
 
-To match the live answers, the mirror would need its own synonym and MeSH-hierarchy layer (e.g. NLM's MeSH entry terms and tree numbers, plus a drug synonym source). Then it would have to be **proven** equivalent to the API's search. That is a project of its own, and far beyond the time we have.
+To match the live answers, the mirror would need its own synonym and MeSH-hierarchy layer (e.g. NLM's MeSH entry terms and tree numbers, plus a drug synonym source). Then it would have to be **proven** equivalent to the API's search. That is a project of its own, and far beyond the time available.
 
 Without it, the mirror would give **different, silently lower counts** for drug and condition questions. That breaks the product's core promise (D6.2, exact answers; Q14, every number traceable and correct). A faster wrong answer is worse than a slow right one, so: **not built.**
 
@@ -62,7 +62,7 @@ So a hybrid could send:
 - **Per-year counts without downloading** (S2 for time dimensions): a trials-per-year series makes one count call per year. 2010-2020 went from **412 s to 57 s**, with identical numbers.
 - **Background jobs** for large questions, with heartbeats, and requeueing when a worker stops (a restart no longer strands a job).
 - **Result reuse with revalidation** (Q8): a repeated question is answered from the stored result after two cheap count calls.
-- **Charts built off the event loop** (in review), so one large question doesn't stall other requests.
+- **Charts built off the event loop**, so one large question doesn't stall other requests.
 
 ## If we build it later
 

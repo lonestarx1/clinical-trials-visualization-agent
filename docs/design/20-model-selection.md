@@ -1,6 +1,6 @@
-# Design Q20 (O2): Selecting the AI Model for Each Task
+# Design Q20 (O2): Selecting the AI model for each task
 
-Status: **Process decided** (2026-10-24, with the user). Starting defaults set; final choices come from a measured comparison ("bake-off") once the AI evaluation set exists (Q18).
+Status: **Process decided** (2026-10-24). Starting defaults set; final choices come from a measured comparison ("bake-off") once the AI evaluation set exists (Q18).
 
 ## Why this needs its own decision
 
@@ -33,7 +33,7 @@ Source: [OpenAI API pricing](https://developers.openai.com/api/docs/pricing), re
 | gpt-4.1 | 2.00 | 0.50 | 8.00 | GPT-4.1, non-reasoning |
 | gpt-4.1-mini | 0.40 | 0.10 | 1.60 | GPT-4.1, non-reasoning |
 | gpt-4o-mini | 0.15 | 0.075 | 0.60 | GPT-4o, non-reasoning |
-| gpt-4o-2024-08-06 | — | — | — | Not listed under standard inference pricing (only under fine-tuning) on the page read; **excluded** until its price is confirmed |
+| gpt-4o-2024-08-06 | n/a | n/a | n/a | Not listed under standard inference pricing (only under fine-tuning) on the page read; **excluded** until its price is confirmed |
 
 These numbers go into `pricing.yaml` with `version` and `last_verified: 2026-10-24` (Q16 `llm_usage`). Reasoning models also bill **reasoning tokens** as output, which is why their real cost per call can be well above what the input/output prices suggest. The reasoning-effort setting is therefore part of each candidate's configuration (e.g. `gpt-5.4-mini @ low` vs `@ medium`).
 
@@ -67,6 +67,8 @@ Assumptions:
 ~~**Title and summary share one model and one call.**~~ **Superseded 2026-10-24:** the narrator writes only the title ([Q4b revision](04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)): free-text summaries were hallucination-prone, the assignment only requires a title, and dropping it saves output tokens and narrator time. The bake-off scores titles only (check pass rate, readability spot check).
 
 ## Starting defaults (until the bake-off runs)
+
+**Status (2026-10-25):** the bake-off hasn't run yet, because the AI evaluation set it needs isn't built (Q18). These defaults are what the deployed service uses. The five example runs in [`docs/examples/`](../examples/) cost about $0.002-0.003 each in AI calls (`meta.usage.cost_usd`), well under the estimate above.
 
 | Stage | Model | Why this as a starting point |
 |---|---|---|
@@ -142,7 +144,7 @@ Changing a model or prompt changes `planner_version`, so the plan cache (L2, Q8)
 - A new model becomes available, or a price changes (`pricing.yaml` version bump)
 - The live E2E suite (Q18) shows a quality drop
 
-## Honesty notes (for the README)
+## Limits of these numbers
 
 - The evaluation sets are **our own and small** (tens of cases), so results are indicative, not statistically strong. That limitation is stated alongside the numbers.
 - Cost estimates in this file are **pre-measurement**. The README reports measured costs from `llm_usage`.

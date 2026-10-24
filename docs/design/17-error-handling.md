@@ -1,6 +1,6 @@
-# Design Q17: Error Handling
+# Design Q17: Error handling
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Rule 1: outcomes that aren't charts are not errors
 

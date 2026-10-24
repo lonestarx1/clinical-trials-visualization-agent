@@ -1,6 +1,6 @@
-# Design Q8: Cache, Rate Limiting, Retries
+# Design Q8: Cache, rate limiting, retries
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Cache
 
@@ -17,7 +17,7 @@ Status: **Decided** (2026-10-24, with the user)
 
 - **Data version tracking:** `dataTimestamp` is read from `/version` and re-checked about every 10 minutes (configurable). Every cache row records the `dataTimestamp` it was **last verified** against.
 
-### Revalidate, don't invalidate (revised with the user)
+### Revalidate, don't invalidate (revised design)
 
 The first draft invalidated **everything** when `dataTimestamp` changed. That is wasteful: each daily refresh touches only a few thousand of ~608k trials. Instead, cached search results are **revalidated** lazily, on next use:
 
@@ -42,13 +42,15 @@ If both pass, the cached result is **exactly** still valid. It's re-stamped with
 | L2 Plans | **Never** invalidated by data updates. Plans depend on the question, fields, model and prompt version only. (`count_trials` results used during planning are L1 entries.) |
 | L3 Final responses, stored results + citations, finished jobs | Valid while **all** their underlying searches revalidate; otherwise recomputed |
 
-**Caveats to verify (live, later):**
+**Caveats still to verify live (open item O5):**
 - Does every visible change bump `LastUpdatePostDate`? Registry-side re-indexing (e.g. MeSH re-mapping, synonym dictionary updates) might change search membership or derived fields without it.
 - Until that's verified, a **safety ceiling** applies: any entry older than N days (default 7, configurable) is refetched regardless.
 
 Old rows past the ceiling or unused for a while are deleted by a periodic cleanup job.
 - **Request coalescing ("single-flight"):** concurrent identical L1 fetches share one in-flight API call.
 - **Version fields** (model/prompt version in L2, code/schema version in L3) make deployments invalidate old plans and responses safely.
+
+**As built:** L2 (plans) and L3 (stored results) are implemented, with revalidation as above and the 7-day safety ceiling. Each stored result keeps its searches and totals for revalidation. The L1 page cache and request coalescing are not built ([Q16 implementation status](16-database.md#implementation-status-2026-10-24)).
 
 ### Why Postgres, not Redis (recorded alternative)
 

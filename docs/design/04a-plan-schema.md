@@ -1,6 +1,6 @@
 # Design Q4a: The QueryPlan (what the planning agent must submit)
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Shape
 

@@ -1,6 +1,6 @@
-# Design Q15: Code Structure, Stack, Agent Framework, Packaging
+# Design Q15: Code structure, stack, agent framework, packaging
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Stack
 
@@ -45,7 +45,11 @@ Sources: JetBrains PyCharm blog (2026-06), Fungies, Next-IT, Uvik comparisons. P
 - The **planner** is a bounded tool-calling sub-agent (`list_options`, `check_plan`, `count_trials`, `submit_plan`) with a step limit.
 - Non-AI stages are plain, deterministic Python functions called from nodes, so they stay unit-testable without the framework.
 
+**As built:** LangGraph runs the planner's bounded tool loop ([`backend/app/agents/planner.py`](../../backend/app/agents/planner.py)). The request pipeline around it is plain async Python ([`backend/app/pipeline/query.py`](../../backend/app/pipeline/query.py)), with the guard and planner started as concurrent tasks, rather than one LangGraph state graph.
+
 ## Code structure
+
+The backend lives in `backend/app/` with this layout, plus `llm/` (the model client with retries and the fallback model).
 
 ```
 app/
@@ -69,8 +73,8 @@ tests/          unit · contract · integration (recorded API fixtures) · AI ev
 | Target | Setup |
 |---|---|
 | **Submission (reproducible locally)** | **Docker Compose**: `api` container (FastAPI + in-process background workers) + `postgres` container. One command to run. |
-| **Live demo** | The same Compose stack on an AWS EC2 instance, behind an HTTPS reverse proxy (e.g. Caddy with automatic certificates). Next.js frontend on Vercel. CORS allows the Vercel domain. HTTPS is required: an HTTPS frontend can't call an HTTP backend (mixed content). |
-| **Production (documented, not built)** | Container orchestration (Amazon ECS on Fargate, or Kubernetes on Amazon EKS), infrastructure as code (Terraform), managed Postgres (Amazon RDS), separate worker service, secrets in a secrets manager, centralised logs/metrics/traces. |
+| **Live demo** | **Superseded (2026-10-25).** Originally: the same Compose stack on an AWS EC2 instance behind an HTTPS reverse proxy (e.g. Caddy), with the Next.js frontend on Vercel. What runs today: web app, API and Postgres on k3s (Kubernetes) on one EC2 instance, both hosts served over HTTPS by one Ingress. See [Q19, what was actually deployed](19-deployment-ui.md#revision-2026-10-25-what-was-actually-deployed). |
+| **Production (documented, not built)** | Container orchestration (Amazon ECS on Fargate, or Kubernetes on Amazon EKS), infrastructure as code (Terraform), managed Postgres (Amazon RDS), separate worker service, secrets in a secrets manager, centralised logs/metrics/traces. Refined in [Q19's production path](19-deployment-ui.md#production-path-how-wed-run-it-for-real-users) (EKS). |
 
 ### One-command local demo (frontend included)
 
@@ -82,8 +86,8 @@ The Compose stack includes the frontend, so reviewers can use the system right a
 | `api` | FastAPI + background workers; runs Alembic migrations on start | `postgres` healthy (healthcheck: `/health`) |
 | `web` | Next.js app (production build, standalone output) | `api` healthy |
 
-- **Repo layout:** `backend/` + `frontend/` in one repository. The same `frontend/` code deploys to Vercel.
-- **Same-origin calls:** the Next.js app forwards `/api/*` to the `api` container (server-side), so the browser talks to one address. No CORS issues locally, and the API URL is a **runtime** setting (not baked into the build). On Vercel the same setting points to the EC2 HTTPS endpoint.
+- **Repo layout:** `backend/` + `frontend/` in one repository. The same `frontend/` code runs in Compose and in the deployed cluster.
+- **Same-origin calls:** the Next.js app forwards `/api/*` to the `api` container (server-side), so the browser talks to one address. No CORS issues locally, and the API URL is a **runtime** setting (not baked into the build). (The original plan pointed the same setting at the EC2 API from Vercel; superseded, see Q19.)
 - **One `.env`:** only `OPENAI_API_KEY` is required; everything else has defaults.
 - **Opening the browser:** a container **can't** open the host's browser. So:
   - (a) `docker compose up` logs a clear "Open http://localhost:3000" line, and the README says the same.

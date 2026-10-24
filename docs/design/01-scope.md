@@ -1,6 +1,6 @@
-# Design Q1: Scope - Which Questions We Support
+# Design Q1: Scope (which questions we support)
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Principle
 
@@ -10,7 +10,7 @@ Every supported question has the same shape:
 
 A question type is a combination of entries from registries (dimensions, measures, network types), not custom code. Adding a new dimension means one registry entry plus a test.
 
-Priority is a **robust** design, not a minimal one. The "stretch" items from the first draft are now core.
+We aimed for a **robust** design, not a minimal one, so items first considered stretch goals are part of the core.
 
 ## Core question types
 
@@ -28,7 +28,7 @@ Priority is a **robust** design, not a minimal one. The "stretch" items from the
 
 All 9 appendix examples (PA-1..PA-9) are covered, as are all chart types listed in Part 4.
 
-## Beyond the appendix (added after brainstorming realistic user questions)
+## Beyond the appendix (other realistic questions)
 
 Covered by the shape above with no extra work:
 - "Industry vs academic share of X trials per year": time × sponsor class

@@ -1,6 +1,6 @@
-# Design Q13: Network Graphs That Are Meaningful
+# Design Q13: Meaningful network graphs
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 Part 4 and Part 7 both single out "meaningful network graphs" as worth more points. This file defines what "meaningful" means for us.
 

@@ -1,6 +1,6 @@
-# Design Q18: Testing Strategy
+# Design Q18: Testing strategy
 
-Status: **Decided** (2026-10-24, with the user)
+Status: **Decided** (2026-10-24)
 
 ## Layers
 
@@ -12,8 +12,10 @@ Status: **Decided** (2026-10-24, with the user)
 | **Database** | Against a real Postgres (Docker): cache revalidation (Q8), job claiming with `SKIP LOCKED`, crash recovery, one-active-job uniqueness, keyset citation pagination, retention cleanup, `llm_usage` cost and budget cap | No | Yes (Postgres service container) |
 | **Cross-check** | For real queries, our aggregated counts vs the API's own `countTotal` for the same filter (e.g. our "Phase 3" bucket vs `AREA[Phase]PHASE3` with the same scope): **two independent methods must agree** (exactly for additive single-valued dimensions; per-value for multi-valued ones) | Live API | Opt-in (`-m live`) |
 | **AI evaluation** | ~40 questions with expected plan properties (intent, chart type, dimension(s), filters, scope verdict). Covers the 9 appendix questions, the Q1 "beyond appendix" types, ambiguous phrasings, out-of-scope questions, **prompt-injection attempts**, and structured-field conflicts. Scored per property; guard precision/recall reported. | Real OpenAI | Opt-in (`-m eval`) |
-| **Live end-to-end** (expanded on the user's request) | **~60 questions** run through the **full pipeline with the real ClinicalTrials.gov API and real OpenAI models**, over HTTP against the running Docker Compose stack. See "Live end-to-end suite" below. | Live API + real AI | Opt-in (`-m e2e`); run before submission and after major changes |
+| **Live end-to-end** | **~60 questions** run through the **full pipeline with the real ClinicalTrials.gov API and real OpenAI models**, over HTTP against the running Docker Compose stack. See "Live end-to-end suite" below. | Live API + real AI | Opt-in (`-m e2e`); run before submission and after major changes |
 | **Smoke** | `docker compose up` -> `/health` ok -> one real question end to end -> valid response | Yes | Manual / pre-submit |
+
+**As built (2026-10-25):** the offline layers (unit, contract, integration), the database tests, the live cross-checks and a smaller live end-to-end suite run today; the [README](../../README.md) lists them with counts. The end-to-end suite covers the 9 appendix questions plus two measure questions, not yet the ~60 below. The ~40-question AI evaluation set is not built yet, so the model bake-off (Q20) hasn't run.
 
 ## Live end-to-end suite
 
@@ -52,7 +54,7 @@ Unlike the AI evaluation (which scores the **plan** only), every case here runs 
 | D18.2 | **The LLM is a dependency we fake in offline tests** (scripted responses via the LangGraph model interface), so CI never needs a key and runs deterministically. |
 | D18.3 | **Example runs (Part 6) are produced by a script** against the real system and then validated by the contract tests and the citation exactness check. They're never edited by hand. |
 | D18.4 | **CI:** GitHub Actions runs lint (`ruff`), type checks (`mypy` or `pyright`), and the offline layers (unit, contract, integration, database) on every push. |
-| D18.5 | **AI eval results** (scores per property, guard precision/recall, cost per question from `llm_usage`) are published in the README as validation evidence (Part 8). They're described honestly as new work for this project. |
+| D18.5 | **AI eval results** (scores per property, guard precision/recall, cost per question from `llm_usage`) are published in the README as validation evidence (Part 8). They're presented as new work done for this project. |
 | D18.6 | **Bug -> test:** every bug found during development gets a regression test (evidence of iteration, Part 8). |
 
 ## Requirement links
