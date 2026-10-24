@@ -185,3 +185,8 @@ def test_search_url_is_reproducible() -> None:
         "https://clinicaltrials.gov/api/v2/studies?"
         "filter.overallStatus=RECRUITING&query.cond=%22breast+cancer%22"
     )
+
+
+def test_sex_all_means_trials_open_to_all_sexes() -> None:
+    """Not every trial: the unquoted code matched all of them (live mode kept every trial)."""
+    assert params(sexes=["ALL"])["filter.advanced"] == 'AREA[Sex]"ALL"'

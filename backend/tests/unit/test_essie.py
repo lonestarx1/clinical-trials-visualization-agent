@@ -92,3 +92,11 @@ def test_single_item_groups_collapse() -> None:
 def test_empty_groups_are_rejected() -> None:
     with pytest.raises(ValueError):
         And([])
+
+
+def test_the_code_all_is_quoted_because_essie_reads_it_as_match_everything() -> None:
+    """Measured 2026-10-25: AREA[Sex]ALL matched all 608,415 trials; AREA[Sex]"ALL" matched the
+    523,690 open to all sexes, as /stats/field/values counts them. NONE and NA are not affected."""
+    assert to_essie(Area("Sex", Code("ALL"))) == 'AREA[Sex]"ALL"'
+    assert to_essie(Area("Sex", Or([Code("ALL"), Code("FEMALE")]))) == 'AREA[Sex]("ALL" OR FEMALE)'
+    assert to_essie(Area("DesignMasking", Code("NONE"))) == "AREA[DesignMasking]NONE"

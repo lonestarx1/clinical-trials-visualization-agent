@@ -98,12 +98,17 @@ class Not:
 Node = Phrase | Code | Range | Missing | Area | And | Or | Not
 
 
+# Codes Essie reads as an operator unless quoted. Measured: AREA[Sex]ALL matched every trial,
+# AREA[Sex]"ALL" the trials open to all sexes. NONE, NA and the booleans match as plain codes.
+QUOTED_CODES = {"ALL"}
+
+
 def to_essie(node: Node) -> str:
     match node:
         case Phrase(text):
             return f'"{text}"'
         case Code(value):
-            return value
+            return f'"{value}"' if value in QUOTED_CODES else value
         case Range(lo, hi):
             return f"RANGE[{lo},{hi}]"
         case Missing():
