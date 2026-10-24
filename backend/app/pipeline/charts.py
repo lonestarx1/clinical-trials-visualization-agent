@@ -15,6 +15,7 @@ from typing import Any, Literal
 from app.pipeline.aggregate import NOT_REPORTED, Bucket, Grouping, group, nct_id, year_range
 from app.pipeline.citations import sample_citations
 from app.pipeline.extract import Evidence, extract_number
+from app.pipeline.networks import build_network
 from app.registry import DIMENSIONS, MEASURES, ChartType, Dimension, DimensionKind, Intent
 from app.registry.enums import Phase
 from app.schemas.plan import QueryPlan
@@ -34,6 +35,7 @@ class ChartMeta:
     sort: Sort | None = None
     notes: list[str] = field(default_factory=list)
     group_overlap: list[dict[str, Any]] | None = None
+    network: dict[str, Any] | None = None
 
 
 @dataclass
@@ -161,9 +163,52 @@ def build_chart(
     if plan.chart_type is ChartType.METRIC or plan.dimension is None:
         return _metric(plan, groups, studies, citations_per_datum)
     dim = DIMENSIONS[plan.dimension]
+    if plan.chart_type is ChartType.NETWORK_GRAPH:
+        all_studies = [s for _, members in groups for s in members]
+        viz, network, linked = build_network(plan, all_studies, studies, citations_per_datum)
+        meta = ChartMeta(
+            counting_rule="Node size = distinct trials with that entity; edge width = distinct "
+            "trials with both.",
+            additive=False,
+            unique_trials=linked,
+            network=network,
+        )
+        return ChartResult(viz, meta)
+    if plan.chart_type is ChartType.SCATTER_PLOT:
+        return _scatter(plan, dim, studies, citations_per_datum)
     if dim.kind is DimensionKind.NUMERIC:
         return _histogram(plan, dim, groups, studies, citations_per_datum)
+    if plan.dimension_2 and not plan.groups:
+        series_dim = DIMENSIONS[plan.dimension_2]
+        split = _split_series(plan, series_dim, [s for _, m in groups for s in m])
+        return _bars(plan, dim, split, studies, now_year, citations_per_datum, series=series_dim)
     return _bars(plan, dim, groups, studies, now_year, citations_per_datum)
+
+
+MAX_SERIES = 6
+
+
+def _split_series(
+    plan: QueryPlan, series: Dimension, studies: Sequence[dict[str, Any]]
+) -> list[tuple[str | None, list[dict[str, Any]]]]:
+    """One group of trials per value of the series dimension (a trial can be in several)."""
+    buckets = group(studies, series, plan.model_copy(update={"filters": plan.filters}))
+    labels = {k: b.label for k, b in buckets.buckets.items()}
+    sizes = {k: float(len(b.trials)) for k, b in buckets.buckets.items()}
+    keys, _, _ = _sorted_keys(
+        series,
+        plan.model_copy(
+            update={
+                "options": plan.options.model_copy(
+                    update={"top_n": MAX_SERIES if series.kind is DimensionKind.ENTITY else None}
+                )
+            }
+        ),
+        sizes,
+        labels,
+    )
+    by_id = {nct_id(s): s for s in studies}
+    return [(labels[k], [by_id[i] for i in buckets.buckets[k].trials]) for k in keys]
 
 
 def _bars(
@@ -173,7 +218,9 @@ def _bars(
     studies: dict[str, dict[str, Any]],
     now_year: int,
     limit: int,
+    series: Dimension | None = None,
 ) -> ChartResult:
+    """Bars or a time series; several groups (comparison) or series (split by `series`)."""
     measure = plan.measure
     years = (
         year_range([s for _, m in groups for s in m], dim, plan, now_year)
@@ -194,7 +241,8 @@ def _bars(
         totals[key] += m.value
     keys, sort, notes = _sorted_keys(dim, plan, totals, labels)
 
-    comparison = len(groupings) > 1
+    comparison = len(groupings) > 1 or series is not None
+    color_field = series.key if series else "group"
     rows = []
     for label, g in groupings:
         for key in keys:
@@ -206,7 +254,7 @@ def _bars(
                 measure: m.value,
             }
             if comparison:
-                row["group"] = label
+                row[color_field] = label
             if dim.kind is DimensionKind.TIME:
                 row["estimated_count"] = len(bucket.estimated & set(m.evidence))
             rows.append(row | sample_citations(m.evidence, studies, limit))
@@ -222,14 +270,16 @@ def _bars(
 
     encoding = {"x": _x_channel(dim, sort), "y": _y_channel(measure)}
     if comparison:
-        encoding["color"] = Channel(field="group", type="nominal", label="Group")
+        encoding["color"] = Channel(
+            field=color_field, type="nominal", label=series.label if series else "Group"
+        )
     if dim.kind is DimensionKind.TIME:
         chart_type = ChartType.TIME_SERIES
     else:
         chart_type = ChartType.GROUPED_BAR_CHART if comparison else ChartType.BAR_CHART
 
     overlap = None
-    if comparison:
+    if comparison and series is None:
         members = {label: {nct_id(s) for s in ms} for label, ms in groups}
         overlap = [
             {"groups": [a, b], "trials": len(members[a] & members[b])}
@@ -327,6 +377,50 @@ def _histogram(
     return ChartResult(viz, meta)
 
 
+def _scatter(
+    plan: QueryPlan, x_dim: Dimension, studies: dict[str, dict[str, Any]], limit: int
+) -> ChartResult:
+    assert plan.dimension_2 is not None
+    y_dim = DIMENSIONS[plan.dimension_2]
+    rows, missing = [], 0
+    for trial in sorted(studies):
+        x, y = extract_number(studies[trial], x_dim.key), extract_number(studies[trial], y_dim.key)
+        if x is None or y is None or (y_dim.key == "duration_months" and y.value < 0):
+            missing += 1
+            continue
+        rows.append(
+            {
+                "key": trial,
+                "nct_id": trial,
+                x_dim.key: x.value,
+                y_dim.key: y.value,
+                "estimated": x.estimated or y.estimated,
+            }
+            | sample_citations({trial: x.evidence + y.evidence}, studies, limit)
+        )
+    viz = Visualization(
+        type=ChartType.SCATTER_PLOT,
+        title=f"{x_dim.label} vs {y_dim.label.lower()}",
+        summary=f"{len(rows)} trials have both values.",
+        encoding={
+            "x": Channel(field=x_dim.key, type="quantitative", label=x_dim.label),
+            "y": Channel(field=y_dim.key, type="quantitative", label=y_dim.label),
+            "id": Channel(field="nct_id", type="nominal", label="Trial"),
+        },
+        data=rows,
+    )
+    excluded = [Excluded(reason=f"no {x_dim.key} or {y_dim.key} reported", count=missing)]
+    return ChartResult(
+        viz,
+        ChartMeta(
+            counting_rule="One point per trial with both values.",
+            additive=True,
+            unique_trials=len(rows),
+            excluded=excluded if missing else [],
+        ),
+    )
+
+
 def _metric(
     plan: QueryPlan,
     groups: GroupedStudies,
@@ -388,7 +482,7 @@ def _summary(rows: list[dict[str, Any]], dim: Dimension, measure: str, trials: i
     top = max(rows, key=lambda r: r[measure], default=None)
     if top is None or not top[measure]:
         return f"{trials} trials matched."
-    where = f" ({top['group']})" if "group" in top else ""
+    where = f" ({top['group']})" if "group" in top else ""  # comparison groups only
     return (
         f"{trials} trials matched; {top[dim.key]}{where} has the highest value ({top[measure]:g})."
     )

@@ -29,7 +29,7 @@ class Visualization(BaseModel):
     encoding: dict[str, Channel]
     # Flat records keyed by the encoding fields, plus `key`, `citation_count`,
     # `citations` and `citations_truncated` on every data point.
-    data: list[dict[str, Any]]
+    data: list[dict[str, Any]] | dict[str, list[dict[str, Any]]]  # network: {"nodes", "edges"}
 
 
 class Excluded(BaseModel):
@@ -79,6 +79,7 @@ class Meta(BaseModel):
     sort: Sort | None = None
     api_queries: list[ApiQuery] = []
     group_overlap: list[dict[str, Any]] | None = None
+    network: dict[str, Any] | None = None
     citations: CitationsMeta | None = None
     data_timestamp: str | None = None
     retrieved_at: str | None = None

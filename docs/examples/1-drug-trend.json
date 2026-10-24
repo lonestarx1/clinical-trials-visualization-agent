@@ -5,15 +5,15 @@
     "citations_per_datum": 3
   },
   "http_status": 200,
-  "seconds": 10.0,
+  "seconds": 9.8,
   "response": {
     "schema_version": "1.0",
     "result_id": null,
     "status": "ok",
     "visualization": {
       "type": "time_series",
-      "title": "Pembrolizumab clinical trials by start year (2015–2026)",
-      "summary": "From 2015 to 2026, the number of trials stayed roughly flat, ranging from 116 to 263 (peak in 2022).",
+      "title": "Pembrolizumab trials by start year (2015–2026)",
+      "summary": "ClinicalTrials.gov shows a roughly flat time series of number of trials from 2015 (116) to 2022 (263), totaling 2,586 trials.",
       "encoding": {
         "x": {
           "field": "start_year",
@@ -567,8 +567,7 @@
         "start_year_min": 2015
       },
       "assumptions": [
-        "Interpreting 'since 2015' as trials with start year from 2015 onward.",
-        "Using lead sponsor/default trial matching rules unless otherwise specified."
+        "Interpret 'this drug' as Pembrolizumab from fixed_fields."
       ],
       "warnings": [],
       "notes": [
@@ -595,6 +594,7 @@
         }
       ],
       "group_overlap": null,
+      "network": null,
       "citations": {
         "requested": "sample",
         "applied": "sample",
@@ -602,7 +602,7 @@
         "reason": null
       },
       "data_timestamp": "2026-10-23T09:00:04",
-      "retrieved_at": "2026-10-24T11:27:56+00:00",
+      "retrieved_at": "2026-10-24T11:48:07+00:00",
       "source": "clinicaltrials.gov",
       "guard": {
         "verdict": "ok",
@@ -613,7 +613,7 @@
         "tool_calls": [
           {
             "tool": "check_plan",
-            "ms": 1,
+            "ms": 0,
             "ok": true,
             "errors": [
               "chart_type: Input should be 'bar_chart', 'grouped_bar_chart', 'time_series', 'histogram', 'scatter_plot', 'network_graph' or 'metric'"
@@ -635,20 +635,20 @@
       },
       "usage": {
         "llm_calls": 4,
-        "input_tokens": 3396,
-        "output_tokens": 388,
-        "cost_usd": 0.001974,
+        "input_tokens": 3448,
+        "output_tokens": 329,
+        "cost_usd": 0.001754,
         "models": [
           "gpt-5.4-mini",
           "gpt-5.4-nano"
         ]
       },
-      "trace_id": "bdfb32b3-589c-471b-a440-fcee20b4eada",
+      "trace_id": "536ad83d-b4a4-4c4c-aa2f-4a0b2111a29f",
       "timings_ms": {
-        "retrieve": 4920,
-        "aggregate": 34,
-        "narrate": 1376,
-        "total": 6556
+        "retrieve": 4927,
+        "aggregate": 36,
+        "narrate": 1191,
+        "total": 6480
       },
       "details": {}
     }

@@ -26,9 +26,10 @@ def test_example_matches_the_schema(path: Path) -> None:
     viz = response.visualization
     assert viz is not None and viz.title and viz.summary
     assert "{" not in viz.title + viz.summary
+    rows = [*viz.data["nodes"], *viz.data["edges"]] if isinstance(viz.data, dict) else viz.data
     for channel in viz.encoding.values():
-        assert any(channel.field in row for row in viz.data), channel.field
-    for row in viz.data:
+        assert any(channel.field in row for row in rows), channel.field
+    for row in rows:
         assert len(row["citations"]) <= record["request"]["citations_per_datum"]
         assert len(row["citations"]) == min(row["citation_count"], len(row["citations"]))
         for citation in row["citations"]:

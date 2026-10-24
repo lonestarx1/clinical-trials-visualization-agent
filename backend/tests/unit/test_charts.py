@@ -298,3 +298,81 @@ def test_a_wrong_excerpt_fails_loudly() -> None:
     viz.data[0]["citations"][0]["evidence"][0]["excerpt"] = "PHASE4"  # type: ignore[index]
     with pytest.raises(CitationMismatch):
         verify_citations(viz, BY_ID)
+
+
+# ---------- scatter ----------
+
+
+def test_scatter_has_one_point_per_trial_with_both_values() -> None:
+    result = chart(
+        plan(
+            intent="numeric_relationship",
+            chart_type="scatter_plot",
+            dimension="enrollment",
+            dimension_2="duration_months",
+        )
+    )
+    viz = result.visualization
+    assert viz.type == "scatter_plot"
+    points = {p["nct_id"]: p for p in viz.data}  # type: ignore[union-attr]
+    assert len(points) == 7  # NCT04135092 has neither value
+    combo = points["NCT02648477"]
+    assert combo["enrollment"] == 30
+    assert combo["duration_months"] == pytest.approx(93.1, abs=0.05)
+    assert combo["citation_count"] == 1
+    fields = [e["field"] for e in combo["citations"][0]["evidence"]]
+    assert "protocolSection.designModule.enrollmentInfo.count" in fields
+    assert "protocolSection.statusModule.completionDateStruct.date" in fields
+    assert [e.model_dump() for e in result.meta.excluded] == [
+        {"reason": "no enrollment or duration_months reported", "count": 1}
+    ]
+    assert (viz.encoding["x"].field, viz.encoding["y"].field, viz.encoding["id"].field) == (
+        "enrollment",
+        "duration_months",
+        "nct_id",
+    )
+    verify_citations(viz, BY_ID)
+
+
+# ---------- series split by a second dimension ----------
+
+
+def test_time_series_split_into_series_by_phase() -> None:
+    result = chart(
+        plan(intent="trend", chart_type="time_series", dimension="start_year", dimension_2="phase")
+    )
+    viz = result.visualization
+    assert viz.encoding["color"].field == "phase"
+    rows = {(r["phase"], r["start_year"]): r["trial_count"] for r in viz.data}  # type: ignore[index, union-attr]
+    assert rows[("Phase 2", "2016")] == 1 and rows[("Phase 2", "2026")] == 1
+    assert rows[("Phase 2", "2015")] == 0
+    assert rows[("Phase 3", "2015")] == 1
+    series = list(dict.fromkeys(r["phase"] for r in viz.data))  # type: ignore[index, union-attr]
+    assert series == [
+        "Phase 1",
+        "Phase 1/Phase 2",
+        "Phase 2",
+        "Phase 3",
+        "Not Applicable",
+        "No phase (observational / expanded access)",
+    ]
+    assert result.meta.group_overlap is None
+
+
+def test_bar_chart_split_into_series_becomes_grouped() -> None:
+    result = chart(
+        plan(
+            intent="distribution",
+            chart_type="grouped_bar_chart",
+            dimension="sponsor_class",
+            dimension_2="study_type",
+        )
+    )
+    rows = {
+        (r["study_type"], r["sponsor_class"]): r["trial_count"] for r in result.visualization.data
+    }  # type: ignore[index, union-attr]
+    assert (
+        rows[("Interventional", "Other (incl. academic)")] == 4
+    )  # combo, future, partial... see table
+    # (the observational trial's sponsor is OTHER too)
+    assert rows[("Observational", "Other (incl. academic)")] == 1

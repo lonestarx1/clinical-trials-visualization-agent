@@ -117,6 +117,8 @@ async def test_list_options_returns_the_registry() -> None:
     [options] = outputs(llm, 1)
     assert "phase" in {d["key"] for d in options["dimensions"]}
     assert "trial_count" in options["measures"]
+    assert {"network_graph", "scatter_plot"} <= set(options["chart_types"])
+    assert "network_graph" in options["chart_rules"] and "scatter_plot" in options["chart_rules"]
 
 
 async def test_structured_fields_are_given_as_fixed_facts() -> None:

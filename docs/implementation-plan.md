@@ -70,7 +70,7 @@ Rules:
 ### M3: Networks, scatter, citations endpoint
 
 - Network builders (Q13): sponsor-collaborator, drug co-occurrence, condition-drug at minimum; Jaccard, pruning, communities.
-- Scatter chart. `GET /v1/results/{id}/citations` with keyset paging (Q14).
+- Scatter chart. Series split by a second dimension (moved from M1b). `GET /v1/results/{id}/citations` moves to M4, since it needs stored results.
 - **Exit check:** PA network questions return meaningful graphs with node and edge citations.
 
 ### M4: Persistence, cache, jobs, usage

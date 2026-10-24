@@ -9,6 +9,7 @@ After one failed retry, the deterministic template from the chart builder is use
 import json
 import logging
 import re
+import statistics
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -114,6 +115,8 @@ def _scope(plan: QueryPlan) -> str:
 
 
 def _labels(plan: QueryPlan, viz: Visualization) -> list[str]:
+    if isinstance(viz.data, dict):  # network
+        return [str(n["label"]) for n in viz.data["nodes"]]
     if not plan.dimension:
         return []
     key = plan.dimension if viz.type is not ChartType.HISTOGRAM else "key"
@@ -127,6 +130,38 @@ def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str
         "dimension": DIMENSIONS[plan.dimension].label.lower() if plan.dimension else "",
         "scope": _scope(plan),
     }
+    if isinstance(viz.data, dict):  # network
+        nodes, edges = viz.data["nodes"], viz.data["edges"]
+        names = {n["id"]: n["label"] for n in nodes}
+        facts |= {"n_nodes": _fmt(len(nodes)), "n_edges": _fmt(len(edges))}
+        if nodes:
+            hub = max(nodes, key=lambda n: (n["degree"], n["weight"]))
+            facts |= {
+                "top_node": hub["label"],
+                "top_node_degree": _fmt(hub["degree"]),
+                "top_node_trials": _fmt(hub["weight"]),
+            }
+        if edges:
+            strongest = edges[0]  # sorted by weight
+            facts |= {
+                "strongest_link": f"{names[strongest['source']]} - {names[strongest['target']]}",
+                "strongest_link_trials": _fmt(strongest["weight"]),
+            }
+        return facts
+    if viz.type is ChartType.SCATTER_PLOT:
+        assert plan.dimension and plan.dimension_2
+        points = viz.data if isinstance(viz.data, list) else []
+        xs = [p[plan.dimension] for p in points]
+        ys = [p[plan.dimension_2] for p in points]
+        facts["n_points"] = _fmt(len(xs))
+        if xs:
+            facts |= {
+                "median_x": _fmt(statistics.median(xs)),
+                "median_y": _fmt(statistics.median(ys)),
+                "x_label": DIMENSIONS[plan.dimension].label.lower(),
+                "y_label": DIMENSIONS[plan.dimension_2].label.lower(),
+            }
+        return facts
     if viz.type is ChartType.METRIC:
         facts["value"] = _fmt(viz.data[0]["value"])
         return facts

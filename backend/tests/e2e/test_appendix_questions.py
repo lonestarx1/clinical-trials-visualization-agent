@@ -12,7 +12,6 @@ import httpx
 import pytest
 
 pytestmark = pytest.mark.e2e
-NETWORKS_IN_M3 = pytest.mark.xfail(reason="network graphs arrive in M3", strict=True)
 
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:8000")
 
@@ -91,10 +90,7 @@ def data_points(visualization: dict[str, Any]) -> list[dict[str, Any]]:
     return list(data)
 
 
-PARAMS = [
-    pytest.param(c, id=c.id, marks=NETWORKS_IN_M3 if c.chart_type == "network_graph" else ())
-    for c in CASES
-]
+PARAMS = [pytest.param(c, id=c.id) for c in CASES]
 
 
 @pytest.mark.parametrize("case", PARAMS)
