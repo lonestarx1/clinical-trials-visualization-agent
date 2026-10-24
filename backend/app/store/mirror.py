@@ -67,6 +67,12 @@ async def ids_in(session: AsyncSession, sl: YearSlice) -> set[str]:
     return set(await session.scalars(select(MirrorTrial.nct_id).where(_in(sl))))
 
 
+async def changed_since(session: AsyncSession, day: date) -> set[str]:
+    """Trials whose LastUpdatePostDate is on or after `day`."""
+    query = select(MirrorTrial.nct_id).where(MirrorTrial.last_update_post_date >= day)
+    return set(await session.scalars(query))
+
+
 async def delete_trials(session: AsyncSession, nct_ids: Iterable[str]) -> int:
     ids = list(nct_ids)
     if not ids:

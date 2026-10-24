@@ -177,7 +177,25 @@ digraph schema {
       <TR><TD ALIGN="LEFT">started_at, finished_at</TD><TD ALIGN="LEFT">timestamptz</TD><TD>idx</TD></TR>
     </TABLE>>];
 
+  registry_term_sets [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="3" BGCOLOR="#00695C"><FONT COLOR="white"><B>registry.term_sets</B> (a term's trials, Q22)</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><B>term_key</B></TD><TD ALIGN="LEFT">text</TD><TD PORT="term_key_out">PK</TD></TR>
+      <TR><TD ALIGN="LEFT">param, expression</TD><TD ALIGN="LEFT">text</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">size</TD><TD ALIGN="LEFT">integer</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">data_timestamp</TD><TD ALIGN="LEFT">timestamptz</TD><TD></TD></TR>
+      <TR><TD ALIGN="LEFT">resolved_at, checked_at</TD><TD ALIGN="LEFT">timestamptz</TD><TD></TD></TR>
+    </TABLE>>];
+
+  registry_term_members [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="3" BGCOLOR="#00695C"><FONT COLOR="white"><B>registry.term_members</B></FONT></TD></TR>
+      <TR><TD PORT="term_key" ALIGN="LEFT">term_key</TD><TD ALIGN="LEFT">text</TD><TD>PK, FK</TD></TR>
+      <TR><TD ALIGN="LEFT">nct_id</TD><TD ALIGN="LEFT">text</TD><TD>PK, idx</TD></TR>
+    </TABLE>>];
+
   // Relationships: tail = "one" side (tee), head = "many" side (crow)
+  registry_term_sets:term_key_out:e -> registry_term_members:term_key:w [xlabel="1 term : N trials"];
   data_versions:data_timestamp_out:e -> api_searches:verified_data_ts:w [xlabel="verified against"];
   data_versions:data_timestamp_out:e -> results:verified_data_ts:w      [xlabel="verified against"];
   api_searches:search_key_out:e -> api_pages:search_key:w          [xlabel="1 search : N pages"];

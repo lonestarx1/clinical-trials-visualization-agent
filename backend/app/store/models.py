@@ -2,7 +2,8 @@
 datums and full citations, jobs, and LLM usage. Not built: the page-level API cache (L1)
 and the traces table (traces stay in logs and meta).
 
-The `registry` schema holds the mirror of ClinicalTrials.gov (design Q22): trials and sync runs.
+The `registry` schema holds the mirror of ClinicalTrials.gov (design Q22): trials, sync runs and
+term sets (the trials each search term matches, as resolved by the API).
 """
 
 import uuid
@@ -219,3 +220,31 @@ class SyncRun(Base):
     error: Mapped[str | None] = mapped_column(Text)
     started_at: Mapped[datetime] = _now()
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class TermSet(Base):
+    """The NCT IDs one search term matches, as the API resolved them (design Q22)."""
+
+    __tablename__ = "term_sets"
+    __table_args__ = ({"schema": "registry"},)
+
+    term_key: Mapped[str] = mapped_column(Text, primary_key=True)  # "<param>|<expression>"
+    param: Mapped[str] = mapped_column(Text)
+    expression: Mapped[str] = mapped_column(Text)
+    size: Mapped[int] = mapped_column(Integer)
+    data_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True))  # data it matches
+    resolved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))  # last full listing
+    checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))  # last listing or refresh
+
+
+class TermMember(Base):
+    __tablename__ = "term_members"
+    __table_args__ = (
+        Index("term_members_nct_id", "nct_id"),
+        {"schema": "registry"},
+    )
+
+    term_key: Mapped[str] = mapped_column(
+        ForeignKey("registry.term_sets.term_key", ondelete="CASCADE"), primary_key=True
+    )
+    nct_id: Mapped[str] = mapped_column(Text, primary_key=True)

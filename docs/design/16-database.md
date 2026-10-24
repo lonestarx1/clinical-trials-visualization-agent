@@ -8,7 +8,7 @@ Postgres is the only datastore (Q8, Q15). It holds the API response cache, plan 
 
 Built: `data_versions`, `plan_cache`, `results`, `result_datums`, `result_citations`, `jobs`, `llm_usage` (migration `6ebfd3b4b50c`). Not built (cut line 4 in the implementation plan): `api_searches` / `api_pages` (L1 page cache) and `traces`. Consequences: `results.searches` stores each search's params and total count as JSON (used for revalidation) instead of keys into `api_searches`, and `llm_usage.trace_id` has no foreign key.
 
-**Revision (2026-10-25): the mirror's tables.** Migration `b3e1c0a7d222` adds the `registry` schema for the mirror behind `fast` mode ([Q22](22-term-sets.md)): `registry.trials` and `registry.sync_runs` (section 11). They are filled only when `MIRROR_SYNC_ENABLED` is on.
+**Revision (2026-10-25): the mirror's tables.** Migration `b3e1c0a7d222` adds the `registry` schema for the mirror behind `fast` mode ([Q22](22-term-sets.md)): `registry.trials` and `registry.sync_runs` (section 11). They are filled only when `MIRROR_SYNC_ENABLED` is on. Migration `c4f2d1b8e333` adds `registry.term_sets` and `registry.term_members` (section 12).
 
 ## Conventions
 
@@ -280,6 +280,21 @@ A copy of ClinicalTrials.gov for `fast` mode, in its own schema so it stays apar
 | `started_at`, `finished_at` | timestamptz | `started_at` minus three days is where the next update starts |
 
 Index: `(status, finished_at)`. One sync at a time is enforced by a Postgres advisory lock, not a table.
+
+## 12. `registry.term_sets` and `registry.term_members`: term sets (Q22)
+
+The trials each search term matches, as the API resolved them, so the mirror never has to interpret a condition, drug, sponsor or place itself.
+
+| Column | Type | Notes |
+|---|---|---|
+| `term_key` | text | **PK**, `"<param>|<expression>"`, such as `query.cond|"lung cancer"` |
+| `param`, `expression` | text | The term's search parameter and Essie text |
+| `size` | integer | Number of members |
+| `data_timestamp` | timestamptz | The API data the members match |
+| `resolved_at` | timestamptz | Last full listing (listed again after 7 days) |
+| `checked_at` | timestamptz | Last listing or refresh; the next refresh asks for trials updated from three days before it |
+
+`registry.term_members`: `term_key` (**FK -> term_sets**, cascade) and `nct_id` (text); primary key on both, index on `nct_id`.
 
 ## Retention and cleanup (periodic task)
 

@@ -152,8 +152,8 @@ The SQL times are estimates, to be measured. With indexes on the extracted colum
 | Table | Contents |
 |---|---|
 | `registry.trials` | As in Q21 |
-| `registry.term_sets` | `term_key` (PK), `param`, `expression`, `size`, `resolved_at`, `refreshed_through` (the last `LastUpdatePostDate` covered), `data_ts` |
-| `registry.term_members` | `term_key`, `nct_num` (the NCT ID as an integer); primary key on both, index on `nct_num` |
+| `registry.term_sets` | `term_key` (PK), `param`, `expression`, `size`, `data_timestamp` (the data the members match), `resolved_at` (last full listing), `checked_at` (last listing or refresh; the next refresh starts three days before it) |
+| `registry.term_members` | `term_key`, `nct_id` (text, like `registry.trials`, so joins need no cast); primary key on both, index on `nct_id` |
 | `registry.sync_runs` | As in Q21 |
 | `registry.drift` | Each failed check or shadow-run difference: the search, the live and mirror values, and what was refreshed |
 
@@ -170,6 +170,8 @@ ClinicalTrials.gov's [Terms and Conditions](https://clinicaltrials.gov/about-sit
 | Don't "assert any proprietary rights" or present it as other than a U.S. Government database | The API guide and README say the data belong to ClinicalTrials.gov (NLM) |
 | Don't use email addresses from the database for marketing | The mirror stores no email fields |
 | Some data "may be subject to the copyright of third parties" | We store only the fields charts and citations need (titles, names, codes, dates), no long free text such as descriptions or eligibility criteria |
+
+**As built (2026-10-25), term sets:** a compiled `Search` keeps its clauses, and `split()` turns them into terms (any clause with a phrase) and structured clauses. `term_set()` lists a term with `fields=NCTId`, reuses it for the same data, refreshes it with one narrowed call after an update, and lists it again after 7 days. Measured against the live API with the live mirror: "breast cancer" 16,765 trials listed in 19.9 s (17 pages), Keytruda 2,652 in 3.6 s, Pfizer (lead) 3,892 in 6.3 s, Japan 9,396 in 12.0 s, each equal to the API's count. A refresh across five days of updates took **1.7 s** and gave exactly the same set as a full listing.
 
 ## Rollout
 
