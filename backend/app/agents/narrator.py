@@ -9,6 +9,7 @@ After one failed retry, the deterministic template from the chart builder is use
 import json
 import logging
 import re
+import statistics
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -145,6 +146,20 @@ def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str
             facts |= {
                 "strongest_link": f"{names[strongest['source']]} - {names[strongest['target']]}",
                 "strongest_link_trials": _fmt(strongest["weight"]),
+            }
+        return facts
+    if viz.type is ChartType.SCATTER_PLOT:
+        assert plan.dimension and plan.dimension_2
+        points = viz.data if isinstance(viz.data, list) else []
+        xs = [p[plan.dimension] for p in points]
+        ys = [p[plan.dimension_2] for p in points]
+        facts["n_points"] = _fmt(len(xs))
+        if xs:
+            facts |= {
+                "median_x": _fmt(statistics.median(xs)),
+                "median_y": _fmt(statistics.median(ys)),
+                "x_label": DIMENSIONS[plan.dimension].label.lower(),
+                "y_label": DIMENSIONS[plan.dimension_2].label.lower(),
             }
         return facts
     if viz.type is ChartType.METRIC:
