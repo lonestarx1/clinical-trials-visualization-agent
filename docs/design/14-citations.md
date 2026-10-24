@@ -36,8 +36,8 @@ Every number in a chart is backed by the trials that produced it. For each trial
 ## Full citation lists: dedicated endpoint
 
 - Every successful response has a **`result_id`**. The result, including each data point's **full** list of contributing NCT IDs, is stored in Postgres.
-- `GET /v1/results/{result_id}/citations?datum=<datum key>&page=<n>&page_size=<<=100>` returns the full, paginated citation list for one data point.
-- **Lifetime:** configurable retention (e.g. 24 h). After an API data update, a stored result stays valid as long as its underlying searches pass the revalidation check (Q8). Otherwise it's recomputed, or treated as expired. Expired or unknown IDs return **410 Gone** ("re-run the query").
+- `GET /v1/results/{result_id}/citations?datum=<datum key>&cursor=<next_cursor>&page_size=<<=100>` returns the full citation list for one data point, keyset-paginated (Q16).
+- **Lifetime:** configurable retention (e.g. 24 h). After an API data update, a stored result stays valid as long as its underlying searches pass the revalidation check (Q8). Otherwise it's recomputed, or treated as expired. Expired IDs return **410 Gone** (`expired`, "re-run the query"); unknown IDs return 404 `not_found`. A background job that produced a result expires with it (Q17).
 - **Why:** a broad chart can cover 17,000 trials; inline full lists would make responses megabytes long. The frontend can show "326 trials, view all" and load the list on demand.
 
 ## Count-only strategies (S1 stats / S2 per-bucket counts, Q6)
@@ -51,6 +51,14 @@ Every number in a chart is backed by the trials that produced it. For each trial
 - **The backend always checks the size before returning.** If the full inline set exceeds a limit (configurable, e.g. **2,000 citations in total** across the response, or an estimated payload above a few MB), it falls back to the sample mode.
 - The response then reports `meta.citations = { "requested": "full", "applied": "sample", "reason": "2,000 citation limit exceeded (17,450 contributing trial references)" }`, and the full lists stay available through the endpoint.
 - `full` never bypasses the exactness check below.
+
+**As built (2026-10-25):**
+
+- The limit is the setting `CITATIONS_FULL_MAX` (default **2,000**), counted as the total of every data point's citation list (a trial in three bars counts three times). There is no separate byte-size estimate: at 2,000 citations a response stays well under a few MB.
+- Under the limit: every data point's `citations` is its full list, `citations_truncated` is `false`, and `meta.citations` is `{"requested": "full", "applied": "full", "reason": null}`.
+- Over the limit: the sample stays and `reason` reads e.g. `"2,000 citation limit exceeded (17,450 contributing trial references); page through them with the citations endpoint"`.
+- Trials-per-year series counted one call per year (Q6 S2) only ever read a sample of each year, so `full` gives `applied: "sample"` with `reason: "counted per year: ..."`.
+- The citation mode is part of the stored result's key (`result_key`: plan + `citations_per_datum` + `citations`), so a cached or revalidated answer always has the mode asked for. It is not part of the plan-cache key: the plan doesn't depend on it, so a `full` request after a `sample` one reuses the plan and computes a new result.
 
 ## Exactness check (always on)
 
