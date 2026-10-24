@@ -227,3 +227,7 @@ So the registry re-maps conditions and interventions to MeSH, and recomputes oth
 - Check 1 (no trial changed since) can miss a re-mapped trial.
 - Check 2 (the total count is unchanged) still catches any re-mapping that changes the count, but not a swap where one trial leaves and another joins.
 - MeSH re-mapping is rare (mostly the yearly MeSH update), so the risk is small but real. The **7-day safety ceiling stays**: no stored answer is reused for more than 7 days without being recomputed.
+
+## 11. The code `ALL` must be quoted (found by the mirror cross-check)
+
+Measured 2026-10-25. `AREA[Sex]ALL` matches **every** trial (608,415): Essie reads the bare word `ALL` as "everything". Quoted, `AREA[Sex]"ALL"` matches the 523,690 trials open to all sexes, exactly the `/stats/field/values` count. `AREA[Sex]FEMALE` (58,711), `AREA[Sex]MALE` (24,611) and `AREA[Sex]MISSING` (1,403) match their stats counts, and so do the other code values that look like keywords: `AREA[DesignMasking]NONE` (254,813, quoted or not), `AREA[Phase]NA` (239,565) and the booleans. The compiler quotes `ALL` (`QUOTED_CODES` in `app/ctgov/essie.py`).
