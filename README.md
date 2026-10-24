@@ -2,7 +2,7 @@
 
 A backend service that turns a natural-language question about clinical trials into a structured visualization spec, backed by live data from the [ClinicalTrials.gov API](https://clinicaltrials.gov/data-api/api), with citations for every data point.
 
-> **Status: in progress.** The skeleton (M0) is in place: settings, health endpoint, Docker Compose stack, CI and the acceptance tests. See [the implementation plan](docs/implementation-plan.md).
+> **Status: in progress.** Done: M0 (skeleton, settings, health, Compose, CI, acceptance tests) and M1a (registry, request and plan schemas, query compiler, ClinicalTrials.gov client). See [the implementation plan](docs/implementation-plan.md).
 
 ## Quick start
 
@@ -24,6 +24,7 @@ Requirements: [uv](https://docs.astral.sh/uv/) (Python 3.12 is installed by uv i
 |---|---|
 | `make test` | Offline tests: unit, contract, integration (no network, no AI) |
 | `make test-db` | Database tests against the Compose Postgres |
+| `make test-live` | Live ClinicalTrials.gov checks of the compiled query syntax (opt-in) |
 | `make test-e2e` | Acceptance tests against the running stack (real API and AI) |
 | `make lint` | ruff, formatting check, mypy (strict) |
 
