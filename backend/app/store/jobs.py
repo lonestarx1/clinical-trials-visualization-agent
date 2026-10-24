@@ -76,6 +76,12 @@ async def progress(session: AsyncSession, job_id: uuid.UUID, value: dict[str, An
     )
 
 
+async def heartbeat(session: AsyncSession, job_id: uuid.UUID) -> None:
+    await session.execute(
+        update(Job).where(Job.job_id == job_id).values(heartbeat_at=datetime.now(UTC))
+    )
+
+
 async def succeed(session: AsyncSession, job_id: uuid.UUID, *, result_id: uuid.UUID | None) -> None:
     now = datetime.now(UTC)
     await session.execute(
