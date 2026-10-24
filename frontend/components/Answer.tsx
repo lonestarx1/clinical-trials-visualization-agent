@@ -82,6 +82,7 @@ export function Answer({ response, theme, onSelect, onCopyLink }: {
           <div>
             <h3>What was counted</h3>
             <p>{sentenceFilters(m.filters ?? {})}</p>
+            {(m.notes ?? []).length > 0 && <ul className="notes">{m.notes.map((t: string, i: number) => <li key={i}>{t}</li>)}</ul>}
             {m.counting_rule && <p>{m.counting_rule}{m.additive === false ? " A trial can appear in more than one bar, so the bars add up to more than the total." : ""}</p>}
             {(m.assumptions ?? []).length > 0 && (
               <>
@@ -95,7 +96,6 @@ export function Answer({ response, theme, onSelect, onCopyLink }: {
             {excluded.length
               ? <ul>{excluded.map((e, i) => <li key={i}>{n(e.count)} {e.count === 1 ? "trial" : "trials"}: {e.reason}</li>)}</ul>
               : <p>No matching trial was dropped for missing or out-of-range data.</p>}
-            {(m.notes ?? []).length > 0 && <ul className="notes">{m.notes.map((t: string, i: number) => <li key={i}>{t}</li>)}</ul>}
             {m.network && (
               <p>The network keeps the {m.network.nodes} most connected of {n(m.network.nodes_before)} entities and links with at
                 least {m.network.min_edge_weight} shared trial{m.network.min_edge_weight === 1 ? "" : "s"}; colours are clusters found by community detection.</p>
