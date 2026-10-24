@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import Link from "next/link";
 import { Answer } from "@/components/Answer";
 import { datumLabel, EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { Logo } from "@/components/Logo";
@@ -111,6 +112,8 @@ export default function Home() {
           <Logo />Clinical Trials Explorer
         </button>
         <div className="topbar-actions">
+          {/* On phones the answer view's top bar has no room for it; the home page keeps it. */}
+          <Link className={`ghost docs-link${view.kind !== "home" ? " wide-only" : ""}`} href="/docs">API<span className="wide-only"> docs</span></Link>
           {view.kind !== "home" && <button className="ghost new-question" onClick={goHome}>New<span className="wide-only"> question</span></button>}
           <ThemePicker selection={selection} onChoose={choose} />
         </div>
