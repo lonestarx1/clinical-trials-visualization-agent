@@ -9,9 +9,20 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import BaseModel
 
 from app.api.errors import _PUBLIC
+from app.api.health import Health
 from app.main import create_app
+from app.schemas.endpoints import (
+    CitationPage,
+    ErrorResponse,
+    JobAccepted,
+    JobStatus,
+    Options,
+    UsageSummary,
+)
+from app.schemas.request import QueryRequest
 from app.schemas.response import QueryResponse
 from app.store.results import CODE_VERSION
 
@@ -179,3 +190,42 @@ def test_response_models_describe_every_field(spec: dict[str, Any], name: str) -
     schema = spec["components"]["schemas"][name]
     missing = [f for f, prop in schema["properties"].items() if not prop.get("description")]
     assert not missing, missing
+
+
+MODELS: dict[str, type[BaseModel]] = {
+    "QueryResponse": QueryResponse,
+    "JobAccepted": JobAccepted,
+    "JobStatus": JobStatus,
+    "CitationPage": CitationPage,
+    "Options": Options,
+    "UsageSummary": UsageSummary,
+    "Health": Health,
+    "ErrorResponse": ErrorResponse,
+}
+
+
+def test_every_example_is_valid_for_its_schema(spec: dict[str, Any]) -> None:
+    """Including the nulls FastAPI would drop (e.g. `visualization: null`)."""
+    checked = 0
+    for _, _, op in operations(spec):
+        for response in op["responses"].values():
+            schema = response.get("content", {}).get("application/json", {}).get("schema", {})
+            name = schema.get("$ref", "").rsplit("/", 1)[-1]
+            if name not in MODELS:
+                continue
+            for example in examples(response).values():
+                MODELS[name].model_validate(example["value"])
+                checked += 1
+    assert checked >= 20
+
+
+def test_request_examples_are_valid_requests(spec: dict[str, Any]) -> None:
+    body = spec["paths"]["/v1/query"]["post"]["requestBody"]["content"]["application/json"]
+    assert body["examples"]
+    for example in body["examples"].values():
+        QueryRequest.model_validate(example["value"])
+
+
+def test_the_options_model_matches_the_real_body(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key-not-real")
+    Options.model_validate(TestClient(create_app()).get("/v1/options").json())
