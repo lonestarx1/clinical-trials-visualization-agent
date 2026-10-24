@@ -29,7 +29,7 @@ DEFAULT_CHART = {
     Intent.NUMERIC_RELATIONSHIP: ChartType.SCATTER_PLOT,
     Intent.SINGLE_NUMBER: ChartType.METRIC,
 }
-NOT_BUILT_YET = {ChartType.NETWORK_GRAPH, ChartType.SCATTER_PLOT}  # arrive in M3
+NOT_BUILT_YET: set[ChartType] = set()
 
 ChartSource = Literal["ai", "user", "fallback"]
 
@@ -59,6 +59,26 @@ def compatibility_errors(plan: QueryPlan) -> list[str]:
         return ["metric takes no dimension."] if dim else []
     if dim is None:
         return [f"{chart} needs a dimension."]
+    dim_2 = DIMENSIONS[plan.dimension_2] if plan.dimension_2 else None
+    if chart is ChartType.NETWORK_GRAPH:
+        kinds = {kind, dim_2.kind if dim_2 else kind}
+        errors = (
+            []
+            if kinds == {DimensionKind.ENTITY}
+            else [
+                "network_graph needs entity dimensions (e.g. drug alone for co-occurrence, or "
+                "sponsor + drug)."
+            ]
+        )
+        return errors + (["network_graph can't show comparison groups."] if plan.groups else [])
+    if chart is ChartType.SCATTER_PLOT:
+        if (
+            kind is not DimensionKind.NUMERIC
+            or not dim_2
+            or dim_2.kind is not DimensionKind.NUMERIC
+        ):
+            return ["scatter_plot needs two numeric dimensions (dimension and dimension_2)."]
+        return ["scatter_plot can't show comparison groups."] if plan.groups else []
     errors = []
     if chart is ChartType.TIME_SERIES and kind is not DimensionKind.TIME:
         errors.append("time_series needs a time dimension (start_year or first_posted_year).")

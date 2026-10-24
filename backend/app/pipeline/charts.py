@@ -174,6 +174,8 @@ def build_chart(
             network=network,
         )
         return ChartResult(viz, meta)
+    if plan.chart_type is ChartType.SCATTER_PLOT:
+        return _scatter(plan, dim, studies, citations_per_datum)
     if dim.kind is DimensionKind.NUMERIC:
         return _histogram(plan, dim, groups, studies, citations_per_datum)
     return _bars(plan, dim, groups, studies, now_year, citations_per_datum)
@@ -338,6 +340,50 @@ def _histogram(
         notes=[f"Bins are {width:g} wide; values above {upper:g} (99th percentile) overflow."],
     )
     return ChartResult(viz, meta)
+
+
+def _scatter(
+    plan: QueryPlan, x_dim: Dimension, studies: dict[str, dict[str, Any]], limit: int
+) -> ChartResult:
+    assert plan.dimension_2 is not None
+    y_dim = DIMENSIONS[plan.dimension_2]
+    rows, missing = [], 0
+    for trial in sorted(studies):
+        x, y = extract_number(studies[trial], x_dim.key), extract_number(studies[trial], y_dim.key)
+        if x is None or y is None or (y_dim.key == "duration_months" and y.value < 0):
+            missing += 1
+            continue
+        rows.append(
+            {
+                "key": trial,
+                "nct_id": trial,
+                x_dim.key: x.value,
+                y_dim.key: y.value,
+                "estimated": x.estimated or y.estimated,
+            }
+            | sample_citations({trial: x.evidence + y.evidence}, studies, limit)
+        )
+    viz = Visualization(
+        type=ChartType.SCATTER_PLOT,
+        title=f"{x_dim.label} vs {y_dim.label.lower()}",
+        summary=f"{len(rows)} trials have both values.",
+        encoding={
+            "x": Channel(field=x_dim.key, type="quantitative", label=x_dim.label),
+            "y": Channel(field=y_dim.key, type="quantitative", label=y_dim.label),
+            "id": Channel(field="nct_id", type="nominal", label="Trial"),
+        },
+        data=rows,
+    )
+    excluded = [Excluded(reason=f"no {x_dim.key} or {y_dim.key} reported", count=missing)]
+    return ChartResult(
+        viz,
+        ChartMeta(
+            counting_rule="One point per trial with both values.",
+            additive=True,
+            unique_trials=len(rows),
+            excluded=excluded if missing else [],
+        ),
+    )
 
 
 def _metric(
