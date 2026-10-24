@@ -179,7 +179,7 @@ ClinicalTrials.gov's [Terms and Conditions](https://clinicaltrials.gov/about-sit
 
 ## As built: fast mode (2026-10-25)
 
-- **Request and response:** `POST /v1/query` takes `mode` (`live`, the default, or `fast`), and `meta.data_source` says which mode answered. `GET /health` reports `fast_mode.status` (`ready`, `syncing`, `not_loaded`, `off`) and the data version the mirror holds. The plan cache ignores `mode`, so both modes share plans; a stored answer serves either mode (see the known issue below).
+- **Request and response:** `POST /v1/query` takes `mode` (`live`, the default, or `fast`), and `meta.data_source` says which mode answered. `GET /health` reports `fast_mode.status` (`ready`, `syncing`, `not_loaded`, `off`) and the data version the mirror holds. The plan cache ignores `mode`, so both modes share plans. Stored answers are kept per mode (`mode` is part of `result_key`), so a live request never gets a stored fast answer.
 - **The path** (`app/mirror/fast.py`, called from `handle_query` after `prepare()`):
   1. the mirror must hold the API's current `dataTimestamp`;
   2. the chart's fields must be ones the mirror keeps;
@@ -211,7 +211,7 @@ Checked against `app/mirror/`, `app/workers/mirror.py` and `app/pipeline/query.p
 | Shadow runs | **Built for a sample:** `FAST_MODE_SHADOW_RATE` (10%) of fast answers of at most `FAST_MODE_SHADOW_MAX_PAGES` (20) pages; values compared, citations not; log only |
 | `FAST_MODE_SHADOW` (shadow-only phase, step 5 of the rollout) | **Not built** (deviation, see "As built: fast mode") |
 
-**Known issue: the stored answer ignores `mode`.** The result key (`result_key` in `app/pipeline/keys.py`) covers the plan and citation options, not `mode`. So a `live` request for a question already answered in `fast` mode is served the stored fast answer. Its `meta.data_source` still says `fast`, so it is visible, but the user asked for live data. Fix (code): add `mode` to the result key, or don't reuse fast answers for live requests.
+**Fixed: stored answers are kept per mode.** At first the result key (`result_key` in `app/pipeline/keys.py`) covered the plan and citation options but not `mode`, so a `live` request for a question already answered in `fast` mode was served the stored fast answer. `mode` is now part of the key, with a test (`tests/db/test_fast_mode.py`).
 
 ## Rollout
 

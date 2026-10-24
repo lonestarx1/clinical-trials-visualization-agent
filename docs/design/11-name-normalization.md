@@ -35,7 +35,7 @@ Checked against [`extract.py`](../../backend/app/pipeline/extract.py) and [`netw
 - **D11.2:** placebo, vehicle and sham are excluded, and the counting rule says "placebo excluded", but the number excluded is not reported in `meta`.
 - **D11.6:** only site-level principal and sub-investigators are used; trial-level `overallOfficials` are not. Credentials are removed by cutting the name at its first comma, so "Smith, John" becomes "Smith".
 
-**Known limitation: marking or hiding the queried entity in a network.** `is_query_entity` and `hide_query_entity` ([Q13](13-networks.md)) compare the filter text, case-folded, with the node keys (`networks.py`, lines 101-108). Node keys are MeSH terms and raw API names, not the user's words. So the queried entity is found only when the user's term equals the node's name: "pembrolizumab" matches, but "breast cancer" never matches "Breast Neoplasms", "Merck" never matches "Merck Sharp & Dohme LLC", and "USA" never matches "United States". The node is then neither flagged nor hidden. A fix would find the node through the matching trials' own values instead of the filter text.
+**Marking or hiding the queried entity in a network** ([Q13](13-networks.md)). Node keys are MeSH terms and raw API names, not the user's words, so the filter text alone would miss "Keytruda" (pembrolizumab), "breast cancer" (Breast Neoplasms), "Merck" (Merck Sharp & Dohme LLC) or "USA" (United States). As built, a term is matched against every name the records give a node (a drug's other names, a country's canonical name), and failing that, against the node found in most of the network's trials. `meta.network.query_entities` says how each term was matched, or that none was.
 
 ## Requirement links
 

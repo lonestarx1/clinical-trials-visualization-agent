@@ -103,8 +103,7 @@ LIVE = {"PHASE1": 1, "PHASE2": 1, "PHASE2/PHASE3": 1, "PHASE3": 1}  # melanoma: 
 def test_fast_answers_from_the_mirror_with_the_live_answer(client: TestClient) -> None:
     fast = ask(client, mode="fast")
     assert fast["meta"]["data_source"] == "fast"
-    # 2 sample citations per bar, not 1: a different stored answer, so live really runs again
-    live = ask(client, mode="live", citations_per_datum=2)
+    live = ask(client, mode="live")
     assert live["meta"]["data_source"] == "live"
     assert values(fast) == values(live) == LIVE
     # Every number stays checkable against ClinicalTrials.gov: the live search URL is kept.
@@ -113,6 +112,16 @@ def test_fast_answers_from_the_mirror_with_the_live_answer(client: TestClient) -
     ]
     assert "query.cond" in fast["meta"]["api_queries"][0]["url"]
     assert all(c["nct_id"] != "NCT5" for d in fast["visualization"]["data"] for c in d["citations"])
+
+
+def test_a_live_request_never_gets_a_stored_fast_answer(client: TestClient) -> None:
+    """Each mode has its own stored answers: asking live after fast computes live."""
+    assert ask(client, mode="fast")["meta"]["data_source"] == "fast"
+    live = ask(client, mode="live")
+    assert live["meta"]["data_source"] == "live"
+    assert live["meta"]["cache"]["result"] == "miss"
+    again = ask(client, mode="fast")
+    assert (again["meta"]["data_source"], again["meta"]["cache"]["result"]) == ("fast", "hit")
 
 
 def test_live_is_the_default_and_unchanged(client: TestClient) -> None:

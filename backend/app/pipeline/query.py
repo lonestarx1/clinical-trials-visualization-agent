@@ -177,7 +177,9 @@ async def store_answer(
     async with sessions() as s:
         await results.save_result(
             s,
-            result_key=result_key(plan, request.citations_per_datum, request.citations),
+            result_key=result_key(
+                plan, request.citations_per_datum, request.citations, request.mode
+            ),
             response=response.model_dump(mode="json"),
             request=request.model_dump(mode="json"),
             plan=plan.model_dump(mode="json"),
@@ -264,14 +266,14 @@ async def _answer_without_models(
     That is a stored plan plus a stored result that is still valid or revalidates (Q8).
     The guard is not called either. This is safe: a plan is cached only after the guard
     passed the request, and the plan-cache key covers the question and every field except
-    `citations` and `citations_per_datum` (a choice and a number, which can't carry an
+    `citations`, `citations_per_datum` and `mode` (choices and a number, which can't carry an
     attack). So an exact repeat of a guarded request is all that can get through here.
     Anything else (a new question, or a result that would have to be narrated again)
     needs a model and is refused.
     """
     if cached is None or cached.plan is None:
         raise BudgetExceeded
-    key = result_key(cached.plan, request.citations_per_datum, request.citations)
+    key = result_key(cached.plan, request.citations_per_datum, request.citations, request.mode)
     reused = await _reuse(sessions, key, ctgov, settings)
     if reused is None:
         raise BudgetExceeded
@@ -374,7 +376,7 @@ async def handle_query(
     if sessions is not None:
         reused = await _reuse(
             sessions,
-            result_key(plan, request.citations_per_datum, request.citations),
+            result_key(plan, request.citations_per_datum, request.citations, request.mode),
             ctgov,
             settings,
         )

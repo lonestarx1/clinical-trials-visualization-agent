@@ -43,7 +43,7 @@ Filters
 - `measure` also takes `distinct_count`: distinct entities (sponsors, drugs, ...) per bucket, with `options.count_entity` and an optional `options.min_trials` (1-1,000). Both options are rejected with any other measure.
 - `scope_suggestion` (up to 300 chars): for an out-of-scope answer, the closest question the tool can answer, shown in `meta.details.suggestion`. `scope_reason` is up to 500 chars; `assumptions` up to 10 entries; `options.histogram_bins` 2-50; `options.top_n` 1-50.
 - `filters.us_states` is free text like `countries`, not an enum, and is grounded by V2 ([Q4b](04b-ai-validation.md)).
-- `options.show_empty` is accepted but no code reads it yet ([Q10](10-missing-partial-estimated.md), D10.9).
+- `options.show_empty` lists every value of an enum dimension, with 0 where no trial has it ([Q10](10-missing-partial-estimated.md), D10.9).
 
 ## Decisions
 

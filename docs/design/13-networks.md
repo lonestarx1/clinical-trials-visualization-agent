@@ -49,7 +49,11 @@ The pruning is deterministic (ties broken by label), so the same data always giv
 
 ## As built (2026-10-25): two limits
 
-- **Query-entity match is by name, so it can miss silently.** `is_query_entity` and `hide_query_entity` compare the filter's text, case-folded, with node keys, which are normalised MeSH terms for drugs and conditions (`app/pipeline/networks.py`, around line 101). "pembrolizumab" matches its node; "Keytruda" or "lung cancer" (MeSH "Lung Neoplasms") match nothing, so no node is flagged or hidden and nothing says so. Fix (code): map the filter through the same MeSH lookup, or flag nodes present in every trial, and add a note when nothing matched.
+- **How the queried entity is found** (`_query_entities` in `app/pipeline/networks.py`). Node keys are normalised MeSH terms and API names, not the user's words, so each filter term on a network dimension is matched in two steps:
+  1. **By name:** against every name the records give a node: its key, its labels and, for drugs, the intervention's name and listed other names. "Keytruda", "MK-3475" and "Lambrolizumab" all find the pembrolizumab node.
+  2. **In most trials:** a term no record uses (e.g. "lung cancer", whose node is MeSH "Lung Neoplasms") still matched every trial through the API's synonyms. So if one node of that type is in more than half the trials with a value for it, and in more than any other node, it is the queried entity.
+
+  Otherwise no node is flagged or hidden. `meta.network.query_entities` lists each term with its node and `matched_by` (`name`, `in most trials` or null), so a miss is visible.
 - **Node weight counts linked trials only.** A node's `weight`, and the Jaccard denominator, count the trials in which the node is part of at least one edge. For drug ↔ drug that is the stated rule (trials with >= 2 drugs). For two node types it means a sponsor's weight is its trials **with at least one drug**, not all its trials in scope. `meta.network.trials_without_links` reports how many trials gave no link.
 
 ## Requirement links

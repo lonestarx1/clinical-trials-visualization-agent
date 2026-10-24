@@ -46,7 +46,7 @@ Evidence of careful construction, testing and iteration is rewarded.
 
 ### How correctness was validated
 
-- Automated test suites: 589 offline unit, contract and integration tests, 86 database tests, 20 live API checks, 11 end-to-end questions through the running stack, and 71 web tests. The README's "Testing and validation" section lists them.
+- Automated test suites: 597 offline unit, contract and integration tests, 87 database tests, 20 live API checks, 11 end-to-end questions through the running stack, and 71 web tests. The README's "Testing and validation" section lists them.
 - **An AI evaluation set** (42 planner, 36 guard and 25 narrator cases) measures each AI stage with the real models. It found a gate bug, drove two rounds of prompt fixes, chose the models in a bake-off, and showed two kinds of title error the checks miss ([`../eval/`](../eval/README.md)).
 - **Cross-checks against the API:** our aggregated counts are compared with the API's own counts, and with an independent tally of the raw records. Fast mode's searches over our copy are cross-checked against the live API; the check found that Essie reads a bare `ALL` as "every trial" ([live probe §11](../api/live-probe.md)).
 - **Citation exactness:** every excerpt is checked against the raw API record at its field path.
