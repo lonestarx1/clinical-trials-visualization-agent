@@ -16,7 +16,7 @@ Status: **Decided** (2026-10-24, with the user)
 | Entities as the user wrote them: drug, condition, sponsor, country terms; comparison groups ("A vs B") | Free text, checked with `count_trials` |
 | Dimension(s) and measure | Registry keys |
 | Filters: status, phase, year range, ... | Enum values / bounded integers |
-| Title + one-sentence summary (narration stage) | Free text, sanity-checked (Q4) |
+| Chart title (narration stage) | Free text with fact placeholders, sanity-checked (Q4). The one-sentence summary was removed 2026-10-24 ([Q4b revision](04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)) |
 
 ## Code decides (everything that affects the numbers)
 

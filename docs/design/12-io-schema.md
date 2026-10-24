@@ -25,15 +25,16 @@ The request schema is in Q5 (`05-request-fields.md`).
 
 ## Response envelope (same for every chart type)
 
+**Revision (2026-10-24):** `visualization.summary` was removed and `schema_version` went from `"1.0"` to `"2.0"`, because removing a field breaks clients ([Q4b revision](04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)).
+
 ```json
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "result_id": "uuid (null when no result is stored)",
   "status": "ok | no_matching_trials | out_of_scope | could_not_interpret",
   "visualization": {
     "type": "bar_chart | grouped_bar_chart | time_series | histogram | scatter_plot | network_graph | metric",
     "title": "string (AI-written, validated)",
-    "summary": "string (AI-written from the fact sheet, validated)",
     "encoding": { "...": "per type, see below" },
     "data": "per type, see below"
   },

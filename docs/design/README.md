@@ -7,10 +7,10 @@ Designed with the user, one question at a time, on 2026-10-24. Each file records
 | Q | File | Decision in one line |
 |---|---|---|
 | 1 | [01-scope.md](01-scope.md) | One question shape ("measure of trials matching filters, grouped by dimension(s) or linked as a network"); 9 question types, 7 chart types, 9 extra dimensions beyond the appendix; efficacy, patient matching, single-trial summaries and stop-reason categorisation out of scope |
-| 2 | [02-pipeline.md](02-pipeline.md) | 12-stage pipeline; AI only in Guard, Plan and Narrate; AI writes the title + a one-sentence summary, both validated |
+| 2 | [02-pipeline.md](02-pipeline.md) | 12-stage pipeline; AI only in Guard, Plan and Narrate; AI writes the title, validated (the one-sentence summary was removed 2026-10-24, see Q4b) |
 | 3 | [03-ai-vs-code.md](03-ai-vs-code.md) | AI turns words into choices from fixed lists (incl. chart type); code turns choices into numbers. Planning is a **bounded agent with code tools** (`list_options`, `check_plan`, `count_trials`, `submit_plan`) + a code gate |
 | 4a | [04a-plan-schema.md](04a-plan-schema.md) | Strict QueryPlan: enums/bounded numbers everywhere except entity terms; 2-4 comparison groups; OR within a filter, AND across filters |
-| 4b | [04b-ai-validation.md](04b-ai-validation.md) | 9 checks: schema, entity grounding, non-empty search, explained extra filters; **fact sheet + placeholders** so narrated numbers are correct by construction; number/name/banned-claim checks; retry then template fallback |
+| 4b | [04b-ai-validation.md](04b-ai-validation.md) | 9 checks: schema, entity grounding, non-empty search, explained extra filters; **fact sheet + placeholders** so narrated numbers are correct by construction; number/name/banned-claim checks; retry then template fallback. **Revised 2026-10-24:** AI writes the title only, the summary is removed |
 | 5 | [05-request-fields.md](05-request-fields.md) | PDF field names (`drug_name`, `trial_phase`, ...); fields override the AI; bad input in 3 layers: 422, sanitise + escape, "no matching trials" with per-filter counts |
 | 5b | [05b-input-guard.md](05b-input-guard.md) | AI guard for malicious requests, in parallel with planning; 400 on reject; **fail closed** after one retry (503) |
 | 6 | [06-retrieval.md](06-retrieval.md) | **Live API only, exact answers**; strategies S1 stats / S2 count per bucket / S3 fetch + aggregate; parallel slices (concurrency 2); background jobs over ~60 s. Local mirror **seriously weighed and rejected** (legal uncertainty, complexity, authority) |

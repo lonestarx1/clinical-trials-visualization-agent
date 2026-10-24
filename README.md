@@ -7,7 +7,7 @@ POST /v1/query  {"query": "How are breast cancer trials distributed across phase
 -> 200 {"status": "ok", "visualization": {"type": "bar_chart", "title": ..., "encoding": ..., "data": [...]}, "meta": {...}}
 ```
 
-> **Status:** milestones M0-M5 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations, plus AI title and summary; stored results with **full citation lists**, plan and result caches with revalidation, background jobs for broad questions, LLM cost tracking with a daily cap. **All 9 appendix questions pass end to end.** Includes a web UI. Next: deployment (M6). See [the implementation plan](docs/implementation-plan.md).
+> **Status:** milestones M0-M5 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations and an AI-written, checked title; stored results with **full citation lists**, plan and result caches with revalidation, background jobs for broad questions, LLM cost tracking with a daily cap. **All 9 appendix questions pass end to end.** Includes a web UI. Next: deployment (M6). See [the implementation plan](docs/implementation-plan.md).
 
 ## Quick start
 
@@ -56,7 +56,7 @@ request ─► validate (422) ─┬─► guard (AI, fail closed) ────�
 | Compile, retrieve | Code | Plan -> Essie query tree (user text can only ever be a quoted phrase) -> ClinicalTrials.gov, with a global rate limiter, retries and a circuit breaker. |
 | Aggregate, chart | Code | Every number. Explicit counting rules for multi-valued fields, nothing silently dropped (`meta.excluded`). |
 | Verify | Code | Every citation excerpt is compared with the record it came from; a mismatch fails the request. |
-| Narrate | AI (`gpt-5.4-nano`) | Writes the title and one-sentence summary **with placeholders** filled from a fact sheet, so numbers are correct by construction. Checked for invented numbers, names not in the chart and evaluative claims; one retry, then a template. |
+| Narrate | AI (`gpt-5.4-nano`) | Writes the chart title **with placeholders** filled from a fact sheet, so numbers are correct by construction. Checked for invented numbers, names not in the chart, evaluative claims, length and repeated phrases; one retry, then a template title. No free-text summary: it was removed as hallucination-prone and not required ([decision](docs/design/04b-ai-validation.md#revision-2026-10-24-the-ai-summary-is-removed)). |
 
 Networks: one entity dimension gives co-occurrence (drugs used together), two give links between kinds (sponsor - drug, condition - drug, sponsor - collaborator, investigator - site). Node and edge weights are distinct trials, edges also carry Jaccard similarity, the graph is pruned deterministically (recorded in `meta.network`), and communities are detected: in the melanoma example they separate lymphodepletion + IL-2 regimens, chemotherapy, checkpoint + BRAF/MEK therapy and peptide vaccines.
 
@@ -98,11 +98,11 @@ Unknown fields are rejected (422). Full schema: `/openapi.json`.
 
 ```jsonc
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "status": "ok",                       // or no_matching_trials | out_of_scope | could_not_interpret (200, visualization null)
   "visualization": {
     "type": "bar_chart",
-    "title": "...", "summary": "...",
+    "title": "...",
     "encoding": {                       // every data key is named here: no guessing
       "x": {"field": "phase", "type": "ordinal", "label": "Phase", "sort": "natural"},
       "y": {"field": "trial_count", "type": "quantitative", "label": "Number of trials", "unit": "trials"}
@@ -145,7 +145,7 @@ AI cost per question: about $0.003 (measured, `meta.usage`).
 
 The full reasoning, alternatives and requirement links are in [docs/design](docs/design/README.md) (20 decisions). The main ones:
 
-- **AI chooses, code computes.** The planner picks from registry lists; all numbers and citations come from deterministic code. Narration uses placeholders.
+- **AI chooses, code computes.** The planner picks from registry lists; all numbers and citations come from deterministic code. The AI writes only the chart title, with placeholders; there is no free-text summary.
 - **Live API, exact answers.** Every chart is computed from ClinicalTrials.gov at request time, never sampled. A local mirror was seriously considered and rejected (legal uncertainty about bulk copying, operational weight).
 - **Strict matching by default.** Drugs match intervention names (with the API's own synonym expansion: "Keytruda" finds pembrolizumab trials); conditions are quoted phrases; "sponsor" means lead sponsor. `match_mode` / `sponsor_role` widen it. Measured in the [live probe](docs/api/live-probe.md).
 - **Explicit counting rules.** 17% of trials have two phases, and trials list many drugs, conditions and countries. Every chart states its rule, whether bars add up (`meta.additive`) and how many distinct trials it covers.
