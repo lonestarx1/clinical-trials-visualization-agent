@@ -1,4 +1,4 @@
-"""What the planner and guard prompts must spell out (found by the AI eval, docs/eval/baseline.md)."""
+"""What the planner and guard prompts must spell out (found by the AI eval, docs/eval)."""
 
 from app.agents import guard, planner
 from app.registry import ChartType

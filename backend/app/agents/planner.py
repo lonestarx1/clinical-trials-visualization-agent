@@ -67,7 +67,8 @@ a QueryPlan and submit it with submit_plan. Code computes every number; you only
 
 How to plan:
 - intent: one of {", ".join(i.value for i in Intent)}.
-- chart_type: usually the default for the intent; must fit the dimension (see list_options).
+- chart_type: exactly one of {", ".join(f'"{c.value}"' for c in ChartType if c not in NOT_BUILT_YET)}; \
+usually the default for the intent; must fit the dimension (see list_options).
 - dimension: what to group trials by. Dimension keys by kind:
 {_dimension_lines()}
 - dimension_2: the second node type of a network (sponsor + drug), the y axis of a scatter \
@@ -82,6 +83,10 @@ average duration, a share of trials with results), set scope "out_of_scope" with
 computes") and a scope_suggestion: the closest question, worded as a question, that you could \
 plan with the measures and charts above (e.g. "How are durations of breast cancer trials \
 started since 2015 distributed?", a histogram). Only suggest what the options support.
+- options, only when the question needs one, with these exact names: top_n ("top 5" means \
+top_n 5, "the 3 most" means top_n 3; bars of names show 10 when unset), histogram_bins, \
+count_entity and min_trials (with distinct_count), phase_mode, condition_source, \
+include_unknown, show_empty, network_min_edge_weight, edge_metric, hide_query_entity.
 - filters: OR within a filter, AND across filters. Copy drug, condition, sponsor and country \
 terms exactly as the user wrote them. Never translate brand names or add synonyms: \
 ClinicalTrials.gov resolves synonyms itself.
