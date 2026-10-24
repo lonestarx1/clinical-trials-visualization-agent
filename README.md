@@ -7,7 +7,7 @@ POST /v1/query  {"query": "How are breast cancer trials distributed across phase
 -> 200 {"status": "ok", "visualization": {"type": "bar_chart", "title": ..., "encoding": ..., "data": [...]}, "meta": {...}}
 ```
 
-> **Status:** milestones M0-M5 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations and an AI-written, checked title; stored results with **full citation lists**, plan and result caches with revalidation, background jobs for broad questions, LLM cost tracking with a daily cap. **All 9 appendix questions pass end to end.** Includes a web UI. Next: deployment (M6). See [the implementation plan](docs/implementation-plan.md).
+> **Status:** milestones M0-M5 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations and an AI-written, checked title; stored results with **full citation lists**, plan and result caches with revalidation, background jobs for broad questions, LLM cost tracking with a daily cap. **All 9 appendix questions pass end to end.** Includes a web UI. **Deployed (M6):** https://trials.cheiron.engineeradriel.com (web) and https://api.cheiron.engineeradriel.com (API). Next: evaluation and final docs (M7). See [the implementation plan](docs/implementation-plan.md).
 
 ## Quick start
 
@@ -172,6 +172,23 @@ Written test-first (each `test:` commit fails before the `feat:` commit that fol
 - Sponsor names are not merged across spellings ("Merck Sharp & Dohme LLC" vs "Merck & Co."). MeSH grouping inherits MeSH quirks: "aldesleukin" and "Interleukin-2" can be separate drug nodes.
 
 - The ClinicalTrials.gov rate limiter, the per-client limit and the job workers are in-process (one instance); several instances would need a shared store such as Redis.
+
+## Deployment
+
+Live at **https://trials.cheiron.engineeradriel.com** (web app) and **https://api.cheiron.engineeradriel.com** (API).
+
+It runs on **Kubernetes (k3s) on one EC2 t3.medium**, defined in **Terraform** (network, node, IAM, ECR, Secrets Manager, DNS) and **Kustomize** (Postgres, API, web, Ingress with Let's Encrypt). `make deploy` builds, pushes and rolls out through an SSM tunnel: there's no SSH and no public Kubernetes API.
+
+**Why this setup:** the submission deadline and cost (about $1.50/day). k3s is real Kubernetes, with the same manifests and Helm as EKS, but without EKS's $2.40/day control-plane fee. The same base also has an EKS overlay.
+
+**In production** it would run on EKS across three zones, with:
+- RDS for Postgres;
+- background workers scaled on queue depth;
+- one rate limiter shared by all pods (ClinicalTrials.gov limits per IP);
+- CloudFront, WAF and an ALB in front;
+- External Secrets, and GitOps deploys with Argo CD.
+
+The reasons and alternatives are in [design Q19](docs/design/19-deployment-ui.md#revision-2026-10-25-what-was-actually-deployed). How to deploy from scratch is in [`infra/README.md`](infra/README.md).
 
 ## Development
 
