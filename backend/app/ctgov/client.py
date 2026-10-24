@@ -10,6 +10,7 @@ import asyncio
 import logging
 import random
 import time
+from collections import deque
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from types import TracebackType
@@ -61,23 +62,37 @@ class InconsistentResults(CtgovError):
 
 
 class RateLimiter:
-    """At most `per_minute` request starts per minute and `concurrency` in flight."""
+    """At most `per_minute` request starts per minute and `concurrency` in flight.
 
-    def __init__(self, per_minute: int, concurrency: int, clock: ClockLike | None = None) -> None:
-        self._interval = 60.0 / per_minute
+    Up to `burst` requests may start at once: at most `burst` starts in any window of
+    `burst * 60 / per_minute` seconds (a sliding window). `burst=1` spaces every start evenly.
+    """
+
+    def __init__(
+        self,
+        per_minute: int,
+        concurrency: int,
+        clock: ClockLike | None = None,
+        *,
+        burst: int = 1,
+    ) -> None:
+        self._window = burst * 60.0 / per_minute
+        self._starts: deque[float] = deque(maxlen=burst)
         self._slots = asyncio.Semaphore(concurrency)
         self._lock = asyncio.Lock()
-        self._next_start = 0.0
         self._clock = clock or _SystemClock()
 
     async def __aenter__(self) -> None:
         await self._slots.acquire()
         try:
             async with self._lock:
-                wait = self._next_start - self._clock.monotonic()
-                if wait > 0:
-                    await self._clock.sleep(wait)
-                self._next_start = max(self._next_start, self._clock.monotonic()) + self._interval
+                start = self._clock.monotonic()
+                if len(self._starts) == self._starts.maxlen:
+                    free_at = self._starts[0] + self._window
+                    if free_at > start:
+                        await self._clock.sleep(free_at - start)
+                    start = max(free_at, self._clock.monotonic())
+                self._starts.append(start)
         except BaseException:  # cancelled while waiting its turn (a cancelled job): no __aexit__
             self._slots.release()
             raise
