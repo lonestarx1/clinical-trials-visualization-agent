@@ -116,6 +116,24 @@ def test_repeat_questions_reuse_the_plan_and_the_result(client: tuple[TestClient
     assert second["visualization"] == first["visualization"]
 
 
+def test_a_reused_answer_honours_the_citation_mode(client: tuple[TestClient, Models]) -> None:
+    c, models = client
+    sample = c.post("/v1/query", json=QUESTION).json()
+    full = c.post("/v1/query", json=QUESTION | {"citations": "full"}).json()
+    assert models.planner_calls == 1  # the citation mode doesn't change the plan
+    assert full["meta"]["citations"]["applied"] == "full"
+    assert full["result_id"] != sample["result_id"]
+    phase2 = next(r for r in full["visualization"]["data"] if r["key"] == "PHASE2")
+    assert len(phase2["citations"]) == phase2["citation_count"] == 2
+
+    again = c.post("/v1/query", json=QUESTION | {"citations": "full"}).json()
+    assert again["meta"]["cache"]["result"] == "hit"
+    assert again["result_id"] == full["result_id"]
+    back = c.post("/v1/query", json=QUESTION).json()
+    assert back["result_id"] == sample["result_id"]
+    assert back["meta"]["citations"]["applied"] == "sample"
+
+
 def test_broad_questions_become_background_jobs(
     client: tuple[TestClient, Models], monkeypatch: pytest.MonkeyPatch
 ) -> None:
