@@ -374,7 +374,7 @@ def _histogram(
     viz = Visualization(
         type=ChartType.HISTOGRAM,
         title=f"Distribution of {dim.label.lower()}",
-        summary=f"{len(known)} trials have a reported {dim.label.lower()}.",
+        summary=f"{len(known):,} trials have a reported {dim.label.lower()}.",
         encoding={
             "x": Channel(field="bin_start", type="quantitative", label=dim.label),
             "y": Channel(
@@ -418,7 +418,7 @@ def _scatter(
     viz = Visualization(
         type=ChartType.SCATTER_PLOT,
         title=f"{x_dim.label} vs {y_dim.label.lower()}",
-        summary=f"{len(rows)} trials have both values.",
+        summary=f"{len(rows):,} trials have both values.",
         encoding={
             "x": Channel(field=x_dim.key, type="quantitative", label=x_dim.label),
             "y": Channel(field=y_dim.key, type="quantitative", label=y_dim.label),
@@ -498,8 +498,7 @@ def _title(plan: QueryPlan, dim: Dimension) -> str:
 def _summary(rows: list[dict[str, Any]], dim: Dimension, measure: str, trials: int) -> str:
     top = max(rows, key=lambda r: r[measure], default=None)
     if top is None or not top[measure]:
-        return f"{trials} trials matched."
+        return f"{trials:,} trials matched."
     where = f" ({top['group']})" if "group" in top else ""  # comparison groups only
-    return (
-        f"{trials} trials matched; {top[dim.key]}{where} has the highest value ({top[measure]:g})."
-    )
+    value = f"{top[measure]:,.0f}" if float(top[measure]).is_integer() else f"{top[measure]:,.1f}"
+    return f"{trials:,} trials matched; {top[dim.key]}{where} has the highest value ({value})."
