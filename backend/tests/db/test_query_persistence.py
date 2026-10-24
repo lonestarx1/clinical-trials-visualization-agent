@@ -168,6 +168,47 @@ def test_daily_budget_is_enforced(client: tuple[TestClient, Models]) -> None:
     assert blocked.json()["error"]["code"] == "budget_exceeded"
 
 
+def test_cached_answers_are_served_when_the_budget_is_spent(
+    client: tuple[TestClient, Models],
+) -> None:
+    c, models = client
+    c.app.state.settings.llm_daily_budget_usd = 0.0000001
+    first = c.post("/v1/query", json=QUESTION).json()  # spends the budget
+    calls = (models.guard_calls, models.planner_calls)
+
+    again = c.post("/v1/query", json=QUESTION)
+    assert again.status_code == 200, again.text
+    body = again.json()
+    assert body["result_id"] == first["result_id"]
+    assert body["meta"]["cache"] == {"plan": "hit", "result": "hit"}
+    assert body["meta"]["usage"]["llm_calls"] == 0
+    # This exact request already passed the guard when its plan was cached.
+    assert (models.guard_calls, models.planner_calls) == calls
+    assert body["meta"]["guard"]["verdict"] == "ok"
+
+
+async def test_a_cached_plan_without_a_reusable_result_still_needs_the_budget(
+    client: tuple[TestClient, Models], sessions: Any
+) -> None:
+    c, models = client
+    c.app.state.settings.llm_daily_budget_usd = 0.0000001
+    first = c.post("/v1/query", json=QUESTION).json()  # spends the budget; plan cached
+    calls = (models.guard_calls, models.planner_calls)
+
+    # A different citation mode is a different stored result: narrating it needs a model.
+    other_mode = c.post("/v1/query", json=QUESTION | {"citations": "full"})
+    assert other_mode.status_code == 503
+    assert other_mode.json()["error"]["code"] == "budget_exceeded"
+
+    async with sessions() as s:
+        await results.expire_now(s, uuid.UUID(first["result_id"]))
+        await s.commit()
+    expired = c.post("/v1/query", json=QUESTION)
+    assert expired.status_code == 503
+    assert expired.json()["error"]["code"] == "budget_exceeded"
+    assert (models.guard_calls, models.planner_calls) == calls  # no model was called
+
+
 def test_usage_needs_the_admin_token(client: tuple[TestClient, Models]) -> None:
     c, _ = client
     c.post("/v1/query", json=QUESTION)
