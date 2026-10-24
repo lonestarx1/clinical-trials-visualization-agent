@@ -114,6 +114,8 @@ def _scope(plan: QueryPlan) -> str:
 
 
 def _labels(plan: QueryPlan, viz: Visualization) -> list[str]:
+    if isinstance(viz.data, dict):  # network
+        return [str(n["label"]) for n in viz.data["nodes"]]
     if not plan.dimension:
         return []
     key = plan.dimension if viz.type is not ChartType.HISTOGRAM else "key"
@@ -127,6 +129,24 @@ def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str
         "dimension": DIMENSIONS[plan.dimension].label.lower() if plan.dimension else "",
         "scope": _scope(plan),
     }
+    if isinstance(viz.data, dict):  # network
+        nodes, edges = viz.data["nodes"], viz.data["edges"]
+        names = {n["id"]: n["label"] for n in nodes}
+        facts |= {"n_nodes": _fmt(len(nodes)), "n_edges": _fmt(len(edges))}
+        if nodes:
+            hub = max(nodes, key=lambda n: (n["degree"], n["weight"]))
+            facts |= {
+                "top_node": hub["label"],
+                "top_node_degree": _fmt(hub["degree"]),
+                "top_node_trials": _fmt(hub["weight"]),
+            }
+        if edges:
+            strongest = edges[0]  # sorted by weight
+            facts |= {
+                "strongest_link": f"{names[strongest['source']]} - {names[strongest['target']]}",
+                "strongest_link_trials": _fmt(strongest["weight"]),
+            }
+        return facts
     if viz.type is ChartType.METRIC:
         facts["value"] = _fmt(viz.data[0]["value"])
         return facts

@@ -34,7 +34,7 @@ def _ms(start: float) -> int:
 
 def _mostly_estimated(viz: Visualization, plan: QueryPlan) -> list[str]:
     """Design Q10, D10.8: flag time buckets where most trials have estimated dates."""
-    if "estimated_count" not in (viz.data[0] if viz.data else {}):
+    if not isinstance(viz.data, list) or "estimated_count" not in (viz.data[0] if viz.data else {}):
         return []
     years = [
         str(r[plan.dimension or ""])
@@ -123,6 +123,7 @@ async def run_plan(
     meta.sort = chart.meta.sort
     meta.notes += chart.meta.notes
     meta.group_overlap = chart.meta.group_overlap
+    meta.network = chart.meta.network
     meta.warnings += _mostly_estimated(chart.visualization, plan)
     meta.timings_ms = {"retrieve": retrieve_ms, "aggregate": _ms(aggregate_start)}
 
