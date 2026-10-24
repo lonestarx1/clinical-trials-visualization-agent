@@ -299,6 +299,31 @@ async def test_fetch_all_removes_duplicate_trials() -> None:
     assert len(result.studies) == 2
 
 
+async def test_pages_hands_over_each_page_as_it_arrives() -> None:
+    """The mirror load saves page by page instead of holding a slice in memory."""
+    clock = FakeClock()
+    handler = sequence(
+        page(["NCT1", "NCT2"], token="t1", total=3), page([], token="t2"), page(["NCT3"])
+    )
+    client, _ = make_client(handler, clock)
+    seen = []
+    async for studies, total in client.pages(SEARCH, fields=["NCTId"]):
+        seen.append(
+            ([s["protocolSection"]["identificationModule"]["nctId"] for s in studies], total)
+        )
+    assert seen == [(["NCT1", "NCT2"], 3), ([], 3), (["NCT3"], 3)]
+
+
+async def test_pages_checks_the_total_after_the_last_page() -> None:
+    clock = FakeClock()
+    client, _ = make_client(sequence(page(["NCT1"], token="t", total=3), page(["NCT1"])), clock)
+    handed_over = 0
+    with pytest.raises(InconsistentResults):
+        async for _ in client.pages(SEARCH, fields=["NCTId"]):
+            handed_over += 1
+    assert handed_over == 2  # both pages first: 1 distinct trial of 3 is only known at the end
+
+
 # ---------- data version ----------
 
 
