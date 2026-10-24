@@ -140,6 +140,9 @@ def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str
         "dimension": DIMENSIONS[plan.dimension].label.lower() if plan.dimension else "",
         "scope": _scope(plan),
     }
+    if plan.measure == "distinct_count":
+        facts["entity"] = measure_text(plan)[1]
+        facts["min_trials"] = str(plan.options.min_trials or 1)
     if isinstance(viz.data, dict):  # network
         nodes, edges = viz.data["nodes"], viz.data["edges"]
         names = {n["id"]: n["label"] for n in nodes}
@@ -267,6 +270,14 @@ def check_text(
             errors.append(f"number {number} is not a fact; use a placeholder")
 
     errors += [f"banned word '{m.lower()}'" for m in _BANNED.findall(text)]  # V8
+    words = re.findall(r"\w+", text.lower())
+    seen: set[tuple[str, ...]] = set()
+    for i in range(len(words) - 2):  # e.g. a placeholder wrapped in its own words
+        trigram = tuple(words[i : i + 3])
+        if trigram in seen:
+            errors.append(f"repeats '{' '.join(trigram)}': check how placeholders read")
+            break
+        seen.add(trigram)
     return errors
 
 
