@@ -39,6 +39,8 @@ spec:
           env:
             - name: API_BASE_URL # server-side proxy; the browser only talks to the web app
               value: http://api:8000
+            - name: PUBLIC_API_URL # the API address shown to developers on /docs
+              value: https://api.cheiron.engineeradriel.com
           readinessProbe:
             httpGet:
               path: /
