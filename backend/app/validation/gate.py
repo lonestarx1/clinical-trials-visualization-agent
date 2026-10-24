@@ -310,7 +310,10 @@ def _measure_mismatch(plan: QueryPlan, request: QueryRequest) -> list[str]:
         if not pattern.search(request.query):
             continue
         counted = plan.measure == "distinct_count" and plan.options.count_entity == entity
-        if counted or plan.dimension == entity:
+        # Grouping by the entity, or by a per-trial count of it ("the number of sites" in a
+        # trial is site_count), answers the question too.
+        dimensions = {plan.dimension, plan.dimension_2}
+        if counted or entity in dimensions or f"{entity}_count" in dimensions:
             continue
         errors.append(
             f"The question counts {entity}s, but the plan counts {plan.measure}. Use measure "

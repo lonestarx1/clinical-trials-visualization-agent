@@ -83,7 +83,10 @@ def test_the_number_of_sites_per_trial_is_not_a_site_count(
         "dimension": dimension,
         "dimension_2": dimension_2,
     }
-    query = "Is there a relationship between enrollment and the number of sites in phase 3 COVID-19 trials?"
+    query = (
+        "Is there a relationship between enrollment and the number of sites in phase 3 "
+        "COVID-19 trials?"
+    )
     assert gate(query, plan).errors == []
 
 
