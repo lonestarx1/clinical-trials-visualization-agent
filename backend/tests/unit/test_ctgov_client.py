@@ -75,6 +75,23 @@ async def test_limiter_burst_refills_after_a_quiet_spell() -> None:
     assert starts == [3.0, 3.0, 3.0]
 
 
+async def test_a_child_limiter_keeps_a_lower_rate_inside_the_shared_budget() -> None:
+    """The mirror sync gets its own cap, and its requests still count against the shared one."""
+    clock = FakeClock()
+    shared = RateLimiter(per_minute=60, concurrency=10, clock=clock, burst=3)
+    sync = RateLimiter(per_minute=30, concurrency=10, clock=clock, parent=shared)
+    starts = []
+    for _ in range(3):
+        async with sync:
+            starts.append(clock.now)
+    assert starts == [0.0, 2.0, 4.0]
+    others = []
+    for _ in range(2):
+        async with shared:
+            others.append(clock.now)
+    assert others == [4.0, 5.0]  # at most 3 starts in any 3 s, the sync's included
+
+
 async def test_limiter_caps_concurrency() -> None:
     limiter = RateLimiter(per_minute=60_000, concurrency=2)
     in_flight = peak = 0
