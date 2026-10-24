@@ -37,6 +37,7 @@ def test_fields_are_unique_and_include_the_measure_and_second_dimension() -> Non
     assert fields_for(plan) == [
         "NCTId",
         "BriefTitle",
+        "StartDate",
         "LeadSponsorName",
         "LeadSponsorClass",
         "InterventionName",
