@@ -7,7 +7,7 @@ Ask a question about clinical trials in plain words and get back a chart you can
 - [Live demo](#live-demo) · [Run it locally](#run-it-locally-with-docker-compose)
 - [Why it's interesting](#why-its-interesting) · [What's built](#whats-built) · [Web app](#web-app) · [How it works](#how-it-works)
 - [API](#api): [endpoints](#endpoints), [`POST /v1/query`](#post-v1query), [response](#response) · [Examples](#examples-real-outputs)
-- [Key design decisions](#key-design-decisions) · [Testing and validation](#testing-and-validation) · [Tools used and integrity](#tools-used-and-integrity) · [Limitations](#limitations)
+- [Key design decisions](#key-design-decisions) · [Testing and validation](#testing-and-validation) · [Live vs fast](#live-vs-fast-a-benchmark) · [Tools used and integrity](#tools-used-and-integrity) · [Limitations](#limitations)
 - [Deployment](#deployment) · [Development](#development) · [Configuration](#configuration) · [Documentation](#documentation)
 
 ## Live demo
@@ -229,6 +229,55 @@ The code was written test-first: each `test:` commit fails before the `feat:` co
 | Web (CI) | `make test-web` | 66 tests: the chart adapter against the example responses, theme contrast gates, the question, evidence and API-guide helpers |
 
 CI never calls ClinicalTrials.gov or a model: the live and end-to-end suites are opt-in.
+
+## Live vs fast: a benchmark
+
+The service answers in two modes ([why two modes](#why-two-modes) below). To see whether fast mode is really faster, we asked **50 different questions** in both modes and timed each answer, end to end, as a user waits for it.
+
+**How it was run:**
+- 10 subagents in parallel, 5 questions each, against the full stack: real AI models, live ClinicalTrials.gov, and a mirror holding all 608,415 trials.
+- Each question was asked in fast mode first, then live. The live run reused the AI plan, so it skipped planning; if anything, this favours live.
+- The two runs asked for different numbers of inline citations, so neither could reuse the other's stored answer.
+- Inputs, raw results and scripts: [`docs/benchmarks/`](docs/benchmarks/).
+
+![Seconds to answer each question, live vs fast, log scale](docs/benchmarks/live-vs-fast.png)
+
+**What we counted:** 3 of the 50 questions were left out, because their answers were already stored from an earlier test. Fast mode answered 45 of the other 47 and fell back to live on 2. The numbers below cover those 45:
+
+| | Live | Fast |
+|---|---|---|
+| Median time per question | 59.8 s | **24.7 s** |
+| Total time | 4,376 s | **2,423 s** |
+| Faster on | 20 questions | **25 questions** |
+| Answers that ran as background jobs | 5 | **0** |
+
+**Where fast mode wins:**
+- **Broad questions:** phase 1 trials by country took 24 s against 728 s live, and industry-sponsored trials since 2020 took 30 s against 586 s.
+- **Search terms it already knows:** breast cancer sponsors took 6 s against 201 s, and lung cancer by phase 9 s against 184 s.
+
+**Where it loses:** the first time it meets a search term, such as a new condition or drug, it asks ClinicalTrials.gov for that term's full list of trial IDs. With 10 clients sharing one rate limit, that took up to 160 s. Examples are phase 3 depression masking (161 s against 11 s) and recruiting type 2 diabetes (151 s against 11 s). Later questions with the same term are quick.
+
+**Every fast answer was checked:** each one's trial count must equal ClinicalTrials.gov's live count before it is used. This benchmark timed the answers but didn't compare their values. A separate check of 4 questions, up to 130,888 trials, did: fast and live gave identical values.
+
+### Why two modes
+
+We kept both, and made **live the default**:
+- **Live is the reference.** It reads ClinicalTrials.gov at the moment of the question and depends on nothing we store, so it is always correct and current. Fast mode is checked against it, and falls back to it whenever a check fails.
+- **Fast is for broad questions,** where live is bound by the API's limits: at most 1,000 trials per request and about 10 requests per 10 seconds. A question over 100,000 trials takes minutes live, as a background job; fast answers it from our copy.
+- **The choice is the user's,** and every answer says which mode produced it, so speed never hides where a number came from.
+
+### With more time: fast mode without the internet
+
+Fast mode still calls ClinicalTrials.gov during a question: once per new search term, to list its trials, and once to confirm the count. Those calls are the slow part.
+
+The reason is that ClinicalTrials.gov's search engine **resolves synonyms**. "Keytruda" finds pembrolizumab trials, and "lung cancer" also matches MeSH terms and their narrower terms. A plain match in our database would miss trials and give lower counts without anyone noticing ([Q21](docs/design/21-local-mirror-revisited.md)).
+
+With more time, we would **build that synonym search ourselves**:
+- MeSH entry terms and the MeSH hierarchy for conditions;
+- a drug synonym source for interventions;
+- the API's matching rules for sponsors and places.
+
+Once a cross-check suite proved it gives the same trials as the API's search, every question could be answered **entirely from our database**: no listing, no live count, and well under a second, even for a new term.
 
 ## Tools used and integrity
 

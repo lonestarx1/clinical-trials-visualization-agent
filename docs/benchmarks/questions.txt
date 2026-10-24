@@ -1,0 +1,50 @@
+How are breast cancer trials distributed across phases?
+How are lung cancer trials distributed across phases?
+How are prostate cancer trials distributed by recruitment status?
+Which countries have the most recruiting trials for lung cancer?
+Which countries run the most type 2 diabetes trials?
+How has the number of trials for pembrolizumab changed per year since 2015?
+How many trials started each year for Alzheimer's disease?
+How many interventional trials started each year from 2015 to 2020?
+How many observational trials started each year from 2010 to 2020?
+What are the most common intervention types for melanoma trials?
+Who are the top 10 sponsors of breast cancer trials?
+Who are the top 10 lead sponsors of COVID-19 trials?
+How are HIV trials split by type of sponsor?
+What is the distribution of enrollment sizes for phase 3 Alzheimer's disease trials?
+How long do completed Parkinson's disease trials last?
+How many phase 2 nivolumab trials have been completed?
+How many trials are currently recruiting for type 2 diabetes?
+Compare phases for trials involving pembrolizumab vs nivolumab.
+Compare sponsor categories across breast cancer and lung cancer.
+Which drugs frequently co-occur in combination studies for melanoma?
+Show a network of sponsors and drugs for multiple myeloma trials.
+What are the 5 most common conditions in pembrolizumab trials?
+Which US states have the most trials for opioid use disorder?
+Show semaglutide trials by recruitment status.
+What kinds of masking are used in phase 3 depression trials?
+What are the primary purposes of obesity trials?
+Which sites run the most sickle cell disease trials?
+What is the total enrollment by phase for lung cancer trials?
+What is the median enrollment of asthma trials in each country?
+How many trials has Pfizer sponsored each year since 2018?
+Which countries run the most phase 1 trials?
+How many interventional trials started in 2020?
+How are phase 3 trials distributed by recruitment status?
+How are trials started in 2023 distributed across phases?
+Which conditions are most studied in pediatric trials?
+How many trials with posted results started each year from 2010 to 2015?
+How are industry-sponsored trials started since 2020 distributed across phases?
+How are depression trials distributed across phases?
+Which countries have the most tuberculosis trials?
+How are rheumatoid arthritis trials distributed by recruitment status?
+How many trials for adalimumab started each year?
+How are metformin trials distributed across phases?
+Which sponsors run the most hepatitis C trials?
+How are heart failure trials distributed across phases?
+How many stroke trials started each year since 2010?
+What is the distribution of enrollment sizes for COVID-19 vaccine trials?
+How are trials in Japan distributed across phases?
+How are trials in South Korea distributed by recruitment status?
+How many insulin trials started each year from 2010 to 2020?
+Which countries have the most recruiting breast cancer trials?
