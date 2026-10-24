@@ -169,7 +169,7 @@ ClinicalTrials.gov's [Terms and Conditions](https://clinicaltrials.gov/about-sit
 | "State any modifications made to the content of the data" | Records are stored as the API returns them, limited to the fields the registry uses (34, listed in code); no values are changed. Grouping rules are stated per answer, as today (Q9, Q11) |
 | Don't "assert any proprietary rights" or present it as other than a U.S. Government database | The API guide and README say the data belong to ClinicalTrials.gov (NLM) |
 | Don't use email addresses from the database for marketing | The mirror stores no email fields |
-| Some data "may be subject to the copyright of third parties" | We store and show only the structured fields charts need, no free-text descriptions |
+| Some data "may be subject to the copyright of third parties" | We store only the fields charts and citations need (titles, names, codes, dates), no long free text such as descriptions or eligibility criteria |
 
 ## Rollout
 
