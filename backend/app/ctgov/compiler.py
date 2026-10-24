@@ -30,6 +30,13 @@ class Search:
     def url(self, base_url: str) -> str:
         return f"{base_url}/studies?{urlencode(sorted(self.params.items()))}"
 
+    def narrow(self, clause: Node) -> "Search":
+        """The same search AND one more filter.advanced clause."""
+        existing = self.params.get("filter.advanced")
+        extra = to_essie(clause)
+        advanced = f"({existing} AND {extra})" if existing else extra
+        return Search(self.params | {"filter.advanced": advanced}, self.group, self.warnings)
+
 
 @dataclass
 class _Parts:
