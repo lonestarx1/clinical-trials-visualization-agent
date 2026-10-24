@@ -6,6 +6,7 @@ from evals.scoring import (
     GuardRun,
     NarratorRun,
     PlannerRun,
+    choose,
     guard_summary,
     narrator_summary,
     percentile,
@@ -165,3 +166,24 @@ def test_narrator_summary() -> None:
     assert summary["first_attempt"] == round(1 / 3, 3)
     assert summary["fallback"] == round(1 / 3, 3)
     assert summary["bars"]["first attempt >= 95%"] is False
+
+
+def test_choose_takes_the_cheapest_candidate_that_passes_every_bar() -> None:
+    summaries = {
+        "big": {"bars": {"a": True}, "cost_per_call": 0.010, "p95_ms": 900},
+        "small": {"bars": {"a": True}, "cost_per_call": 0.002, "p95_ms": 2000},
+        "tiny": {"bars": {"a": False}, "cost_per_call": 0.001, "p95_ms": 500},
+    }
+    assert choose(summaries) == "small"
+
+
+def test_choose_prefers_the_faster_of_two_within_20_percent_on_cost() -> None:
+    summaries = {
+        "a": {"bars": {"x": True}, "cost_per_question": 0.0020, "p95_ms": 4000},
+        "b": {"bars": {"x": True}, "cost_per_question": 0.0023, "p95_ms": 2500},
+    }
+    assert choose(summaries) == "b"
+
+
+def test_choose_returns_none_when_no_candidate_passes() -> None:
+    assert choose({"a": {"bars": {"x": False}, "cost_per_call": 0.001, "p95_ms": 1}}) is None
