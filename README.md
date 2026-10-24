@@ -332,6 +332,7 @@ It runs on **Kubernetes (k3s) on one EC2 t3.medium**, defined in **Terraform** (
 | `make up` / `make down` / `make logs` | Start, stop and follow the Compose stack |
 | `make test` / `make test-db` / `make test-live` / `make test-e2e` | See [testing](#testing-and-validation) |
 | `make test-web` | Frontend type check + tests (Vitest) |
+| `python3 scripts/build_examples.py [dir]` | Copy the saved example answers (`examples/data/NNN.json`) into `frontend/public/examples/` and rebuild their index for the `/examples` page |
 | `make lint` / `make fmt` | ruff, formatting check and mypy (strict) / auto-format |
 | `make infra-plan` / `make infra-apply` / `make deploy` / `make infra-destroy` | Terraform and the k3s rollout ([`infra/README.md`](infra/README.md)) |
 
