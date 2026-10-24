@@ -101,6 +101,20 @@ def test_could_not_interpret_returns_the_best_attempt() -> None:
     assert body["meta"]["details"]["errors"]
 
 
+def test_a_forced_chart_type_that_cannot_fit_is_could_not_interpret() -> None:
+    # Compatibility depends on the dimension the planner picks, so it can't be a 422 up front.
+    response, _ = post(
+        QUESTION | {"chart_type": "time_series"},
+        [OK],
+        [calls(("submit_plan", {"plan": PA3}))] * 6,
+        [],
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert (body["status"], body["visualization"]) == ("could_not_interpret", None)
+    assert any("time_series needs a time dimension" in e for e in body["meta"]["details"]["errors"])
+
+
 def test_out_of_scope() -> None:
     plan = {
         "scope": "out_of_scope",
