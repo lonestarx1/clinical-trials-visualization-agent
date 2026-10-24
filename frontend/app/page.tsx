@@ -169,7 +169,7 @@ export default function Home() {
         <main className="home">
           <section className="hero">
             <h1>Ask ClinicalTrials.gov a question.<br />Get a chart you can trace to every trial.</h1>
-            <p className="lede">Counts, trends, comparisons and networks from over 600,000 registered studies, computed live.
+            <p className="lede">Counts, trends, comparisons and networks from over 600,000 registered studies, live from ClinicalTrials.gov, or fast from our daily copy.
               Click any bar or node to read the exact record lines behind it.</p>
             <SearchBar value={ask} onChange={setAsk} onSubmit={submit} busy={busy} options={options} size="large" fastStatus={fastStatus} />
           </section>

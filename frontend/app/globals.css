@@ -100,6 +100,7 @@ button:disabled { cursor: default; opacity: 0.5; }
 .mode-picker .segmented button { padding: 0.2rem 0.8rem; font-size: 0.88rem; }
 .mode-hint { margin: 0; flex: 1 1 16rem; color: var(--muted); font-size: 0.85rem; line-height: 1.35; }
 .facts .source-fast { color: var(--action); }
+.question-mode button { padding: 0.15rem 0.7rem; font-size: 0.85rem; }
 .chip { display: inline-flex; gap: 0.4rem; align-items: center; background: var(--action-soft); color: var(--action); border: 0; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.85rem; }
 .refine-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; display: grid; gap: 0.9rem; box-shadow: var(--shadow); }
 .refine-panel .hint { margin: 0; color: var(--muted); font-size: 0.88rem; }
