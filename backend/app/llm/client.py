@@ -10,7 +10,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Protocol
 
 import openai
 from openai import AsyncOpenAI
@@ -84,6 +84,21 @@ def _cost(pricing: Pricing, model: str, inputs: int, cached: int, outputs: int) 
     return (
         (inputs - cached) * price.input + cached * price.cached_input + outputs * price.output
     ) / 1e6
+
+
+class LLM(Protocol):
+    """What the agents need from a model. OpenAILLM in production, a scripted fake in tests."""
+
+    usage: UsageLog
+
+    async def respond(
+        self,
+        items: list[dict[str, Any]],
+        *,
+        tools: list[dict[str, Any]] | None = None,
+        json_schema: dict[str, Any] | None = None,
+        instructions: str | None = None,
+    ) -> LLMReply: ...
 
 
 class OpenAILLM:
