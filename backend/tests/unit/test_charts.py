@@ -372,5 +372,7 @@ def test_bar_chart_split_into_series_becomes_grouped() -> None:
         (r["study_type"], r["sponsor_class"]): r["trial_count"] for r in result.visualization.data
     }  # type: ignore[index, union-attr]
     assert (
-        rows[("Interventional", "Other (incl. academic)")] == 3
+        rows[("Interventional", "Other (incl. academic)")] == 4
     )  # combo, future, partial... see table
+    # (the observational trial's sponsor is OTHER too)
+    assert rows[("Observational", "Other (incl. academic)")] == 1
