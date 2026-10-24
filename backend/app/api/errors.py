@@ -95,16 +95,18 @@ _HTTP_MESSAGES = {
 }
 
 
-async def _http(request: Request, exc: Exception) -> JSONResponse:
-    """Routing and auth errors (unknown path 404, wrong method 405, 401): the same body.
-
-    The code is the status phrase in snake_case (`not_found`, `method_not_allowed`,
-    `unauthorized`); the framework's own detail ("Not Found") is replaced by a sentence.
-    """
-    assert isinstance(exc, StarletteHTTPException)
-    status = HTTPStatus(exc.status_code)
+def http_error(status_code: int) -> tuple[str, str]:
+    """(code, message) for an HTTPException: the status phrase in snake_case (`not_found`,
+    `method_not_allowed`, `unauthorized`), and a sentence instead of the framework's detail."""
+    status = HTTPStatus(status_code)
     code = status.phrase.lower().replace(" ", "_").replace("-", "_")
-    message = _HTTP_MESSAGES.get(exc.status_code, f"{status.phrase}.")
+    return code, _HTTP_MESSAGES.get(status_code, f"{status.phrase}.")
+
+
+async def _http(request: Request, exc: Exception) -> JSONResponse:
+    """Routing and auth errors (unknown path 404, wrong method 405, 401): the same body."""
+    assert isinstance(exc, StarletteHTTPException)
+    code, message = http_error(exc.status_code)
     headers = dict(exc.headers) if exc.headers else None
     return error_response(exc.status_code, code, message, headers=headers)
 

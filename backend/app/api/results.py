@@ -74,7 +74,8 @@ async def citations(
     "`POST /v1/query`). Poll every few seconds: `pending` and `running` report `progress` "
     "in ClinicalTrials.gov pages; `succeeded` carries the normal query response in "
     "`result`; `failed` carries the shared error body in `error`. A job that crashed is "
-    "retried before it is marked failed.",
+    "retried before it is marked failed. A finished job is kept for 24 hours, like its "
+    "result; after that, polling returns `410 expired`.",
     responses=JOB_RESPONSES,
 )
 async def job_status(

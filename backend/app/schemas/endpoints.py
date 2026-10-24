@@ -13,7 +13,9 @@ from app.schemas.response import QueryResponse
 ErrorCode = Literal[
     "invalid_request",
     "rejected_by_policy",
+    "unauthorized",
     "not_found",
+    "method_not_allowed",
     "expired",
     "too_many_requests",
     "upstream_unavailable",

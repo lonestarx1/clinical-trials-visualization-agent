@@ -10,7 +10,7 @@ from fastapi import FastAPI
 
 from app.agents.guard import SafetyCheckUnavailable
 from app.api import examples
-from app.api.errors import classify
+from app.api.errors import classify, http_error
 from app.ctgov.client import CtgovUnavailable, InconsistentResults
 from app.llm.client import LLMUnavailable
 from app.pipeline.query import BudgetExceeded, RejectedByPolicy, TooManyJobs
@@ -22,6 +22,7 @@ from app.schemas.endpoints import (
     Options,
     UsageSummary,
 )
+from app.store.jobs import JobExpired
 from app.store.results import Expired, NotFound
 
 DESCRIPTION = """
@@ -65,8 +66,10 @@ Real errors share one body, and never contain internal details:
 | HTTP | `code` | When |
 |---|---|---|
 | 400 | `rejected_by_policy` | The input guard classified the request as malicious |
-| 404 | `not_found` | Unknown job, result or data point |
-| 410 | `expired` | The stored result is past its 24-hour retention |
+| 401 | `unauthorized` | `GET /v1/usage` without the admin token |
+| 404 | `not_found` | Unknown job, result, data point or path |
+| 405 | `method_not_allowed` | Wrong HTTP method for the path (see the `Allow` header) |
+| 410 | `expired` | The stored result, or the finished job, is past its 24-hour retention |
 | 422 | `invalid_request` | Validation failed; `details` lists each field (`loc`, `msg`) |
 | 429 | `too_many_requests` | Rate limit (with `Retry-After`), or too many active background jobs |
 | 500 | `internal_error` | A bug on our side |
@@ -281,6 +284,11 @@ JOB_RESPONSES: dict[int | str, dict[str, Any]] = {
         "No such job, or this deployment has no database (`not_found`).",
         not_found=("Unknown job_id", NOT_FOUND),
     ),
+    410: errors(
+        "The job finished more than 24 hours ago, or its stored result has expired; ask the "
+        "question again (`expired`).",
+        expired=("Expired job", _public(JobExpired())),
+    ),
     422: errors(
         "`job_id` is not a UUID (`invalid_request`).",
         invalid_request=(
@@ -327,25 +335,10 @@ OPTIONS_RESPONSES: dict[int | str, dict[str, Any]] = {
 USAGE_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: ok("Today's usage and the budget.", usage=("Usage", examples.USAGE))
     | {"model": UsageSummary},
-    401: {
-        "description": "Missing or wrong admin token, or no `ADMIN_TOKEN` configured. "
-        "This one uses FastAPI's default body, not the shared error body.",
-        "content": {
-            "application/json": {
-                "schema": {
-                    "type": "object",
-                    "properties": {"detail": {"type": "string"}},
-                    "required": ["detail"],
-                },
-                "examples": {
-                    "unauthorized": {
-                        "summary": "No or wrong token",
-                        "value": {"detail": "admin token required"},
-                    }
-                },
-            }
-        },
-    },
+    401: errors(
+        "Missing or wrong admin token, or no `ADMIN_TOKEN` configured (`unauthorized`).",
+        unauthorized=("No or wrong token", _error(*http_error(401))),
+    ),
     404: errors(
         "This deployment has no database (`not_found`).",
         not_found=("No database", NOT_FOUND),
