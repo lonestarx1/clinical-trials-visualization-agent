@@ -5,6 +5,7 @@ from typing import Any
 
 import httpx
 import pytest
+
 from app.ctgov.client import (
     CircuitOpen,
     CtgovBadRequest,
@@ -13,7 +14,6 @@ from app.ctgov.client import (
     InconsistentResults,
     RateLimiter,
 )
-
 from app.ctgov.compiler import Search
 from tests.support.fakes import FakeClock, RecordingTransport, json_response, sequence
 
