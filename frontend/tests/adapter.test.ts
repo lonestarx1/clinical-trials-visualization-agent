@@ -113,12 +113,25 @@ describe("datumAt", () => {
 });
 
 describe("network legend", () => {
-  it("lists clusters in numeric order", () => {
-    const chart = toChart(example("5-drug-network"));
+  it("names each cluster after its largest entity, in cluster order", () => {
+    const viz = example("5-drug-network");
+    const nodes = (viz.data as NetworkData).nodes;
+    const chart = toChart(viz);
     if (chart.kind !== "echarts") throw new Error("expected echarts");
     const names = ((chart.option.series as any[])[0].categories as { name: string }[]).map((c) => c.name);
-    const numbers = names.map((n) => Number(n.replace("Cluster ", "")));
-    expect(numbers).toEqual([...numbers].sort((a, b) => a - b));
+    const communities = [...new Set(nodes.map((n) => Number(n.community)))].sort((a, b) => a - b);
+    communities.forEach((c, i) => {
+      const largest = nodes.filter((n) => n.community === c).sort((a, b) => Number(b.weight) - Number(a.weight))[0];
+      expect(names[i]).toBe(`${largest.label} cluster`);
+    });
+  });
+
+  it("keeps the layout inside the card, below the legend", () => {
+    const chart = toChart(example("5-drug-network"));
+    if (chart.kind !== "echarts") throw new Error("expected echarts");
+    const graph = (chart.option.series as any[])[0];
+    expect(graph.top).toBeGreaterThanOrEqual(48);
+    expect(graph.force.gravity).toBeGreaterThanOrEqual(0.2);
   });
 });
 
