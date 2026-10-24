@@ -168,7 +168,8 @@ class CitationsMeta(BaseModel):
     per_datum: int = Field(description="Maximum citations inlined per data point.", examples=[5])
     reason: str | None = Field(
         default=None,
-        description="Why the citations differ from a plain sample, e.g. `counted per year`.",
+        description="Why `applied` differs from `requested`, or why a sample was all there "
+        "was: e.g. the full-citation size limit was exceeded, or years were counted.",
     )
 
 

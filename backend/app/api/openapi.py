@@ -45,7 +45,8 @@ counted and which ClinicalTrials.gov API queries produced the numbers.
    (the normal response is in `result`) or `failed` (the error body is in `error`).
    `progress` reports the ClinicalTrials.gov pages fetched so far.
 5. **Cite:** each data point has a stable `key`, its full `citation_count` and up to
-   `citations_per_datum` citations inline. Page through every trial behind one data point
+   `citations_per_datum` citations inline (`citations: "full"` inlines all of them, up to
+   2,000 per response). Page through every trial behind one data point
    with `GET /v1/results/{result_id}/citations?datum=<key>`. Stored results expire after
    24 hours (then `410 expired`).
 
@@ -117,7 +118,7 @@ TAGS: list[dict[str, Any]] = [
     {
         "name": "citations",
         "description": "Every trial behind one data point of a stored result, "
-        "paginated. Inline citations are only a sample.",
+        'paginated. Inline citations are a sample unless `citations: "full"` was asked.',
     },
     {
         "name": "options",

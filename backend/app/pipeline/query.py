@@ -131,7 +131,7 @@ async def store_answer(
     async with sessions() as s:
         await results.save_result(
             s,
-            result_key=result_key(plan, request.citations_per_datum),
+            result_key=result_key(plan, request.citations_per_datum, request.citations),
             response=response.model_dump(mode="json"),
             request=request.model_dump(mode="json"),
             plan=plan.model_dump(mode="json"),
@@ -276,7 +276,10 @@ async def handle_query(
 
     if sessions is not None:
         reused = await _reuse(
-            sessions, result_key(plan, request.citations_per_datum), ctgov, settings
+            sessions,
+            result_key(plan, request.citations_per_datum, request.citations),
+            ctgov,
+            settings,
         )
         if reused is not None:
             stored, how = reused
@@ -285,7 +288,12 @@ async def handle_query(
             return _finish(QueryResponse.model_validate(stored), ctx, llms)
         ctx.cache["result"] = "miss"
 
-    prepared = await prepare(plan, ctgov, citations_per_datum=request.citations_per_datum)
+    prepared = await prepare(
+        plan,
+        ctgov,
+        citations_per_datum=request.citations_per_datum,
+        citations=request.citations,
+    )
     if (
         sessions is not None
         and not prepared.empty
@@ -316,6 +324,7 @@ async def handle_query(
         ctgov,
         base_url=settings.ctgov_base_url,
         citations_per_datum=request.citations_per_datum,
+        citations_full_max=settings.citations_full_max,
         narrator=partial(narrate, llms.narrator),
     )
     response = _finish(executed.response, ctx, llms)
@@ -356,12 +365,18 @@ async def run_job(
             )
             await s.commit()
 
-    prepared = await prepare(plan, ctgov, citations_per_datum=request.citations_per_datum)
+    prepared = await prepare(
+        plan,
+        ctgov,
+        citations_per_datum=request.citations_per_datum,
+        citations=request.citations,
+    )
     executed = await execute(
         prepared,
         ctgov,
         base_url=settings.ctgov_base_url,
         citations_per_datum=request.citations_per_datum,
+        citations_full_max=settings.citations_full_max,
         narrator=partial(narrate, llms.narrator),
         progress=progress,
     )
