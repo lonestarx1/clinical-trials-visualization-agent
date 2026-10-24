@@ -1,0 +1,11 @@
+# Plain HTTP on the app's routes redirects to HTTPS. cert-manager's HTTP-01 challenge uses
+# its own temporary Ingress, so certificate renewals are unaffected.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: cheiron
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

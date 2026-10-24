@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ../../base
   - cluster-issuer.yaml
+  - redirect-https.yaml
 patches:
   - target:
       kind: Ingress
@@ -13,3 +14,6 @@ patches:
       - op: add
         path: /spec/ingressClassName
         value: traefik
+      - op: add
+        path: /metadata/annotations/traefik.ingress.kubernetes.io~1router.middlewares
+        value: cheiron-redirect-https@kubernetescrd

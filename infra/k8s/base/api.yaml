@@ -34,6 +34,12 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
+      initContainers:
+        - name: wait-for-postgres # migrations run at start, so the database must be up first
+          image: postgres:17-alpine
+          command: ["sh", "-c", "until pg_isready -h postgres -U ctviz -d ctviz; do sleep 2; done"]
+          securityContext:
+            allowPrivilegeEscalation: false
       containers:
         - name: api
           image: cheiron-api
