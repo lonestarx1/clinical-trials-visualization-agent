@@ -6,6 +6,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    NonNegativeInt,
     PositiveFloat,
     PositiveInt,
     SecretStr,
@@ -81,8 +82,12 @@ class Settings(BaseSettings):
     rate_limit_per_ip_per_min: PositiveInt = 300
     max_active_jobs_per_ip: PositiveInt = 10
     llm_daily_budget_usd: PositiveFloat = 100
-    ctgov_rate_limit_per_min: PositiveInt = 40
-    ctgov_max_concurrency: PositiveInt = 2
+    # Measured 2026-10-25: ClinicalTrials.gov answers ~10 requests per ~10 s per IP with a 429
+    # (no Retry-After) after that, and doesn't limit concurrency. 9 per 10 s keeps a margin.
+    ctgov_rate_limit_per_min: PositiveInt = 54
+    ctgov_rate_burst: PositiveInt = 9
+    ctgov_max_concurrency: PositiveInt = 9
+    ctgov_count_cache_seconds: NonNegativeInt = 600
     sync_max_seconds: PositiveInt = 60
     citations_full_max: PositiveInt = 2000
 

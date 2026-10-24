@@ -33,8 +33,8 @@ from app.schemas.response import (
 )
 
 YEAR_FILTER_NOTE = "The year filter excludes trials without a start date."
-SECONDS_PER_PAGE = 1.6  # measured: ~1.1-2.2 s per 1,000-trial page, within 40 requests/min
-SECONDS_PER_CALL = 1.5  # one request start per 1.5 s at 40 requests/min
+SECONDS_PER_PAGE = 1.6  # measured: ~0.8-2.2 s per 1,000-trial page; pages come one by one
+SECONDS_PER_CALL = 60 / 54  # parallel count calls go at the limiter's 54 requests/min
 MAX_COUNTED_YEARS = 60
 COUNTED_NOTE = (
     "Counted with one ClinicalTrials.gov count per year instead of downloading every trial; "
