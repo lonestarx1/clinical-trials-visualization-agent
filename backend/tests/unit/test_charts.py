@@ -81,6 +81,31 @@ def test_bar_encoding_names_every_key() -> None:
     }
 
 
+def test_show_empty_lists_every_enum_value_with_zero(  # D10.9
+) -> None:
+    """The 8 samples have no Early Phase 1 or Phase 4 trial: shown as 0, in phase order."""
+    result = chart(plan(options={"show_empty": True}))
+    assert series(result, "phase") == [
+        ("Early Phase 1", 0),
+        ("Phase 1", 1),
+        ("Phase 1/Phase 2", 1),
+        ("Phase 2", 2),
+        ("Phase 3", 1),
+        ("Phase 4", 0),
+        ("Not Applicable", 1),
+        ("No phase (observational / expanded access)", 2),
+    ]
+    empty = next(r for r in result.visualization.data if r["key"] == "PHASE4")  # type: ignore[union-attr]
+    assert (empty["citation_count"], empty["citations"]) == (0, [])
+    assert result.meta.unique_trials == 8
+
+
+def test_show_empty_does_not_invent_open_ended_values() -> None:
+    """Drugs, sponsors and countries have no fixed list, so nothing is added."""
+    with_empty = chart(plan(dimension="drug", options={"show_empty": True}))
+    assert series(with_empty, "drug") == series(chart(plan(dimension="drug")), "drug")
+
+
 def test_status_distribution() -> None:
     result = chart(plan(dimension="status"))
     assert dict(series(result, "status")) == {
