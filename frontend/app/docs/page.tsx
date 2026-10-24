@@ -157,6 +157,20 @@ const JOB_SAMPLE = `{
   "error": null
 }`;
 
+const CANCELLED_SAMPLE = `{
+  "job_id": "5b0d7c3e-…",
+  "status": "cancelled",
+  "progress": { "stage": "retrieve", "pages_done": 12, "pages_total": 40 },
+  "estimated_seconds": 240,
+  "result": null,
+  "error": {
+    "code": "cancelled",
+    "message": "This job was cancelled.",
+    "details": null,
+    "trace_id": "…"
+  }
+}`;
+
 const CITATIONS_SAMPLE = `{
   "result_id": "d70db059-8f32-49a2-9fdc-231f5e3fd056",
   "datum": "PHASE1",
@@ -282,7 +296,7 @@ function Table({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) {
   );
 }
 
-function Endpoint({ method, path }: { method: "GET" | "POST"; path: string }) {
+function Endpoint({ method, path }: { method: "GET" | "POST" | "DELETE"; path: string }) {
   return <p className="endpoint"><span className={`method method-${method.toLowerCase()}`}>{method}</span><code>{path}</code></p>;
 }
 
@@ -409,12 +423,22 @@ export default function DocsPage() {
             <Endpoint method="GET" path="/v1/jobs/{job_id}" />
             <CodeBlock label="Polling" code={`${curl(api, "/v1/jobs/$JOB_ID")}\n\n${JOB_SAMPLE}`} />
             <ul>
-              <li><code>status</code> goes <code>pending</code> → <code>running</code> → <code>succeeded</code> or <code>failed</code>.</li>
+              <li><code>status</code> goes <code>pending</code> → <code>running</code> → <code>succeeded</code> or <code>failed</code>, or <code>cancelled</code> if you cancel it (below).</li>
               <li><code>progress</code> is <code>{"{}"}</code> until retrieval starts, then counts pages: <code>pages_done</code> of <code>pages_total</code>.</li>
               <li>On <code>succeeded</code>, <code>result</code> is the normal response body, exactly as a 200 would have returned it.</li>
               <li>On <code>failed</code>, <code>error</code> is <code>{"{"} code, message, details, trace_id {"}"}</code>, the same fields as an error body. A job that hits a temporary ClinicalTrials.gov or AI failure is retried, up to 3 attempts, before it fails.</li>
             </ul>
             <p>Asking the same question again while its job is still running returns the same job. A finished job is kept for 24 hours, like its result; after that, polling returns <code>410 expired</code>.</p>
+            <p>No longer need the answer? Cancel the job, so it stops using ClinicalTrials.gov&apos;s shared rate limit:</p>
+            <Endpoint method="DELETE" path="/v1/jobs/{job_id}" />
+            <CodeBlock label="Cancelling" code={`${curl(api, "/v1/jobs/$JOB_ID", { method: "DELETE" })}\n\n${CANCELLED_SAMPLE}`} />
+            <ul>
+              <li>A <code>pending</code> or <code>running</code> job becomes <code>cancelled</code>, with <code>error.code</code> <code>cancelled</code>. Its worker stops within about a second, before the next ClinicalTrials.gov page; <code>progress</code> shows where it stopped.</li>
+              <li>A job that has already finished (<code>succeeded</code>, <code>failed</code> or <code>cancelled</code>) comes back unchanged, so cancelling twice is safe. An unknown <code>job_id</code> is <code>404 not_found</code>.</li>
+              <li>Anyone with the <code>job_id</code> can cancel the job, just as anyone with it can poll it. It&apos;s a random UUID that only the asker receives, so don&apos;t share it.</li>
+              <li>Asking the same question after a cancel starts a new job.</li>
+            </ul>
+            <p>A question answered in the request (200) can&apos;t be cancelled. If you close the connection early, the server still finishes and stores the answer, so asking the same question again is quick (<code>meta.cache.result</code> is <code>hit</code>). If the question turns out to be broad, its job starts anyway; wait for the 202 if you may want to cancel it.</p>
           </section>
 
           <section id="citations" aria-labelledby="citations-h">
