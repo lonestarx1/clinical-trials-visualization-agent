@@ -49,9 +49,33 @@ A stored answer can be reused by either mode: when the checks pass, both modes g
 As designed in Q21: a `registry` schema in the app's Postgres, one row per trial with the record as the API returns it (JSONB, only the fields the registry uses), plus extracted, indexed columns.
 
 - **First load:** 608,415 trials (2026-10-25), 609 pages, about 11 minutes at the limit. Page tokens make one search's pages strictly sequential, so the load runs as several searches sliced by `StartDate` range (plus trials with no start date), each paging on its own, so together they keep the limiter busy.
-- **Daily sync**, after each new `dataTimestamp`: `AREA[LastUpdatePostDate]RANGE[<last sync - 1 day>,MAX]`. Measured: 5,022 trials changed between 2026-10-18 and the 2026-10-23 data, about 1,000 per weekday update, so one or two pages a day.
+- **Daily update:** only the trials that changed, after each new `dataTimestamp` (below).
 - **Removals:** compare the API's total count with the mirror's (one call). When they differ, find the removed trials by **bisection with count calls** (per start year, then per month) and list IDs only in the ranges that differ, instead of a 609-page ID pass.
-- **Weekly full re-sync**, at night (~11 minutes): a safety net for changes that don't bump `LastUpdatePostDate` (open item O5). Its diff against the daily syncs measures how often that happens.
+- **Weekly full re-sync**, at night (~11 minutes at the full rate): a safety net for changes that don't bump `LastUpdatePostDate` (open item O5). Its diff against the daily updates measures how often that happens.
+
+### The daily update
+
+ClinicalTrials.gov publishes one update per weekday, and `/version` gives its `dataTimestamp` (`2026-10-23T09:00:04` for the data measured here). Measured: 5,022 trials changed between 2026-10-18 and that update, about 1,000 per update, so one or two pages.
+
+| Step | What happens |
+|---|---|
+| **Detect** | A sync loop in the API process asks `/version` every 10 minutes (the client caches it that long anyway). A `dataTimestamp` newer than the mirror's starts a sync |
+| **Lock** | The sync takes a Postgres advisory lock, so only one runs at a time, even while a rolling update briefly runs two pods |
+| **Fetch** | `AREA[LastUpdatePostDate]RANGE[<date of the last successful sync - 1 day>,MAX]`, with the registry's fields: ~1,000 trials, one or two pages |
+| **Save** | Upsert the trials into `registry.trials`, in one transaction |
+| **Removals** | In the same transaction: if the mirror now has more trials than the API's total, find the removed ones by bisection (above) and delete them |
+| **Check** | The mirror's count must equal the API's total. Only then write the `sync_runs` row with the new `dataTimestamp`, and commit. That row is what marks the mirror as current |
+| **Fail** | Roll back, keep the previous `dataTimestamp`, record the failed run, and retry after 1, 5, 15, 30 and then every 60 minutes. Log an error when an update is still not synced 3 hours after it appeared |
+
+**Why in the API process, not a cron pod:** the sync must share the one rate limiter. A separate pod would have its own limiter on the same IP, and together they could go over ~10 requests per 10 s, so questions would get `429`s. Inside the process, the sync's client gets its own **lower cap (half the budget, 27 requests a minute) under the shared limiter**, so a long load can't starve questions.
+
+**While a sync runs:** `fast` answers only when the mirror's synced `dataTimestamp` equals the API's current one. From the moment new data appears until the sync commits (a few minutes per weekday), `fast` requests fall back to `live` with a note. No answer mixes the old data with the new.
+
+**Missed updates:** the fetch always starts from the last *successful* sync, with a day of overlap, so a missed day (a restart, an outage) is covered by the next run, and a rerun saves the same trials again harmlessly. If the last successful sync is more than 7 days old, a full load runs instead.
+
+**First load:** the same steps without the `LastUpdatePostDate` filter, in `StartDate` slices, committing page by page. The mirror is not marked current until every slice is done and the total matches. If a new update appears during the load, a daily update runs right after it, from the load's start date.
+
+**Nightly and weekly work**, at a quiet hour (03:00 UTC) through the same loop and limiter: pre-warming term sets every night (Part 2), and the full re-sync on Sundays, when there is no update. The re-sync writes every difference it finds to `registry.drift`: those are trials that changed without a new `LastUpdatePostDate` (O5).
 
 ## Part 2: term sets
 
@@ -136,7 +160,7 @@ The SQL times are estimates, to be measured. With indexes on the extracted colum
 ## Rollout
 
 1. **Terms of use:** read and record them (Q21, step 1). Credit the source and show the data date (already shown).
-2. **Mirror ingestion:** first load, daily sync, removals by bisection, weekly re-sync. Measure O5.
+2. **Mirror ingestion:** the sync loop, first load, daily update, removals by bisection, then the weekly re-sync. Off by default (`MIRROR_SYNC_ENABLED`). Measure O5.
 3. **`to_sql` and the cross-check suite:** for every registry enum value and every year, the mirror count equals the live count; for a sample of terms, the term set equals the live ID list.
 4. **Term sets:** resolve, refresh, re-resolve, pre-warm.
 5. **Shadow first:** with `FAST_MODE_SHADOW` on, every question is answered `live`, and the `fast` answer is computed too and compared. Keep it on until the drift log stays empty for a week of daily updates.
