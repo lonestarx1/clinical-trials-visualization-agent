@@ -38,7 +38,7 @@ About **$1.50/day**: t3.medium $0.052/h, EIP $0.005/h, 50 GB gp3 (~$0.15/day), E
 
 ## Deploying from scratch
 
-Requires Terraform ≥ 1.10, the AWS CLI with the Session Manager plugin, Docker with buildx, and kubectl. The AWS profile defaults to `personal`.
+Requires Terraform ≥ 1.10, the AWS CLI with the Session Manager plugin, Docker with buildx, and kubectl. The AWS profile is `personal` (override with `CHEIRON_AWS_PROFILE`; a shell `AWS_PROFILE` is ignored on purpose).
 
 ```bash
 make infra-bootstrap   # once: the state bucket

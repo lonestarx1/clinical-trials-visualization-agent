@@ -5,7 +5,9 @@ set -euo pipefail
 
 INFRA="$(cd "$(dirname "$0")/.." && pwd)"
 REPO="$(dirname "$INFRA")"
-export AWS_PROFILE="${AWS_PROFILE:-personal}"
+# Its own variable, not AWS_PROFILE: a shell's AWS_PROFILE for another account would
+# otherwise win and push to (and log in against) the wrong account.
+export AWS_PROFILE="${CHEIRON_AWS_PROFILE:-personal}"
 LOCAL_PORT="${KUBE_LOCAL_PORT:-16443}"
 KUBECONFIG_FILE="$INFRA/.kubeconfig"
 
@@ -22,7 +24,14 @@ echo "==> Building and pushing images ($TAG)"
 aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$REGISTRY" >/dev/null
 for app in api web; do
   src=backend; [ "$app" = web ] && src=frontend
-  docker buildx build --platform linux/amd64 -t "$REGISTRY/cheiron-$app:$TAG" --push "$REPO/$src"
+  image="$REGISTRY/cheiron-$app:$TAG"
+  if aws ecr describe-images --region "$REGION" --repository-name "cheiron-$app" \
+    --image-ids imageTag="$TAG" >/dev/null 2>&1; then
+    echo "$image is already in ECR"
+    continue
+  fi
+  docker buildx build --platform linux/amd64 --load -t "$image" "$REPO/$src"
+  docker push "$image"
 done
 
 echo "==> Syncing cluster secrets and fetching the kubeconfig (via SSM)"
@@ -45,7 +54,8 @@ aws ssm start-session --region "$REGION" --target "$INSTANCE" \
   --document-name AWS-StartPortForwardingSession \
   --parameters "{\"portNumber\":[\"6443\"],\"localPortNumber\":[\"$LOCAL_PORT\"]}" >/dev/null &
 TUNNEL=$!
-trap 'kill $TUNNEL 2>/dev/null || true' EXIT
+# The plugin outlives the aws process, so stop both.
+trap 'kill $TUNNEL 2>/dev/null || true; pkill -f "session-manager-plugin.*$INSTANCE" 2>/dev/null || true' EXIT
 for _ in $(seq 1 30); do kubectl get --raw /readyz >/dev/null 2>&1 && break; sleep 1; done
 kubectl get --raw /readyz >/dev/null
 
@@ -55,13 +65,13 @@ kubectl wait --for=condition=Established crd/clusterissuers.cert-manager.io --ti
 kubectl -n cert-manager rollout status deploy/cert-manager-webhook --timeout=180s
 
 echo "==> Applying manifests"
-DEPLOY_DIR="$INFRA/k8s/overlays/k3s/.deploy"
+DEPLOY_DIR="$INFRA/k8s/.deploy" # outside the overlay: Kustomize rejects a root inside its own base
 mkdir -p "$DEPLOY_DIR"
 cat > "$DEPLOY_DIR/kustomization.yaml" <<YAML
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ..
+  - ../overlays/k3s
 images:
   - name: cheiron-api
     newName: $REGISTRY/cheiron-api
