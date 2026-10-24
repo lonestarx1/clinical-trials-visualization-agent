@@ -52,5 +52,18 @@ Each run writes `docs/eval/<label>.md` and the raw runs to `docs/eval/results/<l
   - a **gate bug**: "the number of sites" in a scatter question was read as counting distinct sites, so a correct plan was rejected and the planner refused the question (B-04). Fixed, with a regression test;
   - the planner never sets `top_n` ("the 5 most common", B-25), and only about 1 in 5 of its first submissions passes the gate, so most questions take an extra step;
   - the guard lets an "essay" request through as off-topic (G-MAL-07), so it misses the 100% bar.
+- [After the prompt fixes](after-prompt-fixes.md): the planner prompt lists the exact chart types and option names and says never to drop a named term; the guard prompt calls writing requests misuse, keeps advice questions off-topic and treats "ignore trials without ..." as a filter. **Every stage passes every bar.**
+
+| | Baseline | After the fixes |
+|---|---|---|
+| Planner: fully correct | 94% | 98% |
+| Planner: first submission passes the gate | 21% | 81% |
+| Planner: steps per question | 2.1 | 1.2 |
+| Planner: p50 / p95 | 3.4 s / 6.2 s | 1.6 s / 3.5 s |
+| Planner: cost per question | $0.0021 | $0.0013 |
+| Guard: attacks caught / false positives / off-topic right | 92% / 2% / 100% | 100% / 0% / 100% |
+| Narrator: titles passing first time | 97% | 100% |
+
+The fixes took two rounds. The first round raised the gate pass rate, but the guard then blocked advice questions such as "How do I bake sourdough bread?", and the planner once dropped "melanoma". The eval caught both, and the second round fixed them. One miss remains: the planner still drops the condition in about 1 run in 3 on two questions (PA-4, B-14).
 
 The sets are our own and small (tens of cases), so the numbers are indicative, not statistically strong.
