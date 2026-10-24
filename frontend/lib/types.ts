@@ -28,7 +28,6 @@ export interface NetworkData { nodes: Datum[]; edges: Datum[] }
 export interface Visualization {
   type: ChartType;
   title: string;
-  summary: string;
   encoding: Record<string, Channel>;
   data: Datum[] | NetworkData;
 }
