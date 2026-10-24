@@ -10,7 +10,7 @@ from fastapi import FastAPI
 
 from app.agents.guard import SafetyCheckUnavailable
 from app.api import examples
-from app.api.errors import classify
+from app.api.errors import classify, http_error
 from app.ctgov.client import CtgovUnavailable, InconsistentResults
 from app.llm.client import LLMUnavailable
 from app.pipeline.query import BudgetExceeded, RejectedByPolicy, TooManyJobs
@@ -22,6 +22,7 @@ from app.schemas.endpoints import (
     Options,
     UsageSummary,
 )
+from app.store.jobs import JobExpired
 from app.store.results import Expired, NotFound
 
 DESCRIPTION = """
@@ -45,7 +46,8 @@ counted and which ClinicalTrials.gov API queries produced the numbers.
    (the normal response is in `result`) or `failed` (the error body is in `error`).
    `progress` reports the ClinicalTrials.gov pages fetched so far.
 5. **Cite:** each data point has a stable `key`, its full `citation_count` and up to
-   `citations_per_datum` citations inline. Page through every trial behind one data point
+   `citations_per_datum` citations inline (`citations: "full"` inlines all of them, up to
+   2,000 per response). Page through every trial behind one data point
    with `GET /v1/results/{result_id}/citations?datum=<key>`. Stored results expire after
    24 hours (then `410 expired`).
 
@@ -64,8 +66,10 @@ Real errors share one body, and never contain internal details:
 | HTTP | `code` | When |
 |---|---|---|
 | 400 | `rejected_by_policy` | The input guard classified the request as malicious |
-| 404 | `not_found` | Unknown job, result or data point |
-| 410 | `expired` | The stored result is past its 24-hour retention |
+| 401 | `unauthorized` | `GET /v1/usage` without the admin token |
+| 404 | `not_found` | Unknown job, result, data point or path |
+| 405 | `method_not_allowed` | Wrong HTTP method for the path (see the `Allow` header) |
+| 410 | `expired` | The stored result, or the finished job, is past its 24-hour retention |
 | 422 | `invalid_request` | Validation failed; `details` lists each field (`loc`, `msg`) |
 | 429 | `too_many_requests` | Rate limit (with `Retry-After`), or too many active background jobs |
 | 500 | `internal_error` | A bug on our side |
@@ -85,9 +89,11 @@ Quote the `trace_id` when reporting a problem.
   (`MAX_ACTIVE_JOBS_PER_IP`); another broad question gets `429 too_many_requests`.
   Asking the same question again while its job is active returns the same job.
 - **Daily AI budget:** every guard, planner and narrator call is costed. Once today's spend
-  (UTC day) reaches the cap (USD 100 by default, `LLM_DAILY_BUDGET_USD`), `POST /v1/query`
-  returns `503 budget_exceeded` until midnight UTC. Stored results stay readable through
-  the jobs and citations endpoints. `meta.usage` reports each answer's calls and cost.
+  (UTC day) reaches the cap (USD 100 by default, `LLM_DAILY_BUDGET_USD`), a question that
+  needs a model call gets `503 budget_exceeded` until midnight UTC. An exact repeat of a
+  question whose stored answer is still valid is still answered, with no model call (not
+  even the guard: it passed the first time). Jobs, citations and options keep working.
+  `meta.usage` reports each answer's calls and cost.
 - **ClinicalTrials.gov:** the API calls it at most about 40 times per minute for all users
   together, which is why broad questions run as background jobs.
 
@@ -117,7 +123,7 @@ TAGS: list[dict[str, Any]] = [
     {
         "name": "citations",
         "description": "Every trial behind one data point of a stored result, "
-        "paginated. Inline citations are only a sample.",
+        'paginated. Inline citations are a sample unless `citations: "full"` was asked.',
     },
     {
         "name": "options",
@@ -255,7 +261,7 @@ QUERY_RESPONSES: dict[int | str, dict[str, Any]] = {
     500: INTERNAL,
     503: errors(
         "A dependency or the daily budget stops the answer. Retry later; `budget_exceeded` "
-        "lasts until midnight UTC.",
+        "lasts until midnight UTC, but cached answers are still served meanwhile.",
         budget_exceeded=("Today's AI budget is used up", _public(BudgetExceeded())),
         **UPSTREAM,
         llm_unavailable=("The AI model and its fallback are failing", _public(LLMUnavailable())),
@@ -277,6 +283,11 @@ JOB_RESPONSES: dict[int | str, dict[str, Any]] = {
     404: errors(
         "No such job, or this deployment has no database (`not_found`).",
         not_found=("Unknown job_id", NOT_FOUND),
+    ),
+    410: errors(
+        "The job finished more than 24 hours ago, or its stored result has expired; ask the "
+        "question again (`expired`).",
+        expired=("Expired job", _public(JobExpired())),
     ),
     422: errors(
         "`job_id` is not a UUID (`invalid_request`).",
@@ -324,25 +335,10 @@ OPTIONS_RESPONSES: dict[int | str, dict[str, Any]] = {
 USAGE_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: ok("Today's usage and the budget.", usage=("Usage", examples.USAGE))
     | {"model": UsageSummary},
-    401: {
-        "description": "Missing or wrong admin token, or no `ADMIN_TOKEN` configured. "
-        "This one uses FastAPI's default body, not the shared error body.",
-        "content": {
-            "application/json": {
-                "schema": {
-                    "type": "object",
-                    "properties": {"detail": {"type": "string"}},
-                    "required": ["detail"],
-                },
-                "examples": {
-                    "unauthorized": {
-                        "summary": "No or wrong token",
-                        "value": {"detail": "admin token required"},
-                    }
-                },
-            }
-        },
-    },
+    401: errors(
+        "Missing or wrong admin token, or no `ADMIN_TOKEN` configured (`unauthorized`).",
+        unauthorized=("No or wrong token", _error(*http_error(401))),
+    ),
     404: errors(
         "This deployment has no database (`not_found`).",
         not_found=("No database", NOT_FOUND),

@@ -101,6 +101,20 @@ def test_could_not_interpret_returns_the_best_attempt() -> None:
     assert body["meta"]["details"]["errors"]
 
 
+def test_a_forced_chart_type_that_cannot_fit_is_could_not_interpret() -> None:
+    # Compatibility depends on the dimension the planner picks, so it can't be a 422 up front.
+    response, _ = post(
+        QUESTION | {"chart_type": "time_series"},
+        [OK],
+        [calls(("submit_plan", {"plan": PA3}))] * 6,
+        [],
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert (body["status"], body["visualization"]) == ("could_not_interpret", None)
+    assert any("time_series needs a time dimension" in e for e in body["meta"]["details"]["errors"])
+
+
 def test_out_of_scope() -> None:
     plan = {
         "scope": "out_of_scope",
@@ -153,3 +167,53 @@ def test_invalid_requests_never_reach_the_models() -> None:
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "invalid_request"
     assert llms.guard.requests == [] and llms.planner.requests == []  # type: ignore[attr-defined]
+
+
+def _points(body: dict[str, Any]) -> list[dict[str, Any]]:
+    data = body["visualization"]["data"]
+    return [*data["nodes"], *data["edges"]] if isinstance(data, dict) else data
+
+
+def test_full_citations_inline_every_trial() -> None:
+    response, _ = post(
+        QUESTION | {"citations": "full", "citations_per_datum": 1},
+        [OK],
+        [calls(("submit_plan", {"plan": PA3}))],
+        [NARRATION],
+    )
+    body = response.json()
+    assert body["meta"]["citations"] == {
+        "requested": "full",
+        "applied": "full",
+        "per_datum": 1,
+        "reason": None,
+    }
+    points = _points(body)
+    assert any(p["citation_count"] > 1 for p in points)
+    for p in points:
+        assert len(p["citations"]) == p["citation_count"]
+        assert p["citations_truncated"] is False
+
+
+def test_full_citations_fall_back_to_a_sample_above_the_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CITATIONS_FULL_MAX", "3")
+    response, _ = post(
+        QUESTION | {"citations": "full", "citations_per_datum": 1},
+        [OK],
+        [calls(("submit_plan", {"plan": PA3}))],
+        [NARRATION],
+    )
+    body = response.json()
+    citations = body["meta"]["citations"]
+    assert (citations["requested"], citations["applied"]) == ("full", "sample")
+    assert "3 citation limit exceeded" in citations["reason"]
+    assert all(len(p["citations"]) <= 1 for p in _points(body))
+    assert any(p["citations_truncated"] for p in _points(body))
+
+
+def test_sample_citations_are_the_default() -> None:
+    response, _ = post(QUESTION, [OK], [calls(("submit_plan", {"plan": PA3}))], [NARRATION])
+    citations = response.json()["meta"]["citations"]
+    assert citations == {"requested": "sample", "applied": "sample", "per_datum": 5, "reason": None}

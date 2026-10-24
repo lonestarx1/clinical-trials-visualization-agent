@@ -25,7 +25,7 @@ Sponsor ↔ collaborator always uses both sponsor roles (Q7, D7.6). Other sponso
 | Node | `id` (`<type>:<normalised key>`), `label` (most common raw spelling), `type`, `weight` (= distinct trials containing the node), `degree` (edges after pruning), `community`, `is_query_entity`, `citations` |
 | Edge | `source`, `target`, `weight` (= distinct trials containing both), `jaccard` (= shared trials / trials containing either node), `citations` |
 
-**Why Jaccard as well:** raw counts favour hubs. Carboplatin co-occurs with almost every chemo combination, so by count it looks linked to everything. Jaccard measures how **specific** a link is. Both values are sent: `encoding.edge.width` defaults to `weight`, and `edge_metric: count | jaccard` lets the user choose.
+**Why Jaccard as well:** raw counts favour hubs. Carboplatin co-occurs with almost every chemo combination, so by count it looks linked to everything. Jaccard measures how **specific** a link is. Both values are sent: `encoding.edge_width` defaults to `weight`, and `edge_metric: count | jaccard` lets the user choose.
 
 ## Pruning (keep the graph readable)
 

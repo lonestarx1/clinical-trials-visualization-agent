@@ -184,7 +184,7 @@ Volume estimate: a broad country chart (~17k trials × ~1.5 countries) is about 
 | `heartbeat_at` | timestamptz | Worker heartbeat while running |
 | `trace_id` | uuid | |
 | `created_at`, `started_at`, `finished_at` | timestamptz | |
-| `expires_at` | timestamptz | Retention after finishing |
+| `expires_at` | timestamptz | Retention after finishing (24 h). Polling a job past it, or a succeeded job whose result has expired, returns **410 `expired`**, like results |
 
 Indexes / constraints:
 - **One active job per identical request:** `UNIQUE (request_key) WHERE status IN ('pending','running')` (partial unique index). A duplicate request returns the existing `job_id`.
@@ -246,6 +246,8 @@ Indexes: `(created_at)`, `(model, created_at)`, `(trace_id)`.
 - **savings:** plan-cache hits record the LLM calls avoided (`plan_cache.hit_count` × the original planner cost)
 
 **Daily spending cap:** a configurable USD budget per day, checked against `SUM(cost_usd)` for the current day (UTC). When exceeded, new requests that need LLM calls get **503** `budget_exceeded` (cached results are still served). This protects the API key on the public endpoint.
+
+*As built (2026-10-25):* "cached" means a stored plan for this exact request (`plan_cache`) **and** a stored result for that plan and citation options that is still valid or revalidates (Q8). Such a request makes no model call at all: not even the guard, because a plan is cached only after the guard passed that request (the plan-cache key covers the question and every field except the two citation options). Everything else, including a cached plan whose result would need a new narration, gets 503. Under the budget the guard still runs on every request.
 
 ## Retention and cleanup (periodic task)
 

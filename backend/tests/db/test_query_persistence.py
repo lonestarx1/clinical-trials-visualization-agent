@@ -5,14 +5,19 @@ Scripted models and the recorded API; a real database. Run with: make test-db.
 
 import os
 import time
+import uuid
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import update
 
 from app.main import create_app
 from app.pipeline.query import StageLLMs
+from app.store import jobs, results
+from app.store.models import Job
 from tests.support.fake_llm import ScriptedLLM, calls, text
 from tests.support.recorded_api import recorded_client, recorded_handler
 
@@ -111,6 +116,24 @@ def test_repeat_questions_reuse_the_plan_and_the_result(client: tuple[TestClient
     assert second["visualization"] == first["visualization"]
 
 
+def test_a_reused_answer_honours_the_citation_mode(client: tuple[TestClient, Models]) -> None:
+    c, models = client
+    sample = c.post("/v1/query", json=QUESTION).json()
+    full = c.post("/v1/query", json=QUESTION | {"citations": "full"}).json()
+    assert models.planner_calls == 1  # the citation mode doesn't change the plan
+    assert full["meta"]["citations"]["applied"] == "full"
+    assert full["result_id"] != sample["result_id"]
+    phase2 = next(r for r in full["visualization"]["data"] if r["key"] == "PHASE2")
+    assert len(phase2["citations"]) == phase2["citation_count"] == 2
+
+    again = c.post("/v1/query", json=QUESTION | {"citations": "full"}).json()
+    assert again["meta"]["cache"]["result"] == "hit"
+    assert again["result_id"] == full["result_id"]
+    back = c.post("/v1/query", json=QUESTION).json()
+    assert back["result_id"] == sample["result_id"]
+    assert back["meta"]["citations"]["applied"] == "sample"
+
+
 def test_broad_questions_become_background_jobs(
     client: tuple[TestClient, Models], monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -145,6 +168,47 @@ def test_daily_budget_is_enforced(client: tuple[TestClient, Models]) -> None:
     assert blocked.json()["error"]["code"] == "budget_exceeded"
 
 
+def test_cached_answers_are_served_when_the_budget_is_spent(
+    client: tuple[TestClient, Models],
+) -> None:
+    c, models = client
+    c.app.state.settings.llm_daily_budget_usd = 0.0000001
+    first = c.post("/v1/query", json=QUESTION).json()  # spends the budget
+    calls = (models.guard_calls, models.planner_calls)
+
+    again = c.post("/v1/query", json=QUESTION)
+    assert again.status_code == 200, again.text
+    body = again.json()
+    assert body["result_id"] == first["result_id"]
+    assert body["meta"]["cache"] == {"plan": "hit", "result": "hit"}
+    assert body["meta"]["usage"]["llm_calls"] == 0
+    # This exact request already passed the guard when its plan was cached.
+    assert (models.guard_calls, models.planner_calls) == calls
+    assert body["meta"]["guard"]["verdict"] == "ok"
+
+
+async def test_a_cached_plan_without_a_reusable_result_still_needs_the_budget(
+    client: tuple[TestClient, Models], sessions: Any
+) -> None:
+    c, models = client
+    c.app.state.settings.llm_daily_budget_usd = 0.0000001
+    first = c.post("/v1/query", json=QUESTION).json()  # spends the budget; plan cached
+    calls = (models.guard_calls, models.planner_calls)
+
+    # A different citation mode is a different stored result: narrating it needs a model.
+    other_mode = c.post("/v1/query", json=QUESTION | {"citations": "full"})
+    assert other_mode.status_code == 503
+    assert other_mode.json()["error"]["code"] == "budget_exceeded"
+
+    async with sessions() as s:
+        await results.expire_now(s, uuid.UUID(first["result_id"]))
+        await s.commit()
+    expired = c.post("/v1/query", json=QUESTION)
+    assert expired.status_code == 503
+    assert expired.json()["error"]["code"] == "budget_exceeded"
+    assert (models.guard_calls, models.planner_calls) == calls  # no model was called
+
+
 def test_usage_needs_the_admin_token(client: tuple[TestClient, Models]) -> None:
     c, _ = client
     c.post("/v1/query", json=QUESTION)
@@ -158,3 +222,50 @@ def test_zero_counts_still_answer_without_a_job(client: tuple[TestClient, Models
     c.app.state.ctgov, _ = recorded_client(recorded_handler(lambda _: False))
     body = c.post("/v1/query", json=QUESTION).json()
     assert body["status"] == "no_matching_trials"
+
+
+async def _finished_job(sessions: Any, *, result_id: Any = None) -> Any:
+    async with sessions() as s:
+        job = await jobs.create(
+            s,
+            request_key="j" * 64,
+            request={},
+            plan={},
+            context={},
+            estimated_seconds=90,
+            trace_id=uuid.uuid4(),
+            client_ip="1.2.3.4",
+        )
+        await jobs.succeed(s, job.job_id, result_id=result_id)
+        await s.commit()
+    return job.job_id
+
+
+async def test_jobs_past_retention_are_expired(
+    client: tuple[TestClient, Models], sessions: Any
+) -> None:
+    c, _ = client
+    job_id = await _finished_job(sessions)
+    assert c.get(f"/v1/jobs/{job_id}").status_code == 200
+    async with sessions() as s:
+        await s.execute(
+            update(Job).where(Job.job_id == job_id).values(expires_at=datetime.now(UTC))
+        )
+        await s.commit()
+    response = c.get(f"/v1/jobs/{job_id}")
+    assert response.status_code == 410
+    assert response.json()["error"]["code"] == "expired"
+
+
+async def test_a_job_whose_result_expired_is_expired(
+    client: tuple[TestClient, Models], sessions: Any
+) -> None:
+    c, _ = client
+    result_id = c.post("/v1/query", json=QUESTION).json()["result_id"]
+    job_id = await _finished_job(sessions, result_id=uuid.UUID(result_id))
+    async with sessions() as s:
+        await results.expire_now(s, uuid.UUID(result_id))
+        await s.commit()
+    response = c.get(f"/v1/jobs/{job_id}")
+    assert response.status_code == 410
+    assert response.json()["error"]["code"] == "expired"

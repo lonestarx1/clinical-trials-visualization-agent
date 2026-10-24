@@ -155,9 +155,11 @@ class QueryRequest(BaseModel):
     )
     citations: Literal["sample", "full"] = Field(
         default="sample",
-        description="Accepted for compatibility; inline citations are currently always a "
-        "sample of up to `citations_per_datum` per data point. The full list for any data "
-        "point comes from `GET /v1/results/{result_id}/citations`.",
+        description="`sample`: up to `citations_per_datum` citations inline per data point. "
+        "`full`: every citation inline, unless the response would carry more than 2,000 "
+        "(setting `CITATIONS_FULL_MAX`); it then falls back to a sample and "
+        "`meta.citations` says why. The full list for any data point always comes from "
+        "`GET /v1/results/{result_id}/citations`.",
     )
     citations_per_datum: int = Field(
         default=5,

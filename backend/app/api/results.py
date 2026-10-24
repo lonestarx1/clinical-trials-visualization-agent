@@ -16,7 +16,6 @@ from app.ctgov.countries import CANONICAL
 from app.registry import DIMENSIONS, MEASURES, ChartType
 from app.registry.enums import Phase, Status
 from app.store import jobs, results, usage
-from app.store.models import Result
 from app.store.results import NotFound
 
 router = APIRouter(prefix="/v1")
@@ -75,7 +74,8 @@ async def citations(
     "`POST /v1/query`). Poll every few seconds: `pending` and `running` report `progress` "
     "in ClinicalTrials.gov pages; `succeeded` carries the normal query response in "
     "`result`; `failed` carries the shared error body in `error`. A job that crashed is "
-    "retried before it is marked failed.",
+    "retried before it is marked failed. A finished job is kept for 24 hours, like its "
+    "result; after that, polling returns `410 expired`.",
     responses=JOB_RESPONSES,
 )
 async def job_status(
@@ -84,13 +84,8 @@ async def job_status(
 ) -> dict[str, Any]:
     """Poll a background job (design Q6)."""
     async with _need(sessions)() as s:
-        job = await jobs.get(s, job_id)
-        if job is None:
-            raise NotFound(f"no job {job_id}")
-        result = None
-        if job.result_id is not None:
-            stored = await s.get(Result, job.result_id)
-            result = stored.response if stored else None
+        job, stored = await jobs.get_live(s, job_id)
+        result = stored.response if stored else None
     return {
         "job_id": str(job.job_id),
         "status": job.status,

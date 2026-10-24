@@ -9,8 +9,8 @@ These are valid answers, returned as **200** with `status` set and `visualizatio
 | `status` | When | `meta` contains |
 |---|---|---|
 | `out_of_scope` | The question is about something we don't support (Q1) | The reason |
-| `no_matching_trials` | Valid filters matched 0 trials (Q5 layer 3) | Per-filter counts, e.g. `drug_name "pembrolizumb": 0 trials` |
-| `could_not_interpret` | No valid plan within the agent's limits (Q2, D2.4) | The best attempt + the validation errors |
+| `no_matching_trials` | Valid filters matched 0 trials (Q5 layer 3) | `details.search_counts`: the count of each search (one per comparison group), e.g. `[{"group": null, "count": 0}]`. Per-search, not per-filter ([Q12 revision](12-io-schema.md#revision-2026-10-25-network-encoding-and-no_matching_trials-details-as-built)) |
+| `could_not_interpret` | No valid plan within the agent's limits (Q2, D2.4), including a forced `chart_type` that can't show the question ([Q3 revision](03-ai-vs-code.md#optional-request-override)) | The best attempt + the validation errors |
 
 ## Rule 2: real errors share one body
 
@@ -23,15 +23,17 @@ Error bodies **never** contain stack traces, prompts, model outputs, keys, or in
 
 | HTTP | `code` | When |
 |---|---|---|
-| 422 | `invalid_request` | Request validation failed (Q5 layer 1). `details` lists per-field errors (`loc`, `msg`). FastAPI's default 422 body is converted to this format. |
+| 422 | `invalid_request` | Request validation failed (Q5 layer 1). `details` lists per-field errors (`loc`, `msg`). FastAPI's default 422 body is converted to this format, and so are its routing and auth errors (401, 404, 405: the code is the status name in snake_case). |
 | 400 | `rejected_by_policy` | The input guard classified the request as malicious (Q5b). Generic message; the reason is logged only. |
-| 404 | `not_found` | Unknown `job_id` / `result_id` |
-| 410 | `expired` | Result or job past retention / no longer valid (Q14) |
+| 401 | `unauthorized` | `GET /v1/usage` without the admin token |
+| 404 | `not_found` | Unknown `job_id` / `result_id` / data point, or a path that doesn't exist |
+| 405 | `method_not_allowed` | A known path with the wrong HTTP method (the `Allow` header lists the right one) |
+| 410 | `expired` | Result or job past retention / no longer valid (Q14). A finished job expires 24 h after finishing, or with its result |
 | 429 | `too_many_requests` | **Our own** per-client rate limit; includes a `Retry-After` header |
 | 503 | `upstream_unavailable` | ClinicalTrials.gov still failing after retries, or the circuit breaker is open (Q8) |
 | 503 | `llm_unavailable` | OpenAI failing after retries **and** the fallback model (Q8) |
 | 503 | `safety_check_unavailable` | The guard failed after its retry: fail closed (Q5b) |
-| 503 | `budget_exceeded` | The daily LLM spending cap was reached (Q16 `llm_usage`). Cached results are still served. |
+| 503 | `budget_exceeded` | The daily LLM spending cap was reached (Q16 `llm_usage`) and the request needs a model call. Cached results are still served: an exact repeat whose plan and result are stored is answered with no model call (Q16). |
 | 500 | `internal_error` | Our bug: e.g. ClinicalTrials.gov returned 400 for a query **we** compiled, the citation exactness check failed (Q14), or a response failed schema validation |
 
 ## Rule 3: no silent partial answers
