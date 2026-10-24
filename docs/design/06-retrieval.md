@@ -94,6 +94,9 @@ S1/S2 return counts only, so we can't produce per-trial citations for those valu
 | Worker | In-process async worker pool for the assignment (configurable size); a separate worker service is future work |
 | Reuse | An identical request (same `request_key`) returns the existing active job (partial unique index, Q16) or a still-valid stored result (revalidated, Q8) instead of starting a new one |
 | Retention | Results kept for a configurable time (e.g. 24 h, or until the data updates) |
+| Cancel | `DELETE /v1/jobs/{job_id}` (added 2026-10-25, see the revision below) |
+
+**Revision (2026-10-25): jobs can be cancelled.** A broad job used to run to the end with nobody waiting (an unscoped question is ~15 min of the shared 40 requests/min). `DELETE /v1/jobs/{job_id}` sets a `pending` or `running` job to `cancelled` (`error.code` `cancelled`); a finished job is returned unchanged, so the call is idempotent. The worker checks the row after every page and, for stages without page progress (per-year counts, aggregation, narration), every second, then cancels its work: it stops within about one page (~1.5 s) and writes nothing more. Requests it had queued in the rate limiter leave the queue, freeing the shared budget. A cancelled job is never retried or requeued. Anyone holding the `job_id` may cancel, the same trust model as polling (an unguessable UUID). A synchronous request is not cancellable: if the client disconnects, the server finishes, stores the answer and reuses it for a repeat; the web app's Stop button cancels a job whose 202 arrives after Stop. Tests: `backend/tests/db/test_job_cancel.py`.
 
 ## Rough durations (from live probing; rate limit assumed 40 req/min)
 

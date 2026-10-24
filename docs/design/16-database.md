@@ -191,6 +191,7 @@ Indexes / constraints:
 - **Worker pickup:** index `(status, created_at)`. Claim with
   `SELECT ... WHERE status='pending' ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1`, then `UPDATE ... SET status='running', locked_by=..., started_at=now()`.
 - **Valid transitions** are enforced by conditional updates (`UPDATE ... WHERE job_id=$1 AND status='running'`): `pending -> running -> succeeded | failed`, `pending -> cancelled`, `running -> pending` (crash recovery only).
+- **Revision (2026-10-25): cancellation.** `running -> cancelled` is also valid. `DELETE /v1/jobs/{job_id}` locks the row (`SELECT ... FOR UPDATE`) and, if it is `pending` or `running`, sets `status='cancelled'`, `error` (`code: cancelled`), `finished_at` and `expires_at`. The worker's writes (`progress`, `succeed`, `fail`) are conditional on `status IN ('pending','running')`, so a cancelled row is never overwritten or retried, and the requeue sweep only touches `running`. A cancelled job is not active: it leaves the one-active-job index and the per-IP job count.
 - **Crash recovery:** a periodic sweep returns `running` jobs whose `heartbeat_at` is older than N seconds to `pending` (`attempts + 1`), or marks them `failed` when `attempts >= max_attempts`.
 
 ## 9. `traces`: one row per request / job execution (observability)
