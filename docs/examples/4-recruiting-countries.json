@@ -1,0 +1,562 @@
+{
+  "request": {
+    "query": "Which countries have the most recruiting trials for lung cancer?",
+    "citations_per_datum": 3
+  },
+  "http_status": 200,
+  "seconds": 10.9,
+  "response": {
+    "schema_version": "1.0",
+    "result_id": null,
+    "status": "ok",
+    "visualization": {
+      "type": "bar_chart",
+      "title": "ClinicalTrials.gov lung cancer trials by country (top 10)",
+      "summary": "Bar chart shows number of trials by country for lung cancer, totaling 2,182 trials, with China highest at 875 and Canada lowest at 135.",
+      "encoding": {
+        "x": {
+          "field": "country",
+          "type": "nominal",
+          "label": "Country",
+          "unit": null,
+          "sort": "descending",
+          "time_unit": null
+        },
+        "y": {
+          "field": "trial_count",
+          "type": "quantitative",
+          "label": "Number of trials",
+          "unit": "trials",
+          "sort": null,
+          "time_unit": null
+        }
+      },
+      "data": [
+        {
+          "key": "China",
+          "country": "China",
+          "trial_count": 875,
+          "citation_count": 875,
+          "citations": [
+            {
+              "nct_id": "NCT07824882",
+              "url": "https://clinicaltrials.gov/study/NCT07824882",
+              "title": "A Phase II Study of HS-20093 Injection Combined With Adebrelimab Versus HS-20093 Injection in Previously Treated Patients With Advanced or Metastatic Non-Squamous Non-Small Cell Lung Cancer Without Actionable Genomic Alterations",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "China"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07798947",
+              "url": "https://clinicaltrials.gov/study/NCT07798947",
+              "title": "A Phase II Clinical Study of SHR-7787 Injection Combined With SHR-1316 Injection in Patients With LS-SCLC",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "China"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07541170",
+              "url": "https://clinicaltrials.gov/study/NCT07541170",
+              "title": "A Study to Evaluate the Efficacy and Safety of Divarasib Compared With Investigator's Choice of Immunotherapy or Observation in Participants With Resected Stage II-III KRAS G12C-Positive Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[18].country",
+                  "excerpt": "China"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "United States",
+          "country": "United States",
+          "trial_count": 832,
+          "citation_count": 832,
+          "citations": [
+            {
+              "nct_id": "NCT07388524",
+              "url": "https://clinicaltrials.gov/study/NCT07388524",
+              "title": "Testing the Impact of an Anti-Cancer Drug, Atezolizumab, After Surgery to Prevent Early Stage Non-small Cell Lung Cancer From Returning, AASI-NSCLC Trial",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "United States"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07140315",
+              "url": "https://clinicaltrials.gov/study/NCT07140315",
+              "title": "DK222 Study at Hopkins",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "United States"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07153055",
+              "url": "https://clinicaltrials.gov/study/NCT07153055",
+              "title": "Lurbinectedin With Osimertinib in Transformed Small Cell Lung Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "United States"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "France",
+          "country": "France",
+          "trial_count": 239,
+          "citation_count": 239,
+          "citations": [
+            {
+              "nct_id": "NCT07843940",
+              "url": "https://clinicaltrials.gov/study/NCT07843940",
+              "title": "A Study to Test Obrixtamig in Combination With Pumitamig in People With Advanced Small Cell Lung Cancer (Dareon®-Rosetta35)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[12].country",
+                  "excerpt": "France"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07680764",
+              "url": "https://clinicaltrials.gov/study/NCT07680764",
+              "title": "A Study To Assess the Safety, Tolerability, and Efficacy of Imzokitug in Combination With Pumitamig and Platinum-Doublet Chemotherapy (PDCT) Versus Pumitamig and PDCT as First-line Treatment for Participants With Locally Advanced or Metastatic Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[35].country",
+                  "excerpt": "France"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07680790",
+              "url": "https://clinicaltrials.gov/study/NCT07680790",
+              "title": "Study of Izalontamab Brengitecan (BMS-986507) in Combination With Osimertinib Versus Osimertinib Monotherapy or Osimertinib in Combination With Platinum-based Chemotherapy for EGFRmt Non-small Cell Lung Cancer (IZABRIGHT-Lung02)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[105].country",
+                  "excerpt": "France"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "Spain",
+          "country": "Spain",
+          "trial_count": 211,
+          "citation_count": 211,
+          "citations": [
+            {
+              "nct_id": "NCT07541170",
+              "url": "https://clinicaltrials.gov/study/NCT07541170",
+              "title": "A Study to Evaluate the Efficacy and Safety of Divarasib Compared With Investigator's Choice of Immunotherapy or Observation in Participants With Resected Stage II-III KRAS G12C-Positive Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[41].country",
+                  "excerpt": "Spain"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07843940",
+              "url": "https://clinicaltrials.gov/study/NCT07843940",
+              "title": "A Study to Test Obrixtamig in Combination With Pumitamig in People With Advanced Small Cell Lung Cancer (Dareon®-Rosetta35)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[24].country",
+                  "excerpt": "Spain"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07465757",
+              "url": "https://clinicaltrials.gov/study/NCT07465757",
+              "title": "A Study of Alisertib and Paclitaxel in Patients With Small Cell Lung Cancer (SCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "Spain"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "Italy",
+          "country": "Italy",
+          "trial_count": 199,
+          "citation_count": 199,
+          "citations": [
+            {
+              "nct_id": "NCT07541170",
+              "url": "https://clinicaltrials.gov/study/NCT07541170",
+              "title": "A Study to Evaluate the Efficacy and Safety of Divarasib Compared With Investigator's Choice of Immunotherapy or Observation in Participants With Resected Stage II-III KRAS G12C-Positive Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[25].country",
+                  "excerpt": "Italy"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07817329",
+              "url": "https://clinicaltrials.gov/study/NCT07817329",
+              "title": "NUT Project: Nutritional Support in Thoracic Oncology",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "Italy"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07680764",
+              "url": "https://clinicaltrials.gov/study/NCT07680764",
+              "title": "A Study To Assess the Safety, Tolerability, and Efficacy of Imzokitug in Combination With Pumitamig and Platinum-Doublet Chemotherapy (PDCT) Versus Pumitamig and PDCT as First-line Treatment for Participants With Locally Advanced or Metastatic Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[50].country",
+                  "excerpt": "Italy"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "Australia",
+          "country": "Australia",
+          "trial_count": 153,
+          "citation_count": 153,
+          "citations": [
+            {
+              "nct_id": "NCT07135882",
+              "url": "https://clinicaltrials.gov/study/NCT07135882",
+              "title": "Primary Radiotherapy In MEtastatic Lung Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "Australia"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07843940",
+              "url": "https://clinicaltrials.gov/study/NCT07843940",
+              "title": "A Study to Test Obrixtamig in Combination With Pumitamig in People With Advanced Small Cell Lung Cancer (Dareon®-Rosetta35)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[5].country",
+                  "excerpt": "Australia"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07873450",
+              "url": "https://clinicaltrials.gov/study/NCT07873450",
+              "title": "SumMET: Study of [225Ac]Ac-FL-261 in Participants With Solid Tumors Overexpressing c-MET",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "Australia"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "South Korea",
+          "country": "South Korea",
+          "trial_count": 149,
+          "citation_count": 149,
+          "citations": [
+            {
+              "nct_id": "NCT07541170",
+              "url": "https://clinicaltrials.gov/study/NCT07541170",
+              "title": "A Study to Evaluate the Efficacy and Safety of Divarasib Compared With Investigator's Choice of Immunotherapy or Observation in Participants With Resected Stage II-III KRAS G12C-Positive Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[32].country",
+                  "excerpt": "South Korea"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07680790",
+              "url": "https://clinicaltrials.gov/study/NCT07680790",
+              "title": "Study of Izalontamab Brengitecan (BMS-986507) in Combination With Osimertinib Versus Osimertinib Monotherapy or Osimertinib in Combination With Platinum-based Chemotherapy for EGFRmt Non-small Cell Lung Cancer (IZABRIGHT-Lung02)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[159].country",
+                  "excerpt": "South Korea"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07586202",
+              "url": "https://clinicaltrials.gov/study/NCT07586202",
+              "title": "A Study of Neoadjuvant Amivantamab With Either Lazertinib or Chemotherapy in Participants With Resectable EGFR-Mutated NSCLC",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[12].country",
+                  "excerpt": "South Korea"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "United Kingdom",
+          "country": "United Kingdom",
+          "trial_count": 143,
+          "citation_count": 143,
+          "citations": [
+            {
+              "nct_id": "NCT07680764",
+              "url": "https://clinicaltrials.gov/study/NCT07680764",
+              "title": "A Study To Assess the Safety, Tolerability, and Efficacy of Imzokitug in Combination With Pumitamig and Platinum-Doublet Chemotherapy (PDCT) Versus Pumitamig and PDCT as First-line Treatment for Participants With Locally Advanced or Metastatic Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[71].country",
+                  "excerpt": "United Kingdom"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07718243",
+              "url": "https://clinicaltrials.gov/study/NCT07718243",
+              "title": "Investigating the Combination of Bexmarilimab and Nivolumab in Solid Tumours, Melanoma and NSCLC",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "United Kingdom"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07761351",
+              "url": "https://clinicaltrials.gov/study/NCT07761351",
+              "title": "A Randomized Controlled Trial Comparing Percutaneous CT-Guided Biopsy and Shape-Sensing Robotic-Assisted Bronchoscopy",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[2].country",
+                  "excerpt": "United Kingdom"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "Canada",
+          "country": "Canada",
+          "trial_count": 135,
+          "citation_count": 135,
+          "citations": [
+            {
+              "nct_id": "NCT07541170",
+              "url": "https://clinicaltrials.gov/study/NCT07541170",
+              "title": "A Study to Evaluate the Efficacy and Safety of Divarasib Compared With Investigator's Choice of Immunotherapy or Observation in Participants With Resected Stage II-III KRAS G12C-Positive Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[17].country",
+                  "excerpt": "Canada"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07680790",
+              "url": "https://clinicaltrials.gov/study/NCT07680790",
+              "title": "Study of Izalontamab Brengitecan (BMS-986507) in Combination With Osimertinib Versus Osimertinib Monotherapy or Osimertinib in Combination With Platinum-based Chemotherapy for EGFRmt Non-small Cell Lung Cancer (IZABRIGHT-Lung02)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[57].country",
+                  "excerpt": "Canada"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT06622174",
+              "url": "https://clinicaltrials.gov/study/NCT06622174",
+              "title": "Pulse Radiotherapy to Overcome Metastatic Immune System Evasion in Lung Cancer",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[0].country",
+                  "excerpt": "Canada"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        },
+        {
+          "key": "Germany",
+          "country": "Germany",
+          "trial_count": 135,
+          "citation_count": 135,
+          "citations": [
+            {
+              "nct_id": "NCT07843940",
+              "url": "https://clinicaltrials.gov/study/NCT07843940",
+              "title": "A Study to Test Obrixtamig in Combination With Pumitamig in People With Advanced Small Cell Lung Cancer (Dareon®-Rosetta35)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[15].country",
+                  "excerpt": "Germany"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07680764",
+              "url": "https://clinicaltrials.gov/study/NCT07680764",
+              "title": "A Study To Assess the Safety, Tolerability, and Efficacy of Imzokitug in Combination With Pumitamig and Platinum-Doublet Chemotherapy (PDCT) Versus Pumitamig and PDCT as First-line Treatment for Participants With Locally Advanced or Metastatic Non-Small Cell Lung Cancer (NSCLC)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[44].country",
+                  "excerpt": "Germany"
+                }
+              ]
+            },
+            {
+              "nct_id": "NCT07680790",
+              "url": "https://clinicaltrials.gov/study/NCT07680790",
+              "title": "Study of Izalontamab Brengitecan (BMS-986507) in Combination With Osimertinib Versus Osimertinib Monotherapy or Osimertinib in Combination With Platinum-based Chemotherapy for EGFRmt Non-small Cell Lung Cancer (IZABRIGHT-Lung02)",
+              "evidence": [
+                {
+                  "field": "protocolSection.contactsLocationsModule.locations[117].country",
+                  "excerpt": "Germany"
+                }
+              ]
+            }
+          ],
+          "citations_truncated": true
+        }
+      ]
+    },
+    "meta": {
+      "interpretation": {
+        "intent": "top_n",
+        "chart_type": "bar_chart",
+        "dimension": "country",
+        "dimension_2": null,
+        "measure": "trial_count",
+        "chart_type_source": "ai"
+      },
+      "filters": {
+        "conditions": [
+          "lung cancer"
+        ],
+        "statuses": [
+          "RECRUITING"
+        ]
+      },
+      "assumptions": [
+        "Interpret 'most' as ranking countries by trial count."
+      ],
+      "warnings": [],
+      "notes": [
+        "Showing the top 10 of 69 countries."
+      ],
+      "counting_rule": "Each trial is counted once per country where it has at least one site.",
+      "additive": false,
+      "unique_trials": 2182,
+      "excluded": [],
+      "sort": {
+        "by": "y",
+        "order": "desc"
+      },
+      "api_queries": [
+        {
+          "group": null,
+          "url": "https://clinicaltrials.gov/api/v2/studies?filter.overallStatus=RECRUITING&query.cond=%22lung+cancer%22",
+          "total_count": 2182
+        }
+      ],
+      "group_overlap": null,
+      "citations": {
+        "requested": "sample",
+        "applied": "sample",
+        "per_datum": 3,
+        "reason": null
+      },
+      "data_timestamp": "2026-10-23T09:00:04",
+      "retrieved_at": "2026-10-24T11:28:55+00:00",
+      "source": "clinicaltrials.gov",
+      "guard": {
+        "verdict": "ok",
+        "model": "gpt-5.4-nano"
+      },
+      "planner": {
+        "steps": 3,
+        "tool_calls": [
+          {
+            "tool": "submit_plan",
+            "ms": 0,
+            "ok": false,
+            "errors": [
+              "chart_type: Input should be 'bar_chart', 'grouped_bar_chart', 'time_series', 'histogram', 'scatter_plot', 'network_graph' or 'metric'",
+              "options.sort: Extra inputs are not permitted",
+              "options.limit: Extra inputs are not permitted"
+            ]
+          },
+          {
+            "tool": "list_options",
+            "ms": 0,
+            "ok": true
+          },
+          {
+            "tool": "submit_plan",
+            "ms": 0,
+            "ok": true
+          }
+        ],
+        "model": "gpt-5.4-mini"
+      },
+      "narration": {
+        "model": "gpt-5.4-nano",
+        "attempts": 1,
+        "fallback": false,
+        "errors": []
+      },
+      "usage": {
+        "llm_calls": 5,
+        "input_tokens": 5915,
+        "output_tokens": 400,
+        "cost_usd": 0.003095,
+        "models": [
+          "gpt-5.4-mini",
+          "gpt-5.4-nano"
+        ]
+      },
+      "trace_id": "9f456779-5346-4bee-a197-821121c41ee2",
+      "timings_ms": {
+        "retrieve": 4544,
+        "aggregate": 83,
+        "narrate": 1484,
+        "total": 6441
+      },
+      "details": {}
+    }
+  }
+}
