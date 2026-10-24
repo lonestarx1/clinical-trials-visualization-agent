@@ -46,7 +46,15 @@ def test_schema_errors_are_reported_readably() -> None:
         ({"chart_type": "grouped_bar_chart"}, "grouped_bar_chart needs comparison groups"),
         ({"dimension": None}, "bar_chart needs a dimension"),
         ({"dimension": "enrollment"}, "bar_chart needs a categorical or entity dimension"),
-        ({"chart_type": "network_graph", "dimension": "sponsor"}, "not available yet"),
+        ({"chart_type": "network_graph", "dimension": "enrollment"}, "network_graph needs entity"),
+        (
+            {"chart_type": "scatter_plot", "dimension": "enrollment"},
+            "scatter_plot needs two numeric",
+        ),
+        (
+            {"chart_type": "scatter_plot", "dimension": "phase", "dimension_2": "enrollment"},
+            "scatter_plot needs two numeric",
+        ),
     ],
 )
 def test_chart_compatibility(changes: dict[str, Any], message: str) -> None:
@@ -175,3 +183,25 @@ def test_default_charts() -> None:
     assert default_chart("trend") == "time_series"
     assert default_chart("comparison") == "grouped_bar_chart"
     assert default_chart("single_number") == "metric"
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"intent": "network", "chart_type": "network_graph", "dimension": "drug"},
+        {
+            "intent": "network",
+            "chart_type": "network_graph",
+            "dimension": "sponsor",
+            "dimension_2": "drug",
+        },
+        {
+            "intent": "numeric_relationship",
+            "chart_type": "scatter_plot",
+            "dimension": "enrollment",
+            "dimension_2": "duration_months",
+        },
+    ],
+)
+def test_networks_and_scatter_plots_are_accepted(changes: dict[str, Any]) -> None:
+    assert gate(BASE | changes).errors == []
