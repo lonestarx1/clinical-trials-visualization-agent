@@ -4,10 +4,13 @@ from collections.abc import Iterable, Mapping, Sequence
 from datetime import date
 from typing import Any
 
-from app.pipeline.extract import Evidence, parse_partial_date, value_at
+from app.ctgov.client import CtgovClient
+from app.pipeline.extract import Evidence, extract, parse_partial_date, value_at
 from app.schemas.response import Visualization
+from app.store.results import FetchPage
 
 STUDY_URL = "https://clinicaltrials.gov/study/{}"
+SOURCE_PAGE_SIZE = 200
 
 
 class CitationMismatch(AssertionError):
@@ -78,3 +81,26 @@ def verify_citations(visualization: Visualization, studies: dict[str, dict[str, 
                         f"{cited['nct_id']} {item['field']}: "
                         f"cited {expected!r}, record has {actual!r}"
                     )
+
+
+def source_pages(ctgov: CtgovClient) -> FetchPage:
+    """Pages of a sampled data point's stored API search, as citations (design Q14).
+
+    A trial is cited with the same rule as the answer: its value for the dimension is the data
+    point's key. A trial whose record changed since the answer and no longer fits is skipped.
+    """
+
+    async def fetch(
+        source: dict[str, Any], datum_key: str, token: str | None
+    ) -> tuple[list[dict[str, Any]], str | None]:
+        studies, next_token = await ctgov.page(
+            source["params"], source["fields"], SOURCE_PAGE_SIZE, source["sort"], token
+        )
+        cited = [
+            citation(study, values[0].evidence)
+            for study in studies
+            if (values := extract(study, source["dimension"])) and values[0].key == datum_key
+        ]
+        return cited, next_token
+
+    return fetch

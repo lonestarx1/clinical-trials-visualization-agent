@@ -5,7 +5,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.api.deps import get_sessions, get_settings
+from app.api.deps import get_ctgov, get_sessions, get_settings
 from app.api.openapi import (
     CANCEL_RESPONSES,
     CITATION_RESPONSES,
@@ -14,7 +14,9 @@ from app.api.openapi import (
     USAGE_RESPONSES,
 )
 from app.core.config import Settings
+from app.ctgov.client import CtgovClient
 from app.ctgov.countries import CANONICAL
+from app.pipeline.citations import source_pages
 from app.registry import DIMENSIONS, MEASURES, ChartType
 from app.registry.enums import Phase, Status
 from app.store import jobs, results, usage
@@ -42,12 +44,15 @@ def _need(sessions: async_sessionmaker[AsyncSession] | None) -> async_sessionmak
     "of a stored result, in the same order as its inline citations, keyset-paginated. Use "
     "the response's `result_id` and the data point's `key`; follow `next_cursor` until it "
     "is null. Each citation has the `evidence`: the trial record fields that place it in "
-    "the data point. Results are kept for 24 hours.",
+    "the data point. A data point counted without reading every trial (trials per year "
+    "on a broad question) lists the rest from ClinicalTrials.gov as you page, so a page "
+    "can take a few seconds the first time. Results are kept for 24 hours.",
     responses=CITATION_RESPONSES,
 )
 async def citations(
     result_id: Annotated[uuid.UUID, Path(description="`result_id` from the query response.")],
     sessions: Sessions,
+    ctgov: Annotated[CtgovClient, Depends(get_ctgov)],
     datum: Annotated[
         str, Query(description="The data point's `key`, e.g. `PHASE2` or `drug:nivolumab`.")
     ],
@@ -59,6 +64,9 @@ async def citations(
 ) -> dict[str, Any]:
     """Every trial behind one data point, in citation order, paginated (design Q14)."""
     async with _need(sessions)() as s:
+        upto = (cursor or 0) + page_size + 1  # one more, to know whether a next page exists
+        await results.extend_citations(s, result_id, datum, upto=upto, fetch=source_pages(ctgov))
+        await s.commit()
         page = await results.citation_page(s, result_id, datum, after=cursor, limit=page_size)
     return {
         "result_id": str(page.result_id),

@@ -146,9 +146,16 @@ def _datums(executed: Executed, plan: QueryPlan) -> list[results.Datum]:
             or f"{p.get('source', '')} - {p.get('target', '')}"
         )
         value = next((p[k] for k in (plan.measure, "value", "count", "weight") if k in p), None)
+        key = str(p["key"])
+        source = chart.citation_sources.get(key)
         out.append(
             results.Datum(
-                str(p["key"]), str(label), value, chart.full_citations.get(str(p["key"]), [])
+                key,
+                str(label),
+                value,
+                chart.full_citations.get(key, []),
+                count=source["count"] if source else None,
+                source=source,
             )
         )
     return out

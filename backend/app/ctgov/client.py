@@ -251,6 +251,19 @@ class CtgovClient:
         body = await self._get("/studies", params)
         return list(body.get("studies", []))
 
+    async def page(
+        self,
+        params: dict[str, str],
+        fields: Sequence[str],
+        size: int,
+        sort: str,
+        token: str | None = None,
+    ) -> tuple[list[dict[str, Any]], str | None]:
+        """One page of a stored search and the token of the next (None after the last)."""
+        query = params | {"fields": ",".join(fields), "pageSize": str(size), "sort": sort}
+        body = await self._get("/studies", query | ({"pageToken": token} if token else {}))
+        return list(body.get("studies", [])), body.get("nextPageToken")
+
     async def version(self) -> VersionInfo:
         """API version and data timestamp, cached for `version_ttl` seconds."""
         now = self._clock.monotonic()

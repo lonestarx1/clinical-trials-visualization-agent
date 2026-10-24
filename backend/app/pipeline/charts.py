@@ -45,6 +45,9 @@ class ChartResult:
     meta: ChartMeta
     # Every contributing trial's citation per data point (by row key), for stored results.
     full_citations: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    # Data points whose answer read only a sample: the API search that lists all their trials,
+    # paged by the citations endpoint when asked (design Q14).
+    citation_sources: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 # ---------- measures ----------
