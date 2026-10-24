@@ -50,7 +50,7 @@ As designed in Q21: a `registry` schema in the app's Postgres, one row per trial
 
 - **First load:** 608,415 trials (2026-10-25), 609 pages, about 11 minutes at the limit. Page tokens make one search's pages strictly sequential, so the load runs as several searches sliced by `StartDate` range (plus trials with no start date), each paging on its own, so together they keep the limiter busy.
 - **Daily update:** only the trials that changed, after each new `dataTimestamp` (below).
-- **Removals and repairs:** compare the API's total count with the mirror's (one call). When they differ, compare the count of each start-year slice (34 count calls; measured, the slices add up to the API's total exactly) and list IDs only in the slices that differ: trials gone from the API are deleted, and trials the mirror lacks (changed without a new `LastUpdatePostDate`, O5) are fetched again with their slice. Splitting a differing year by month is a later refinement.
+- **Removals and repairs:** compare the API's total count with the mirror's (one call). When they differ, compare the count of each start-year slice (32 count calls; measured, the slices add up to the API's total exactly) and list IDs only in the slices that differ: trials gone from the API are deleted, and trials the mirror lacks (changed without a new `LastUpdatePostDate`, O5) are fetched again with their slice. Splitting a differing year by month is a later refinement.
 - **Weekly full re-sync**, at night (~11 minutes at the full rate): a safety net for changes that don't bump `LastUpdatePostDate` (open item O5). Its diff against the daily updates measures how often that happens.
 
 ### The daily update
