@@ -19,7 +19,6 @@ export function ExampleCard({ example, theme }: { example: Example; theme: Theme
       {viz ? (
         <div className="figure">
           <h2 className="example-title">{viz.title}</h2>
-          {example.unique_trials != null && <p className="muted small">{example.unique_trials.toLocaleString("en-US")} trials</p>}
           <Chart key={example.n} viz={viz} theme={theme} onSelect={noop} />
         </div>
       ) : (
