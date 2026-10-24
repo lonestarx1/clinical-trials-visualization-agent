@@ -147,6 +147,15 @@ async def test_honours_retry_after() -> None:
     assert clock.sleeps == [7.0]
 
 
+async def test_a_429_without_retry_after_waits_out_the_rate_window() -> None:
+    """ClinicalTrials.gov sends no Retry-After; its window takes ~7-10 s to let requests in."""
+    clock = FakeClock()
+    handler = sequence(httpx.Response(429), json_response({"totalCount": 1}))
+    client, _ = make_client(handler, clock, throttle_wait=10.0)
+    assert await client.count(SEARCH) == 1
+    assert clock.sleeps == [10.0]
+
+
 async def test_retries_timeouts_and_connection_errors() -> None:
     clock = FakeClock()
     handler = sequence(
