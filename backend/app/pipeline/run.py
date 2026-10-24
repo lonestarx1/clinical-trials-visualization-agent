@@ -3,13 +3,15 @@
 import asyncio
 import time
 import uuid
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Any
 
+from app.agents.narrator import Narration
 from app.ctgov.client import CtgovClient
 from app.ctgov.compiler import compile_plan
 from app.ctgov.retrieval import fields_for
-from app.pipeline.charts import build_chart
+from app.pipeline.charts import ChartMeta, build_chart
 from app.pipeline.citations import verify_citations
 from app.schemas.plan import QueryPlan
 from app.schemas.response import (
@@ -18,13 +20,30 @@ from app.schemas.response import (
     Interpretation,
     Meta,
     QueryResponse,
+    Visualization,
 )
+
+Narrator = Callable[[QueryPlan, Visualization, ChartMeta], Awaitable[Narration]]
 
 YEAR_FILTER_NOTE = "The year filter excludes trials without a start date."
 
 
 def _ms(start: float) -> int:
     return round((time.perf_counter() - start) * 1000)
+
+
+def _mostly_estimated(viz: Visualization, plan: QueryPlan) -> list[str]:
+    """Design Q10, D10.8: flag time buckets where most trials have estimated dates."""
+    if "estimated_count" not in (viz.data[0] if viz.data else {}):
+        return []
+    years = [
+        str(r[plan.dimension or ""])
+        for r in viz.data
+        if r[plan.measure] and r["estimated_count"] * 2 > r["citation_count"]
+    ]
+    if not years:
+        return []
+    return [f"Most trials in {', '.join(dict.fromkeys(years))} have estimated (planned) dates."]
 
 
 def _filters_meta(plan: QueryPlan) -> dict[str, Any]:
@@ -44,6 +63,7 @@ async def run_plan(
     base_url: str,
     citations_per_datum: int = 5,
     now: datetime | None = None,
+    narrator: Narrator | None = None,
 ) -> QueryResponse:
     started = time.perf_counter()
     now = now or datetime.now(UTC)
@@ -103,9 +123,19 @@ async def run_plan(
     meta.sort = chart.meta.sort
     meta.notes += chart.meta.notes
     meta.group_overlap = chart.meta.group_overlap
-    meta.timings_ms = {
-        "retrieve": retrieve_ms,
-        "aggregate": _ms(aggregate_start),
-        "total": _ms(started),
-    }
+    meta.warnings += _mostly_estimated(chart.visualization, plan)
+    meta.timings_ms = {"retrieve": retrieve_ms, "aggregate": _ms(aggregate_start)}
+
+    if narrator is not None:
+        narrate_start = time.perf_counter()
+        narration = await narrator(plan, chart.visualization, chart.meta)
+        chart.visualization.title, chart.visualization.summary = narration.title, narration.summary
+        meta.narration = {
+            "model": narration.model,
+            "attempts": narration.attempts,
+            "fallback": narration.fallback,
+            "errors": narration.errors,
+        }
+        meta.timings_ms["narrate"] = _ms(narrate_start)
+    meta.timings_ms["total"] = _ms(started)
     return QueryResponse(status="ok", visualization=chart.visualization, meta=meta)
