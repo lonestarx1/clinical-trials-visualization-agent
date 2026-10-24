@@ -27,7 +27,7 @@ async def sessions() -> AsyncIterator[async_sessionmaker[AsyncSession]]:
         await conn.execute(
             text(
                 "TRUNCATE jobs, result_citations, result_datums, results, plan_cache, llm_usage, "
-                "data_versions CASCADE"
+                "data_versions, registry.trials, registry.sync_runs CASCADE"
             )
         )
     yield async_sessionmaker(engine, expire_on_commit=False)
