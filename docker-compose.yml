@@ -23,6 +23,7 @@ services:
         required: true
     environment:
       DATABASE_URL: postgresql+asyncpg://ctviz:${POSTGRES_PASSWORD:-ctviz}@postgres:5432/ctviz
+      SYNC_MAX_SECONDS: ${SYNC_MAX_SECONDS:-60}
     depends_on:
       postgres:
         condition: service_healthy
