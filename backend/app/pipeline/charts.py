@@ -295,6 +295,10 @@ def _bars(
         for key, bucket in g.buckets.items()
     }
     labels = {k: b.label for _, g in groupings for k, b in g.buckets.items()}
+    if plan.options.show_empty and dim.enum is not None and plan.measure != "median_enrollment":
+        # D10.9: every value of a fixed list, 0 where no trial has it. A median of no trials
+        # isn't 0, so median charts keep only the values that occur.
+        labels |= {m.value: m.label for m in dim.enum if m.value not in labels}
     totals: dict[str, float] = dict.fromkeys(labels, 0.0)
     for (_, key), m in measured.items():
         totals[key] += m.value
