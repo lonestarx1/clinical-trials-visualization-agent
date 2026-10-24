@@ -153,7 +153,9 @@ def fact_sheet(plan: QueryPlan, viz: Visualization, meta: ChartMeta) -> dict[str
         "max_value": _fmt(top[value_key]),
         "min_bucket": str(low[label_key]),
         "min_value": _fmt(low[value_key]),
-        "top_items": ", ".join(dict.fromkeys(str(r[label_key]) for r in ranked[:3])),
+        "next_items": ", ".join(
+            [x for x in dict.fromkeys(str(r[label_key]) for r in ranked) if x != top[label_key]][:3]
+        ),
     }
     if "group" in top:
         facts["max_group"] = str(top["group"])
