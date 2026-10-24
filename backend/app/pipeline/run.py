@@ -282,7 +282,7 @@ async def _downloaded(
     now: datetime,
     progress: Progress | None,
 ) -> tuple[ChartResult, dict[str, dict[str, Any]], int, float]:
-    """Strategy S1: download every matching trial, then aggregate."""
+    """Strategy S3 (design Q6): download every matching trial, then aggregate."""
     plan, searches, meta = prepared.plan, prepared.searches, prepared.meta
     retrieve_start = time.perf_counter()
     fields = fields_for(plan)

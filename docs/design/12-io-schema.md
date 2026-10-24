@@ -18,6 +18,7 @@ Status: **Decided** (2026-10-24). The detailed field-level schema is generated f
 | `GET` | `/v1/jobs/{job_id}` | Poll a job: `pending` / `running` (progress) / `succeeded` (result) / `failed` (error). A finished job is kept 24 h, then `410 expired` (Q17) |
 | `GET` | `/v1/results/{result_id}/citations` | Full, paginated citation list for one data point (Q14) |
 | `GET` | `/v1/options` | Registry: dimensions, measures, chart types, filter enums + labels, compatibility rules. The frontend builds pickers from it. |
+| `GET` | `/v1/usage` | Today's AI calls and cost per stage and model; needs the admin token (`ADMIN_TOKEN`), otherwise 401 |
 | `GET` | `/health` | Liveness/readiness (DB, ClinicalTrials.gov reachability, data timestamp) |
 | `GET` | `/docs`, `/openapi.json` | Auto-generated API docs and schemas |
 
