@@ -1,15 +1,15 @@
-# ClinicalTrials.gov API v2: Live Probe Findings
+# ClinicalTrials.gov API v2: live probe findings
 
-Step 2 of understanding the API. Step 1 (`docs/api/contract.md`) covered what the docs say. This file covers **what the live API actually does**.
+This is the second half of our research on the ClinicalTrials.gov API. The first half, [`contract.md`](contract.md), covers what the documentation says. This file covers **what the live API actually does**, with the exact queries and counts, so each finding can be re-run and checked.
 
 - **When:** 2026-10-24 ~16:10-16:30 KST, API `2.0.5`, `dataTimestamp 2026-10-23T09:00:04`
-- **How:** 65 calls, throttled to at least 1.5 s apart (stdlib `urllib`). Every call is logged in `probe-data/calls.jsonl`.
-- **Scripts:** `scripts/api_probe/` (`ctg.py` helper + `batch1-4.py`)
+- **How:** 65 calls, throttled to at least 1.5 s apart (stdlib `urllib`). Every call is logged in [`probe-data/calls.jsonl`](probe-data/calls.jsonl).
+- **Scripts:** [`scripts/api_probe/`](../../scripts/api_probe/) (`ctg.py` helper + `batch1-4.py`). A later `batch5.py` (one more call, also logged) saved the API's country names to [`reference/location-countries.json`](reference/location-countries.json).
 - **Data saved:**
-  - `probe-data/batch1_counts.json`: all count results
-  - `probe-data/samples/`: 8 full study records chosen to be messy (used as test fixtures later)
-  - `probe-data/raw/`: large dumps, git-ignored, re-creatable with the scripts
-- **Rate limits were deliberately NOT tested** (risk of being blocked during the assignment). See section 8.
+  - [`probe-data/batch1_counts.json`](probe-data/batch1_counts.json): all count results
+  - [`probe-data/samples/`](probe-data/samples/): 8 full study records chosen to be messy (now used as test fixtures)
+  - `probe-data/raw/`: large dumps, not committed, re-creatable with the scripts
+- **Rate limits were deliberately not tested**, to avoid getting blocked. See section 8.
 
 Live counts change daily. Treat every number below as a snapshot.
 
@@ -142,7 +142,7 @@ Live counts change daily. Treat every number below as a snapshot.
 | **B. Count per bucket** | One `countTotal` call per category (`AREA[Phase]PHASE3`, `AREA[StartDate]2019`, ...) | Exact, ~0.35 s per bucket, independent of result size | Only for known small category sets. No citations. Can't do networks or top-N over open-ended values (countries, sponsors). Many calls, which matters under rate limits. |
 | **C. Hybrid** | A for data and citations, capped at N studies (e.g. 3-5k). If over the cap, fall back to B for exact totals, or sample and say so in `meta`. | Best of both | More code paths |
 
-Not decided here; this goes to the design step. Our current lean: **A as the main path, plus a cache, with a per-request study cap** that is reported honestly in `meta`, optionally adding B for exact totals on enum dimensions.
+The probe didn't decide between them. At the time, the lean was **A as the main path, plus a cache, with a per-request study cap** reported in `meta`, optionally adding B for exact totals on enum dimensions. The design decision is [Q6](../design/06-retrieval.md).
 
 ## 7. Saved sample records (`probe-data/samples/`)
 
@@ -165,7 +165,7 @@ No official limit is published (see contract §6), and we saw **no rate-limit he
 - 429 returned when exceeded (same reference doc)
 - no formal published value; use bounded concurrency + backoff with jitter ([IntuitionLabs](https://intuitionlabs.ai/pdfs/clinicaltrials-gov-api-v2-pipeline.pdf))
 
-**What we build to (assume the strictest figure):**
+**What the client is built for (assuming the strictest figure):**
 - **One shared client-side rate limiter**, default **~40 requests/min**, ~1.5 s spacing, configurable. 20% headroom under 50/min.
 - **Low concurrency** (default 2 in flight).
 - **Retry on 429 / 5xx / timeouts** with exponential backoff and jitter. Honour `Retry-After` if it ever appears. Give up after N tries with a clear upstream error.
@@ -173,4 +173,4 @@ No official limit is published (see contract §6), and we saw **no rate-limit he
 - **Budget per request:** a cap on pages per question, reported in `meta`.
 - Under 40/min, strategy B (one call per bucket) gets expensive quickly. Another reason to prefer A plus a cache.
 
-**To do last (after the submission is safe):** a careful ramp test (e.g. 1/s -> 2/s -> 3/s for short bursts) to measure the real limit, then tune the defaults.
+**Still to do:** a careful ramp test (e.g. 1/s -> 2/s -> 3/s for short bursts) to measure the real limit, then tune the defaults. It runs last, because it risks getting the IP blocked.
