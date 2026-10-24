@@ -64,7 +64,7 @@ Evidence of careful construction, testing and iteration is rewarded.
 
 ## 5. Acceptance checks
 
-- [ ] The README has a short tools and validation section that answers all three questions, or links to this disclosure.
-- [ ] Every claim in that section is true and can be explained.
-- [ ] The git history shows step-by-step progress.
-- [ ] The decision log is linked from the README.
+- [x] The README has a short tools and validation section that answers all three questions, or links to this disclosure.
+- [x] Every claim in that section is true and can be explained.
+- [x] The git history shows step-by-step progress.
+- [x] The decision log is linked from the README.
