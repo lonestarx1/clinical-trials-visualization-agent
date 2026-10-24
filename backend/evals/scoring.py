@@ -205,3 +205,26 @@ def narrator_summary(runs: Sequence[NarratorRun]) -> dict[str, Any]:
         "p95 <= 3 s": (speed["p95_ms"] or 0) <= 3_000,
     }
     return summary
+
+
+def choose(summaries: dict[str, dict[str, Any]]) -> str | None:
+    """Q20's decision rule: among candidates passing every bar, the cheapest; when the next
+    is within ~20% on cost, the one with the lower p95. None when no candidate passes."""
+
+    def cost(s: dict[str, Any]) -> float:
+        value = s.get("cost_per_question", s.get("cost_per_call"))
+        return float("inf") if value is None else float(value)
+
+    passing = sorted(
+        (name for name, s in summaries.items() if all(s["bars"].values())),
+        key=lambda name: cost(summaries[name]),
+    )
+    if not passing:
+        return None
+    best = passing[0]
+    for other in passing[1:]:
+        if cost(summaries[other]) <= cost(summaries[best]) * 1.2 and (
+            summaries[other]["p95_ms"] or 0
+        ) < (summaries[best]["p95_ms"] or 0):
+            best = other
+    return best
