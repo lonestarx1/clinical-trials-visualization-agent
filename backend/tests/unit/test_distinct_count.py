@@ -73,10 +73,14 @@ def per_year(result: ChartResult) -> list[tuple[Any, Any]]:
 
 @pytest.mark.parametrize(
     ("min_trials", "expected"),
-    [(1, [(2015, 3), (2016, 2)]), (2, [(2015, 2), (2016, 1)]), (3, [(2015, 1), (2016, 1)])],
+    [
+        (1, [("2015", 3), ("2016", 2)]),
+        (2, [("2015", 2), ("2016", 1)]),
+        (3, [("2015", 1), ("2016", 1)]),
+    ],
 )
 def test_counts_distinct_sponsors_with_at_least_n_trials_per_year(
-    min_trials: int, expected: list[tuple[int, int]]
+    min_trials: int, expected: list[tuple[str, int]]
 ) -> None:
     assert per_year(chart(plan(min_trials))) == expected
 

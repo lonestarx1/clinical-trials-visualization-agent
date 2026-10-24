@@ -133,7 +133,12 @@ def test_numeric_dimensions_for_histograms_and_scatter() -> None:
 
 
 def test_measures_and_chart_types() -> None:
-    assert set(MEASURES) == {"trial_count", "total_enrollment", "median_enrollment"}
+    assert set(MEASURES) == {
+        "trial_count",
+        "total_enrollment",
+        "median_enrollment",
+        "distinct_count",
+    }
     assert {c.value for c in ChartType} == {
         "bar_chart",
         "grouped_bar_chart",

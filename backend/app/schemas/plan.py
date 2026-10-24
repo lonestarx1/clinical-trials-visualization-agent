@@ -8,7 +8,7 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.registry import DIMENSIONS, MEASURES, ChartType, Intent
+from app.registry import DIMENSIONS, MEASURES, ChartType, DimensionKind, Intent
 from app.registry.enums import (
     AgencyClass,
     Allocation,
@@ -78,6 +78,8 @@ class PlanOptions(Strict):
     network_min_edge_weight: int | None = Field(default=None, ge=1)
     edge_metric: EdgeMetric | None = None
     hide_query_entity: bool | None = None
+    count_entity: str | None = None  # measure distinct_count: the entity dimension to count
+    min_trials: int | None = Field(default=None, ge=1, le=1000)  # ... with at least this many
 
 
 class QueryPlan(Strict):
@@ -116,6 +118,19 @@ class QueryPlan(Strict):
         if len(set(labels)) != len(labels):
             raise ValueError("group labels must be unique")
         return groups
+
+    @model_validator(mode="after")
+    def _entity_to_count(self) -> Self:
+        entity = self.options.count_entity
+        if self.measure == "distinct_count":
+            if entity not in DIMENSIONS or DIMENSIONS[entity].kind is not DimensionKind.ENTITY:
+                raise ValueError(
+                    "measure distinct_count needs options.count_entity: an entity dimension "
+                    "(sponsor, collaborator, drug, condition, country, site, investigator)"
+                )
+        elif entity is not None or self.options.min_trials is not None:
+            raise ValueError("options.count_entity and min_trials apply only to distinct_count")
+        return self
 
     @model_validator(mode="after")
     def _reason_when_out_of_scope(self) -> Self:

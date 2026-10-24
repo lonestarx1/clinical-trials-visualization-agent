@@ -22,6 +22,8 @@ def fields_for(plan: QueryPlan) -> list[str]:
         if key:
             pieces += DIMENSIONS[key].fields
     pieces += MEASURES[plan.measure].fields
+    if plan.options.count_entity:
+        pieces += DIMENSIONS[plan.options.count_entity].fields
     return list(dict.fromkeys(pieces))
 
 
