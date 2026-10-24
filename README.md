@@ -65,7 +65,7 @@ Language models are good at reading questions and bad at counting. This project 
 - **Measures:** trial counts, total and median enrollment, and distinct sponsors, drugs, countries and other entities, with an optional minimum number of trials.
 - **Refusals:** the AI can't swap in a different measure. A question asking for something we can't compute gets a clear refusal and a suggestion.
 - **Storage:** stored results with full citation lists, and plan and result caches that revalidate against daily data updates.
-- **Speed:** background jobs for broad questions, and per-year counts without downloading every trial.
+- **Speed:** background jobs for broad questions, per-year counts without downloading every trial, and an opt-in **fast mode**: ClinicalTrials.gov's search picks the trials, our daily-synced copy supplies their records, and a live count confirms every answer, falling back to live when it can't ([Q22](docs/design/22-term-sets.md)).
 - **Cost control:** AI cost tracking per call, with a daily cap.
 - **Results:** all 9 example questions from the assignment's appendix pass end to end against live data.
 - **Deployment:** Kubernetes (k3s) on AWS, defined in Terraform.
@@ -76,6 +76,7 @@ Language models are good at reading questions and bad at counting. This project 
 
 A Next.js and Apache ECharts app in [`frontend/`](frontend/), built for people who need to trust the numbers:
 
+- **Live or fast:** a switch under the search box. Fast answers come from our daily copy of ClinicalTrials.gov, checked against a live count; each answer says where its trials came from.
 - **Ask in plain words**, or refine with filters (drug, condition, sponsor, country, phase, status, years, chart type) shown as removable chips. The home screen has grouped example questions and your recent questions.
 - **The question stays with its answer.** On submit, the search box moves up and becomes the page's heading, in your own words. Click it or press `/` to edit it in place, and `Esc` to cancel.
 - **Every chart traces back to the trials.** Click any bar, point, node or link: a drawer lists the trials behind it, each with the exact record lines that put it there, highlighted (field path on hover), and pages through all of them.
@@ -146,6 +147,7 @@ The [API guide](https://trials.cheiron.engineeradriel.com/docs) walks through re
 | `top_n` | int 1-50 | no | |
 | `match_mode` | `strict` \| `broad` | no | Drug/condition matching (default `strict`) |
 | `sponsor_role` | `lead` \| `any` | no | Default `lead` |
+| `mode` | `live` \| `fast` | no | Default `live`. `fast` reads the trials from our daily-synced copy of ClinicalTrials.gov once ClinicalTrials.gov's search has picked them and a live count has confirmed them; otherwise the answer is live. `meta.data_source` says which ([fast mode](docs/design/22-term-sets.md)) |
 | `citations` | `sample` \| `full` | no | Default `sample`. `full` inlines every citation, up to 2,000 per response (`CITATIONS_FULL_MAX`); above that it falls back to a sample and `meta.citations.reason` says why |
 | `citations_per_datum` | int 1-50 | no | Default 5 |
 | `phase_mode`, `condition_source`, `include_unknown`, `edge_metric`, `hide_query_entity` | | no | See [request fields](docs/design/05-request-fields.md) |
