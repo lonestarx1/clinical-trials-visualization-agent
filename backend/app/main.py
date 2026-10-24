@@ -42,7 +42,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.ctgov = CtgovClient(
             settings.ctgov_base_url,
             http,
-            RateLimiter(settings.ctgov_rate_limit_per_min, settings.ctgov_max_concurrency),
+            RateLimiter(
+                settings.ctgov_rate_limit_per_min,
+                settings.ctgov_max_concurrency,
+                burst=settings.ctgov_rate_burst,
+            ),
+            count_ttl=settings.ctgov_count_cache_seconds,
         )
         workers: list[asyncio.Task[None]] = []
         try:

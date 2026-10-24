@@ -24,7 +24,7 @@ The web app and the API run on Kubernetes. To keep the cost down, the cluster is
   - The OpenAI key is set directly in Secrets Manager, and Terraform creates the secret without a value.
   - The Postgres password is generated on the node.
   - A systemd timer copies both into Kubernetes Secrets, and refreshes the ECR pull token, every 6 hours.
-- **One API replica, on purpose.** The API's client keeps to ~40 ClinicalTrials.gov requests/min, a conservative budget for one IP (the real limit isn't published), and each replica has its own limiter. More replicas would share that budget, not add to it.
+- **One API replica, on purpose.** The API's client keeps to 9 ClinicalTrials.gov requests per 10 s, just under the ~10 measured per IP, and each replica has its own limiter. More replicas would share that budget, not add to it.
   - Rolling updates still have no downtime (`maxUnavailable: 0`).
   - Background jobs already work across replicas, thanks to the `SKIP LOCKED` queue and heartbeats.
 - **t3.medium (4 GB) with an 8 GB swap file on a 50 GB disk.** The largest question (273k trials) peaks at about 2 GB in the API, and k3s, Postgres and the web app take about 1.2 GB.

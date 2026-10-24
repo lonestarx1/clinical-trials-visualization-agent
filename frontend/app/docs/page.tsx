@@ -469,7 +469,7 @@ export default function DocsPage() {
               ["Requests per client IP", "300 per minute, on every /v1 path", <><code>429 too_many_requests</code> with <code>Retry-After</code>.</>],
               ["Background jobs per client IP", "10 pending or running", <><code>429 too_many_requests</code> on the next broad question.</>],
               ["Daily AI budget", "100 USD of model spend per UTC day, for everyone", <>Questions that need an AI call get <code>503 budget_exceeded</code> until midnight UTC. Asking exactly the same question as before still works if its stored answer is valid (<code>meta.cache</code> shows <code>hit</code> or <code>revalidated</code>, with no AI call). Jobs, citations and options keep working.</>],
-              ["ClinicalTrials.gov", "40 requests per minute, 2 at a time, shared by all users", <>Requests wait their turn; broad questions become background jobs.</>],
+              ["ClinicalTrials.gov", "9 requests per 10 seconds, shared by all users", <>Requests wait their turn; broad questions become background jobs.</>],
               ["Answer in the request", "60 seconds (estimated)", <>Longer questions become <a href="#jobs">background jobs</a>.</>],
               ["Result retention", "24 hours", <><code>410 expired</code> from citations paging and job polling.</>],
               ["Full citations", "2,000 per response", <>Over it, <code>citations: &quot;full&quot;</code> falls back to a sample; <code>meta.citations.reason</code> says so.</>],

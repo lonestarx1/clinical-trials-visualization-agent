@@ -173,4 +173,17 @@ No official limit is published (see contract §6), and we saw **no rate-limit he
 - **Budget per request:** a cap on pages per question, reported in `meta`.
 - Under 40/min, strategy B (one call per bucket) gets expensive quickly. Another reason to prefer A plus a cache.
 
-**Still to do:** a careful ramp test (e.g. 1/s -> 2/s -> 3/s for short bursts) to measure the real limit, then tune the defaults. It runs last, because it risks getting the IP blocked.
+**Measured (2026-10-25), with ~120 cheap count calls from one IP:**
+
+| Test | Result |
+|---|---|
+| 2, 4 or 8 calls at once | all answered, ~0.36 s each |
+| 16 at once, after a 70 s rest | 10 answered, then `429` |
+| one at a time, back to back | 11 answered, then `429` within 2.9 s |
+| a steady 60/min for 45 s | all 45 answered |
+| a steady 66/min or 90/min | `429` after 11-13 calls |
+| after a `429` | answers again after ~7 s |
+
+So the limit is about **10 requests per ~10 s window** (~60/min) per IP. **Concurrency is not limited**: a burst is fine as long as it stays inside the window. The `429` carries **no `Retry-After`** and no rate-limit headers. A count call takes ~0.35 s and a 1,000-trial page ~0.8-1.2 s.
+
+**What changed in the client:** 9 requests per 10 s (54 a minute), up to 9 at once (a sliding window, 10% under the measured limit), and a `429` without `Retry-After` waits 10 s instead of the 1 s first backoff. Measured on the live API, 16 count calls went from 22.8 s to 10.4 s, and 17 per-year counts from 24.3 s to 10.4 s.

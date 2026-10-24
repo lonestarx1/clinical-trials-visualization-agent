@@ -33,8 +33,8 @@ from app.schemas.response import (
 )
 
 YEAR_FILTER_NOTE = "The year filter excludes trials without a start date."
-SECONDS_PER_PAGE = 1.6  # measured: ~1.1-2.2 s per 1,000-trial page, within 40 requests/min
-SECONDS_PER_CALL = 1.5  # one request start per 1.5 s at 40 requests/min
+SECONDS_PER_PAGE = 1.6  # measured: ~0.8-2.2 s per 1,000-trial page; pages come one by one
+SECONDS_PER_CALL = 60 / 54  # parallel count calls go at the limiter's 54 requests/min
 MAX_COUNTED_YEARS = 60
 COUNTED_NOTE = (
     "Counted with one ClinicalTrials.gov count per year instead of downloading every trial; "
@@ -135,6 +135,13 @@ class Prepared:
             return math.ceil(self.counted_calls * SECONDS_PER_CALL)
         return math.ceil(self.pages * SECONDS_PER_PAGE)
 
+    def download_if_quicker(self) -> None:
+        """Count per year (S2) only when that beats downloading the pages (S3)."""
+        if self.span is not None and self.pages * SECONDS_PER_PAGE <= (
+            self.counted_calls * SECONDS_PER_CALL
+        ):
+            self.span = None
+
     @property
     def empty(self) -> bool:
         return not any(self.counts)
@@ -184,7 +191,7 @@ async def prepare(
     )
     meta.data_timestamp = version.data_timestamp
     span = yearly_span(plan, now_year=now.year)
-    return Prepared(
+    prepared = Prepared(
         plan,
         searches,
         list(counts),
@@ -194,6 +201,8 @@ async def prepare(
         started=count_start if started is None else started,
         timings_ms={**(timings_ms or {}), "count": elapsed_ms(count_start)},
     )
+    prepared.download_if_quicker()
+    return prepared
 
 
 async def _counted_years(

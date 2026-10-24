@@ -49,6 +49,32 @@ async def test_limiter_spaces_request_starts() -> None:
     assert starts == [0.0, 1.0, 2.0]
 
 
+async def test_limiter_lets_a_burst_start_at_once_then_keeps_the_rate() -> None:
+    """ClinicalTrials.gov counts requests per ~10 s window, so a burst needn't be spaced out."""
+    clock = FakeClock()
+    limiter = RateLimiter(per_minute=60, concurrency=10, clock=clock, burst=3)
+    starts = []
+    for _ in range(7):
+        async with limiter:
+            starts.append(clock.now)
+    # At most 3 starts in any 3 s window: 60 a minute on average.
+    assert starts == [0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 6.0]
+
+
+async def test_limiter_burst_refills_after_a_quiet_spell() -> None:
+    clock = FakeClock()
+    limiter = RateLimiter(per_minute=60, concurrency=10, clock=clock, burst=3)
+    for _ in range(3):
+        async with limiter:
+            pass
+    clock.now += 2.5
+    starts = []
+    for _ in range(3):
+        async with limiter:
+            starts.append(clock.now)
+    assert starts == [3.0, 3.0, 3.0]
+
+
 async def test_limiter_caps_concurrency() -> None:
     limiter = RateLimiter(per_minute=60_000, concurrency=2)
     in_flight = peak = 0
@@ -119,6 +145,15 @@ async def test_honours_retry_after() -> None:
     client, _ = make_client(handler, clock)
     assert await client.count(SEARCH) == 1
     assert clock.sleeps == [7.0]
+
+
+async def test_a_429_without_retry_after_waits_out_the_rate_window() -> None:
+    """ClinicalTrials.gov sends no Retry-After; its window takes ~7-10 s to let requests in."""
+    clock = FakeClock()
+    handler = sequence(httpx.Response(429), json_response({"totalCount": 1}))
+    client, _ = make_client(handler, clock, throttle_wait=10.0)
+    assert await client.count(SEARCH) == 1
+    assert clock.sleeps == [10.0]
 
 
 async def test_retries_timeouts_and_connection_errors() -> None:
@@ -267,3 +302,52 @@ async def test_version_is_cached() -> None:
     clock.now += 2
     assert (await client.version()).data_timestamp == "2026-10-24T09:00:01"
     assert transport.requests[1].url.path == "/api/v2/version"
+
+
+# ---------- count cache ----------
+
+
+def counts_then_versions(*bodies: dict[str, Any]) -> Any:
+    """Answers /version with the given bodies in turn, and counts with 1, 2, 3, ..."""
+    versions, served = list(bodies), [0]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/version"):
+            return json_response(versions.pop(0))
+        served[0] += 1
+        return json_response({"totalCount": served[0]})
+
+    return handler
+
+
+async def test_counts_are_cached_for_the_ttl() -> None:
+    """The planner, the count stage and repeat questions count the same searches."""
+    clock = FakeClock()
+    client, transport = make_client(counts_then_versions(), clock, count_ttl=600.0)
+    other = Search({"query.cond": '"glioma"'})
+    assert [await client.count(SEARCH), await client.count(other)] == [1, 2]
+    clock.now += 599
+    assert [await client.count(SEARCH), await client.count(other)] == [1, 2]
+    assert len(transport.requests) == 2
+    clock.now += 2
+    assert await client.count(SEARCH) == 3
+
+
+async def test_new_data_drops_the_cached_counts() -> None:
+    clock = FakeClock()
+    old = {"apiVersion": "2.0.5", "dataTimestamp": "2026-10-23T09:00:04"}
+    new = old | {"dataTimestamp": "2026-10-24T09:00:01"}
+    client, _ = make_client(
+        counts_then_versions(old, new), clock, count_ttl=3600.0, version_ttl=600.0
+    )
+    await client.version()
+    assert await client.count(SEARCH) == 1
+    clock.now += 601
+    await client.version()  # ClinicalTrials.gov published its daily update
+    assert await client.count(SEARCH) == 2
+
+
+async def test_counts_are_not_cached_by_default() -> None:
+    clock = FakeClock()
+    client, _ = make_client(counts_then_versions(), clock)
+    assert [await client.count(SEARCH), await client.count(SEARCH)] == [1, 2]

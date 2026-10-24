@@ -68,6 +68,7 @@ We considered Redis (an in-memory cache with native TTL, LRU eviction and sub-mi
 |---|---|
 | D8.3 | **One global limiter** for all requests and background jobs: default **40 requests/min** (20% under the most conservative third-party estimate of ~50/min; see live-probe §8). Configurable. |
 | D8.4 | **Concurrency cap**, default **2** in-flight API calls (Q6). Configurable. |
+| D8.3a | **Revision (2026-10-25), measured:** ClinicalTrials.gov allows ~10 requests per ~10 s per IP, with no concurrency limit and no `Retry-After` on its `429` ([live probe §8](../api/live-probe.md)). The limiter now allows 9 requests per 10 s (54 a minute), up to 9 at once: a sliding window, so a burst starts at once. A `429` without `Retry-After` waits 10 s. Count calls are cached in memory for 10 minutes and dropped when the data timestamp changes, so the planner's counts, the count stage and repeat questions don't repeat them. |
 | D8.5 | Single-process deployment for now: the limiter is in-process. With several instances it must move to shared storage (Postgres advisory locks / a token table, or Redis). Documented as a scaling limitation. |
 
 ## Retries and failure handling

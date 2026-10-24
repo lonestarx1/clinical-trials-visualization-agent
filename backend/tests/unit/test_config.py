@@ -51,8 +51,10 @@ def test_limit_defaults_match_the_design(make_settings) -> None:
     assert s.rate_limit_per_ip_per_min == 300
     assert s.max_active_jobs_per_ip == 10
     assert s.llm_daily_budget_usd == 100
-    assert s.ctgov_rate_limit_per_min == 40
-    assert s.ctgov_max_concurrency == 2
+    assert s.ctgov_rate_limit_per_min == 54
+    assert s.ctgov_rate_burst == 9
+    assert s.ctgov_max_concurrency == 9
+    assert s.ctgov_count_cache_seconds == 600
     assert s.sync_max_seconds == 60
     assert s.citations_full_max == 2000
     assert s.llm_startup_ping is False
@@ -98,7 +100,8 @@ def test_unknown_reasoning_effort_is_rejected(make_settings) -> None:
 
 
 @pytest.mark.parametrize(
-    "name", ["CTGOV_MAX_CONCURRENCY", "CTGOV_RATE_LIMIT_PER_MIN", "SYNC_MAX_SECONDS"]
+    "name",
+    ["CTGOV_MAX_CONCURRENCY", "CTGOV_RATE_LIMIT_PER_MIN", "CTGOV_RATE_BURST", "SYNC_MAX_SECONDS"],
 )
 def test_limits_must_be_positive(make_settings, name: str) -> None:
     with pytest.raises(ValidationError):

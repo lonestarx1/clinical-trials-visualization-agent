@@ -39,8 +39,10 @@ Every protective limit **exists, is configurable via environment variables, and 
 | Per-client (IP) request rate | `RATE_LIMIT_PER_IP_PER_MIN` | 300 / min | 429 `too_many_requests` + `Retry-After` |
 | Concurrent background jobs per client | `MAX_ACTIVE_JOBS_PER_IP` | 10 | 429 |
 | Daily LLM spend | `LLM_DAILY_BUDGET_USD` | 100 | 503 `budget_exceeded` (cached results still served) |
-| ClinicalTrials.gov request rate (global) | `CTGOV_RATE_LIMIT_PER_MIN` | 40 / min | Requests queue (not a client error); this one protects us from being blocked, so it stays conservative until O6 is measured |
-| ClinicalTrials.gov concurrency | `CTGOV_MAX_CONCURRENCY` | 2 | Queueing |
+| ClinicalTrials.gov request rate (global) | `CTGOV_RATE_LIMIT_PER_MIN` | 54 / min | Requests queue (not a client error); 10% under the measured limit (O6) |
+| ClinicalTrials.gov burst | `CTGOV_RATE_BURST` | 9 | At most this many starts in any `burst * 60 / rate` s (10 s) |
+| ClinicalTrials.gov concurrency | `CTGOV_MAX_CONCURRENCY` | 9 | Queueing |
+| ClinicalTrials.gov count cache | `CTGOV_COUNT_CACHE_SECONDS` | 600 | Count calls repeat; 0 turns it off |
 | Synchronous time budget (estimated duration) | `SYNC_MAX_SECONDS` | 60 s | Becomes a background job |
 | Planner step limit | `PLANNER_MAX_STEPS` | 6 | `could_not_interpret` |
 | Citations inline (`full` mode) | `CITATIONS_FULL_MAX` | 2,000 | Falls back to sample mode |
