@@ -307,7 +307,7 @@ async def _finish_chart(
     if narrator is not None:
         narrate_start = time.perf_counter()
         narration = await narrator(plan, chart.visualization, chart.meta)
-        chart.visualization.title, chart.visualization.summary = narration.title, narration.summary
+        chart.visualization.title = narration.title
         meta.narration = {
             "model": narration.model,
             "attempts": narration.attempts,

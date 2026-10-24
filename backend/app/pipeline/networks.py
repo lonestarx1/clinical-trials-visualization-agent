@@ -184,7 +184,6 @@ def build_network(
     viz = Visualization(
         type="network_graph",
         title=f"{names} network",
-        summary=f"{len(final_nodes)} entities and {len(edges)} links across {len(linked)} trials.",
         encoding=encoding,
         data={"nodes": node_rows, "edges": edge_rows},
     )
