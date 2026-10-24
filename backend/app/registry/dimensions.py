@@ -236,5 +236,5 @@ DIMENSIONS: dict[str, Dimension] = {
     ]
 }
 
-# Requested for every fetch: needed to cite each trial.
-BASE_FIELDS: tuple[str, ...] = ("NCTId", "BriefTitle")
+# Requested for every fetch: needed to cite each trial and order its citations.
+BASE_FIELDS: tuple[str, ...] = ("NCTId", "BriefTitle", "StartDate")
