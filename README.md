@@ -7,7 +7,7 @@ POST /v1/query  {"query": "How are breast cancer trials distributed across phase
 -> 200 {"status": "ok", "visualization": {"type": "bar_chart", "title": ..., "encoding": ..., "data": [...]}, "meta": {...}}
 ```
 
-> **Status:** milestones M0-M3 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations, plus AI title and summary. **All 9 appendix questions pass end to end.** Next: result storage, the full-citations endpoint and background jobs (M4), UI (M5), deployment (M6). See [the implementation plan](docs/implementation-plan.md).
+> **Status:** milestones M0-M4 done: question -> validated plan -> live data -> chart spec (7 chart types, including **network graphs**) with citations, plus AI title and summary; stored results with **full citation lists**, plan and result caches with revalidation, background jobs for broad questions, LLM cost tracking with a daily cap. **All 9 appendix questions pass end to end.** Next: UI (M5), deployment (M6). See [the implementation plan](docs/implementation-plan.md).
 
 ## Quick start
 
@@ -44,6 +44,17 @@ Networks: one entity dimension gives co-occurrence (drugs used together), two gi
 The AI never produces a number or a citation. Models are configurable per stage (`GUARD_MODEL`, `PLANNER_MODEL`, `NARRATOR_MODEL`, each with a fallback model).
 
 ## API
+
+### Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/v1/query` | Question -> chart spec (200), or a background job for broad questions (**202** + `poll_url`) |
+| `GET` | `/v1/jobs/{job_id}` | Job status, page progress, and the result when done |
+| `GET` | `/v1/results/{result_id}/citations?datum=<key>&cursor=&page_size=` | **Every** trial behind one data point (bar, bucket, node, edge...), keyset-paginated |
+| `GET` | `/v1/options` | Dimensions, measures, chart types and filter values with labels (for pickers) |
+| `GET` | `/v1/usage` | Today's LLM calls and cost (admin token) |
+| `GET` | `/health` | Database + ClinicalTrials.gov status and data timestamp |
 
 ### `POST /v1/query`
 
@@ -93,7 +104,9 @@ Unknown fields are rejected (422). Full schema: `/openapi.json`.
 }
 ```
 
-Per chart type: [response schema design](docs/design/12-io-schema.md). Errors share one body: `{"error": {"code", "message", "details", "trace_id"}}` with codes `invalid_request` (422), `rejected_by_policy` (400), `upstream_unavailable` / `llm_unavailable` / `safety_check_unavailable` (503) and `internal_error` (500).
+Per chart type: [response schema design](docs/design/12-io-schema.md). Each data point carries up to `citations_per_datum` citations inline plus `citation_count`; the full list comes from the citations endpoint using the response's `result_id` and the data point's `key`. `meta.cache` says whether the plan and result came from cache (`hit`, `revalidated`, `miss`).
+
+Errors share one body: `{"error": {"code", "message", "details", "trace_id"}}` with codes `invalid_request` (422), `rejected_by_policy` (400), `not_found` (404), `expired` (410), `too_many_requests` (429), `upstream_unavailable` / `llm_unavailable` / `safety_check_unavailable` / `budget_exceeded` (503) and `internal_error` (500).
 
 ## Examples (real outputs)
 
@@ -118,6 +131,8 @@ The full reasoning, alternatives and requirement links are in [docs/design](docs
 - **Strict matching by default.** Drugs match intervention names (with the API's own synonym expansion: "Keytruda" finds pembrolizumab trials); conditions are quoted phrases; "sponsor" means lead sponsor. `match_mode` / `sponsor_role` widen it. Measured in the [live probe](docs/api/live-probe.md).
 - **Explicit counting rules.** 17% of trials have two phases, and trials list many drugs, conditions and countries. Every chart states its rule, whether bars add up (`meta.additive`) and how many distinct trials it covers.
 - **Defence in depth.** Request validation, an AI guard, a strict plan schema, entity grounding, and an expression tree that makes query injection impossible. Verified live: an injection attempt matched under 100 trials, not all ~600k.
+- **Caching that stays correct.** Repeated questions reuse the stored plan (no planner call) and the stored answer. ClinicalTrials.gov refreshes daily, so a stored answer is reused only if the data version is unchanged, or after revalidation: no matching trial updated since, and the same total (2 cheap counts instead of refetching). Measured: a repeat question in 0.9 s instead of 13 s, with 1 model call instead of 4.
+- **Background jobs** for questions estimated above `SYNC_MAX_SECONDS` (60 s): 202 + polling with page progress, one active job per identical request, `SKIP LOCKED` workers, retries, restart recovery.
 - **One registry.** A dimension is one entry (API fields, filter, enum, counting rule); options, validation, retrieval, aggregation and citations all read from it.
 
 ## Testing and validation
@@ -127,16 +142,17 @@ Written test-first (each `test:` commit fails before the `feat:` commit that fol
 | Suite | Command | What |
 |---|---|---|
 | Offline (CI) | `make test` | ~315 unit, contract and integration tests: compiler strings written by hand, chart numbers worked out by hand from 8 recorded real trials, scripted fake models for the agents |
-| Database | `make test-db` | Against Postgres |
+| Database | `make test-db` | Against Postgres: repositories, stored results and citation paging, plan and result caches, background jobs run by the worker, the daily budget |
 | Live API | `make test-live` | Query syntax against the real API, and a **cross-check**: our aggregated counts equal the API's own counts exactly |
 | End to end | `make test-e2e` | The 9 appendix questions through the running stack, real models and live data: **all 9 pass** |
 
 ## Limitations (current)
 
-- Very broad questions (100k+ trials needing per-trial data) run synchronously and can take minutes; background jobs come in M4.
+- Very broad questions (100k+ trials needing per-trial data) take minutes, as background jobs. A local mirror would make them instant but was rejected (see design Q6).
+- Not built from the database design: the page-level API cache (L1) and the `traces` table (traces live in logs and `meta`).
 - Sponsor names are not merged across spellings ("Merck Sharp & Dohme LLC" vs "Merck & Co."). MeSH grouping inherits MeSH quirks: "aldesleukin" and "Interleukin-2" can be separate drug nodes.
-- The full citation list per data point (beyond the inline sample) needs stored results: `GET /v1/results/{id}/citations` comes in M4.
-- The rate limiter is in-process (one instance).
+
+- The ClinicalTrials.gov rate limiter, the per-client limit and the job workers are in-process (one instance); several instances would need a shared store such as Redis.
 
 ## Development
 

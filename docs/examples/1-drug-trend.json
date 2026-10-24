@@ -5,15 +5,15 @@
     "citations_per_datum": 3
   },
   "http_status": 200,
-  "seconds": 9.8,
+  "seconds": 10.2,
   "response": {
     "schema_version": "1.0",
-    "result_id": null,
+    "result_id": "7f66739f-d388-4e4b-9a56-0d293ec80016",
     "status": "ok",
     "visualization": {
       "type": "time_series",
-      "title": "Pembrolizumab trials by start year (2015–2026)",
-      "summary": "ClinicalTrials.gov shows a roughly flat time series of number of trials from 2015 (116) to 2022 (263), totaling 2,586 trials.",
+      "title": "Pembrolizumab trials by start year: counts over 12 years (2015–2026)",
+      "summary": "ClinicalTrials.gov shows 2,586 pembrolizumab trials with start-year counts staying roughly flat from 2015 (116) to 2022 (263), then varying through 2026.",
       "encoding": {
         "x": {
           "field": "start_year",
@@ -567,7 +567,8 @@
         "start_year_min": 2015
       },
       "assumptions": [
-        "Interpret 'this drug' as Pembrolizumab from fixed_fields."
+        "The user’s fixed drug_name field specifies Pembrolizumab.",
+        "“Since 2015” is interpreted as starting in 2015 and later."
       ],
       "warnings": [],
       "notes": [
@@ -602,7 +603,7 @@
         "reason": null
       },
       "data_timestamp": "2026-10-23T09:00:04",
-      "retrieved_at": "2026-10-24T11:48:07+00:00",
+      "retrieved_at": "2026-10-24T12:07:44+00:00",
       "source": "clinicaltrials.gov",
       "guard": {
         "verdict": "ok",
@@ -635,20 +636,24 @@
       },
       "usage": {
         "llm_calls": 4,
-        "input_tokens": 3448,
-        "output_tokens": 329,
-        "cost_usd": 0.001754,
+        "input_tokens": 3460,
+        "output_tokens": 381,
+        "cost_usd": 0.001922,
         "models": [
           "gpt-5.4-mini",
           "gpt-5.4-nano"
         ]
       },
-      "trace_id": "536ad83d-b4a4-4c4c-aa2f-4a0b2111a29f",
+      "cache": {
+        "plan": "miss",
+        "result": "miss"
+      },
+      "trace_id": "50061f59-a70e-4607-9a53-2a868da6fc67",
       "timings_ms": {
-        "retrieve": 4927,
-        "aggregate": 36,
-        "narrate": 1191,
-        "total": 6480
+        "retrieve": 4676,
+        "aggregate": 42,
+        "narrate": 1081,
+        "total": 5800
       },
       "details": {}
     }

@@ -10,7 +10,7 @@ import asyncio
 import logging
 import random
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from types import TracebackType
 from typing import Any, Protocol
@@ -150,13 +150,25 @@ class CtgovClient:
         )
         return int(body["totalCount"])
 
-    async def fetch_all(self, search: Search, fields: Sequence[str]) -> FetchResult:
-        """Every matching study with only `fields`, following page tokens."""
+    async def fetch_all(
+        self,
+        search: Search,
+        fields: Sequence[str],
+        on_page: Callable[[int], Awaitable[None]] | None = None,
+    ) -> FetchResult:
+        """Every matching study with only `fields`, following page tokens.
+
+        `on_page(pages_done)` is awaited after each page (job progress).
+        """
         params = search.params | {"fields": ",".join(fields), "pageSize": str(PAGE_SIZE)}
         body = await self._get("/studies", params | {"countTotal": "true"})
         total = int(body["totalCount"])
         studies: dict[str, dict[str, Any]] = {}
+        pages = 0
         while True:
+            pages += 1
+            if on_page is not None:
+                await on_page(pages)
             for study in body.get("studies", []):
                 studies.setdefault(_nct_id(study), study)
             token = body.get("nextPageToken")

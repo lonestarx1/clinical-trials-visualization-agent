@@ -62,6 +62,10 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     cors_origins: list[str] = ["http://localhost:3000"]
     enable_debug_endpoints: bool = True
+    admin_token: SecretStr | None = None  # enables GET /v1/usage
+    job_workers: PositiveInt = 2
+    result_ttl_hours: PositiveInt = 24
+    revalidation_ceiling_days: PositiveInt = 7
 
     guard: StageSettings = StageSettings(
         model="gpt-5.4-nano", max_output_tokens=1000, timeout_seconds=5

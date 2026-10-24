@@ -4,15 +4,15 @@
     "citations_per_datum": 3
   },
   "http_status": 200,
-  "seconds": 8.6,
+  "seconds": 9.3,
   "response": {
     "schema_version": "1.0",
-    "result_id": null,
+    "result_id": "1d138d77-311c-4c55-a9b3-e5156a845510",
     "status": "ok",
     "visualization": {
       "type": "bar_chart",
-      "title": "Lung cancer trials by country: top counts for China and others",
-      "summary": "A bar chart shows 875 trials in China and 135 in Canada, out of 2,182, with remaining countries including United States, France, Spain. ",
+      "title": "ClinicalTrials.gov Lung Cancer Trials by Country",
+      "summary": "Bar chart of number of trials across 10 countries (top China with 875 trials; low Canada with 135); total 2,182 trials.",
       "encoding": {
         "x": {
           "field": "country",
@@ -472,7 +472,7 @@
         ]
       },
       "assumptions": [
-        "Interpreting 'most' as highest trial count by country."
+        "Interpret 'most' as ranking countries by number of matching trials."
       ],
       "warnings": [],
       "notes": [
@@ -502,7 +502,7 @@
         "reason": null
       },
       "data_timestamp": "2026-10-23T09:00:04",
-      "retrieved_at": "2026-10-24T11:49:02+00:00",
+      "retrieved_at": "2026-10-24T12:08:43+00:00",
       "source": "clinicaltrials.gov",
       "guard": {
         "verdict": "ok",
@@ -535,20 +535,24 @@
       },
       "usage": {
         "llm_calls": 4,
-        "input_tokens": 3338,
-        "output_tokens": 324,
-        "cost_usd": 0.001713,
+        "input_tokens": 3353,
+        "output_tokens": 341,
+        "cost_usd": 0.001804,
         "models": [
           "gpt-5.4-mini",
           "gpt-5.4-nano"
         ]
       },
-      "trace_id": "e37348f4-6c19-4c54-b984-f5b09e455514",
+      "cache": {
+        "plan": "miss",
+        "result": "miss"
+      },
+      "trace_id": "b377d918-9a18-42a8-ae48-4bd0953588f1",
       "timings_ms": {
-        "retrieve": 4714,
-        "aggregate": 85,
-        "narrate": 950,
-        "total": 5984
+        "retrieve": 4554,
+        "aggregate": 152,
+        "narrate": 1115,
+        "total": 5821
       },
       "details": {}
     }

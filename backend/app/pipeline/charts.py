@@ -42,6 +42,8 @@ class ChartMeta:
 class ChartResult:
     visualization: Visualization
     meta: ChartMeta
+    # Every contributing trial's citation per data point (by row key), for stored results.
+    full_citations: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
 
 
 # ---------- measures ----------
@@ -158,6 +160,21 @@ def build_chart(
     *,
     now_year: int,
     citations_per_datum: int = 5,
+) -> ChartResult:
+    result = _build(plan, groups, now_year=now_year, citations_per_datum=citations_per_datum)
+    data = result.visualization.data
+    points = [*data["nodes"], *data["edges"]] if isinstance(data, dict) else data
+    for point in points:
+        result.full_citations[str(point["key"])] = point.pop("_full", [])
+    return result
+
+
+def _build(
+    plan: QueryPlan,
+    groups: GroupedStudies,
+    *,
+    now_year: int,
+    citations_per_datum: int,
 ) -> ChartResult:
     studies = {nct_id(s): s for _, members in groups for s in members}
     if plan.chart_type is ChartType.METRIC or plan.dimension is None:

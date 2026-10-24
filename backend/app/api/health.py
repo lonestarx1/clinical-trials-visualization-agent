@@ -25,13 +25,22 @@ class Health(BaseModel):
     data_timestamp: str | None  # ClinicalTrials.gov data version (cached /version)
 
 
+async def _unavailable() -> bool:
+    return False
+
+
+async def _no_version() -> VersionInfo:
+    raise CtgovError("no ClinicalTrials.gov client")
+
+
 def get_database_check(request: Request) -> DatabaseCheck:
-    return partial(check_database, request.app.state.engine)
+    engine = getattr(request.app.state, "engine", None)
+    return partial(check_database, engine) if engine is not None else _unavailable
 
 
 def get_data_version(request: Request) -> DataVersion:
-    ctgov: CtgovClient = request.app.state.ctgov
-    return ctgov.version
+    ctgov: CtgovClient | None = getattr(request.app.state, "ctgov", None)
+    return ctgov.version if ctgov is not None else _no_version
 
 
 @router.get("/health", response_model=Health, responses={503: {"model": Health}})

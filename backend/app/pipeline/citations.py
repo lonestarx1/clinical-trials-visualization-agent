@@ -41,12 +41,17 @@ def sample_citations(
     studies: dict[str, dict[str, Any]],
     limit: int,
 ) -> dict[str, Any]:
-    """`citation_count`, up to `limit` citations in a fixed order, and `citations_truncated`."""
-    chosen = ordered_trials(evidence_by_trial, studies)[:limit]
+    """`citation_count`, up to `limit` citations in a fixed order, and `citations_truncated`.
+
+    `_full` carries every citation in the same order; build_chart moves it out of the row.
+    """
+    ordered = ordered_trials(evidence_by_trial, studies)
+    full = [citation(studies[i], evidence_by_trial[i]) for i in ordered]
     return {
         "citation_count": len(evidence_by_trial),
-        "citations": [citation(studies[i], evidence_by_trial[i]) for i in chosen],
+        "citations": full[:limit],
         "citations_truncated": len(evidence_by_trial) > limit,
+        "_full": full,  # moved out of the row by build_chart, stored for the citations endpoint
     }
 
 
