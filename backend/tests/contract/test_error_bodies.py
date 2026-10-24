@@ -47,3 +47,9 @@ def test_validation_errors_keep_their_details(client: TestClient) -> None:
     assert error["details"] == [
         {"loc": ["body", "colour"], "msg": "Extra inputs are not permitted"}
     ]
+
+
+def test_usage_without_the_admin_token_is_unauthorized(client: TestClient) -> None:
+    response = client.get("/v1/usage")
+    assert response.status_code == 401
+    assert _error(response)["code"] == "unauthorized"
