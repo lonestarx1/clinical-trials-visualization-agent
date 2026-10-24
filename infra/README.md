@@ -1,8 +1,8 @@
 # Deployment: Terraform + Kubernetes (k3s) on one EC2 instance
 
-The app runs on Kubernetes. For cost reasons the cluster is **k3s on a single EC2 instance**: a CNCF-certified Kubernetes distribution with the same `kubectl`, manifests and Helm charts as EKS, but no $0.10/hour control-plane fee.
+The web app and the API run on Kubernetes. To keep the cost down, the cluster is **k3s on a single EC2 instance**: a CNCF-certified Kubernetes distribution with the same `kubectl`, manifests and Helm charts as EKS, but no $0.10/hour control-plane fee. The reasons, the alternatives and a production design are in [design Q19](../docs/design/19-deployment-ui.md#revision-2026-10-25-what-was-actually-deployed).
 
-- App: https://trials.cheiron.engineeradriel.com
+- Web app: https://trials.cheiron.engineeradriel.com
 - API: https://api.cheiron.engineeradriel.com
 
 ## What's where
@@ -24,7 +24,7 @@ The app runs on Kubernetes. For cost reasons the cluster is **k3s on a single EC
   - The OpenAI key is set directly in Secrets Manager, and Terraform creates the secret without a value.
   - The Postgres password is generated on the node.
   - A systemd timer copies both into Kubernetes Secrets, and refreshes the ECR pull token, every 6 hours.
-- **One API replica, on purpose.** ClinicalTrials.gov allows ~40 requests/min from our IP, and each replica has its own limiter. More replicas would share that budget, not add to it.
+- **One API replica, on purpose.** The API's client keeps to ~40 ClinicalTrials.gov requests/min, a conservative budget for one IP (the real limit isn't published), and each replica has its own limiter. More replicas would share that budget, not add to it.
   - Rolling updates still have no downtime (`maxUnavailable: 0`).
   - Background jobs already work across replicas, thanks to the `SKIP LOCKED` queue and heartbeats.
 - **t3.medium (4 GB) with an 8 GB swap file on a 50 GB disk.** The largest question (273k trials) peaks at about 2 GB in the API, and k3s, Postgres and the web app take about 1.2 GB.
@@ -38,7 +38,9 @@ About **$1.50/day**: t3.medium $0.052/h, EIP $0.005/h, 50 GB gp3 (~$0.15/day), E
 
 ## Deploying from scratch
 
-Requires Terraform ≥ 1.10, the AWS CLI with the Session Manager plugin, Docker with buildx, and kubectl. The AWS profile is `personal` (override with `CHEIRON_AWS_PROFILE`; a shell `AWS_PROFILE` is ignored on purpose).
+Requires Terraform ≥ 1.10, the AWS CLI with the Session Manager plugin, Docker with buildx, and kubectl.
+
+The AWS profile is `personal`. `make deploy` reads it from `CHEIRON_AWS_PROFILE` and ignores a shell `AWS_PROFILE` on purpose, so a shell set up for another account can't push images to the wrong one. Terraform takes it from the `aws_profile` variable and `backend.hcl`.
 
 ```bash
 make infra-bootstrap   # once: the state bucket
@@ -53,6 +55,14 @@ make deploy            # build, push, roll out; prints the URLs
 ```
 
 After the first deploy, cert-manager gets the certificate within a minute or two (HTTP-01 challenge through Traefik).
+
+### Deploying to your own account
+
+The defaults point at this project's account and domain. To deploy elsewhere, change:
+
+- `terraform/backend.hcl`: the state bucket name (`make infra-bootstrap` prints it), the region and the profile;
+- the Terraform variables `aws_profile`, `region`, `zone_name` (an existing public Route 53 hosted zone), `app_host` and `api_host`;
+- the hostnames in `k8s/base/`: the Ingress hosts (`ingress.yaml`), the API's CORS origin (`api.yaml`) and the web app's `PUBLIC_API_URL` (`web.yaml`).
 
 ## Moving to EKS
 
