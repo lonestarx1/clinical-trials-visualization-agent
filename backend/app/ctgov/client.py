@@ -7,10 +7,11 @@ backoff and Retry-After (a 429 without one waits `throttle_wait`); never retries
 """
 
 import asyncio
+import json
 import logging
 import random
 import time
-from collections import deque
+from collections import OrderedDict, deque
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from types import TracebackType
@@ -23,6 +24,7 @@ from app.ctgov.compiler import Search
 log = logging.getLogger(__name__)
 
 PAGE_SIZE = 1000
+COUNT_CACHE_SIZE = 4096
 RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 
 
@@ -145,6 +147,7 @@ class CtgovClient:
         breaker_cooldown: float = 30.0,
         version_ttl: float = 600.0,
         throttle_wait: float = 10.0,
+        count_ttl: float = 0.0,
     ) -> None:
         self._base = base_url.rstrip("/")
         self._http = http
@@ -160,16 +163,32 @@ class CtgovClient:
         self._open_until = 0.0
         self._version_ttl = version_ttl
         self._throttle_wait = throttle_wait
+        self._count_ttl = count_ttl
+        self._counts: OrderedDict[str, tuple[float, int]] = OrderedDict()  # params -> (at, count)
         self._version: tuple[float, VersionInfo] | None = None
 
     # ---------- public API ----------
 
     async def count(self, search: Search) -> int:
-        """Number of studies matching the search (one cheap call)."""
+        """Number of studies matching the search (one cheap call).
+
+        Kept for `count_ttl` seconds (0: not kept), and dropped when the data timestamp changes.
+        """
+        key = json.dumps(search.params, sort_keys=True)
+        cached = self._counts.get(key)
+        if cached and self._clock.monotonic() - cached[0] < self._count_ttl:
+            self._counts.move_to_end(key)
+            return cached[1]
         body = await self._get(
             "/studies", search.params | {"countTotal": "true", "pageSize": "1", "fields": "NCTId"}
         )
-        return int(body["totalCount"])
+        total = int(body["totalCount"])
+        if self._count_ttl > 0:
+            self._counts[key] = (self._clock.monotonic(), total)
+            self._counts.move_to_end(key)
+            if len(self._counts) > COUNT_CACHE_SIZE:
+                self._counts.popitem(last=False)
+        return total
 
     async def fetch_all(
         self,
@@ -219,6 +238,8 @@ class CtgovClient:
             return self._version[1]
         body = await self._get("/version", {})
         info = VersionInfo(body["apiVersion"], body["dataTimestamp"])
+        if self._version and self._version[1].data_timestamp != info.data_timestamp:
+            self._counts.clear()  # the daily update: every count may have changed
         self._version = (now, info)
         return info
 
