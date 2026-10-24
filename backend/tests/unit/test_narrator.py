@@ -190,3 +190,24 @@ def test_fact_sheet_for_a_scatter_plot() -> None:
     # enrollments 0, 12, 30, 120, 367, 826, 1301 -> median 120
     assert (facts["n_points"], facts["median_x"]) == ("7", "120")
     assert "max_bucket" not in facts
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "ClinicalTrials.gov: Trials by phase",
+        "ClinicalTrials.gov trials by phase",
+        "Trials by phase",
+    ],
+)
+async def test_titles_do_not_start_with_the_source_name(title: str) -> None:
+    """Every chart is from ClinicalTrials.gov; repeating it in each title is noise (seen live)."""
+    plan, result = chart()
+    n = await narrate(
+        ScriptedLLM(text({"title": title, "summary": "{total} trials."})),
+        plan,
+        result.visualization,
+        result.meta,
+    )
+    assert n.title in ("Trials by phase", "trials by phase".capitalize())
+    assert not n.title.lower().startswith("clinicaltrials")
