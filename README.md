@@ -7,7 +7,7 @@ Ask a question about clinical trials in plain words and get back a chart you can
 - [Live demo](#live-demo) · [Run it locally](#run-it-locally-with-docker-compose)
 - [Why it's interesting](#why-its-interesting) · [What's built](#whats-built) · [Web app](#web-app) · [How it works](#how-it-works)
 - [API](#api): [endpoints](#endpoints), [`POST /v1/query`](#post-v1query), [response](#response) · [Examples](#examples-real-outputs)
-- [Key design decisions](#key-design-decisions) · [Testing and validation](#testing-and-validation) · [Limitations](#limitations)
+- [Key design decisions](#key-design-decisions) · [Testing and validation](#testing-and-validation) · [Tools used and integrity](#tools-used-and-integrity) · [Limitations](#limitations)
 - [Deployment](#deployment) · [Development](#development) · [Configuration](#configuration) · [Documentation](#documentation)
 
 ## Live demo
@@ -226,6 +226,15 @@ The code was written test-first: each `test:` commit fails before the `feat:` co
 
 CI never calls ClinicalTrials.gov or a model: the live and end-to-end suites are opt-in.
 
+## Tools used and integrity
+
+- **Tools:** Claude Code (Anthropic) as the coding assistant; OpenAI models inside the product for the guard, planner and title stages ([design Q20](docs/design/20-model-selection.md)).
+- **Designed deliberately:** the decisions in [`docs/design/`](docs/design/README.md), made one question at a time with reasons and alternatives: the architecture (the AI chooses, code computes), the schemas, the counting rules, the citation model and the deployment.
+- **Generated and adapted:** code, tests and docs were drafted with Claude Code, then reviewed, tested and revised, test-first where possible.
+- **How correctness was checked:** the test suites in [Testing and validation](#testing-and-validation), counts cross-checked against the API's own counts, and every citation checked against its raw record.
+
+The full disclosure is in the [integrity note](docs/parts/08-integrity-note.md).
+
 ## Limitations
 
 - Very broad questions that need per-trial data (e.g. sponsors per year across 273k trials) still take minutes, as background jobs. Plain trials-per-year counts are fast (one call per year). A local mirror would make the rest instant, but can't match the API's synonym search yet ([Q21](docs/design/21-local-mirror-revisited.md)).
@@ -277,6 +286,7 @@ All settings come from environment variables (or `.env`); only `OPENAI_API_KEY` 
 | [API guide](https://trials.cheiron.engineeradriel.com/docs) | How to call the API: requests, responses, jobs, citation paging |
 | [Swagger UI](https://api.cheiron.engineeradriel.com/docs) and [ReDoc](https://api.cheiron.engineeradriel.com/redoc) | The full OpenAPI reference |
 | [Assignment](docs/assignment.md) and [requirement breakdown](docs/parts/README.md) | The original brief and every requirement it implies |
+| [Integrity note](docs/parts/08-integrity-note.md) | Tools used, how correctness was checked, what was designed vs generated |
 | [System design (Q1-Q21)](docs/design/README.md) | Each design decision, with reasons, alternatives and requirement links |
 | [How it was built](docs/implementation-plan.md) | Milestones, the test-first workflow, and what's planned |
 | [ClinicalTrials.gov API research](docs/api/contract.md) and [live probe](docs/api/live-probe.md) | What the API documents, and what it does when probed |
