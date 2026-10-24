@@ -59,7 +59,7 @@ async def test_pa3_breast_cancer_by_phase() -> None:
     assert calls == [
         {
             "query.cond": '"breast cancer"',
-            "fields": "NCTId,BriefTitle,Phase,StudyType",
+            "fields": "NCTId,BriefTitle,StartDate,Phase,StudyType",
             "pageSize": "1000",
             "countTotal": "true",
         }
@@ -83,7 +83,7 @@ async def test_pa5_pembrolizumab_vs_nivolumab_phases() -> None:
         'AREA[InterventionNameSearch]"pembrolizumab"',
         'AREA[InterventionNameSearch]"nivolumab"',
     ]
-    assert all(c["fields"] == "NCTId,BriefTitle,Phase,StudyType" for c in calls)
+    assert all(c["fields"] == "NCTId,BriefTitle,StartDate,Phase,StudyType" for c in calls)
 
 
 async def test_pa7_recruiting_lung_cancer_trials_by_country() -> None:
@@ -101,7 +101,7 @@ async def test_pa7_recruiting_lung_cancer_trials_by_country() -> None:
         {
             "query.cond": '"lung cancer"',
             "filter.overallStatus": "RECRUITING",
-            "fields": "NCTId,BriefTitle,LocationCountry",
+            "fields": "NCTId,BriefTitle,StartDate,LocationCountry",
             "pageSize": "1000",
             "countTotal": "true",
         }
