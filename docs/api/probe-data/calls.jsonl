@@ -63,3 +63,4 @@
 {"name": "bc_with_mesh", "url": "https://clinicaltrials.gov/api/v2/studies?query.cond=breast+cancer&pageSize=1000&fields=NCTId|ConditionMeshTerm|InterventionMeshTerm|InterventionName", "status": 200, "seconds": 1.58, "bytes": 351154, "ratelimit_headers": {}}
 {"name": "study_notfound", "url": "https://clinicaltrials.gov/api/v2/studies/NCT99999999", "status": 404, "seconds": 0.38, "bytes": 32, "ratelimit_headers": {}}
 {"name": "pembro_mesh_p0", "url": "https://clinicaltrials.gov/api/v2/studies?query.intr=pembrolizumab&pageSize=1000&fields=NCTId|InterventionName|InterventionType|InterventionMeshTerm|ConditionMeshTerm|Condition", "status": 200, "seconds": 1.71, "bytes": 598589, "ratelimit_headers": {}}
+{"name": "b5_location_country_values", "url": "https://clinicaltrials.gov/api/v2/stats/field/values?fields=LocationCountry", "status": 200, "seconds": 0.39, "bytes": 9554, "ratelimit_headers": {}}
