@@ -4,7 +4,9 @@ answers it, so only a sample page is read, never every trial."""
 from typing import Any
 
 import httpx
+import pytest
 
+from app.mirror.fast import FastUnavailable, fetch_from_mirror
 from app.pipeline.citations import source_pages
 from app.pipeline.run import TOTAL_NOTE, prepare, run_plan
 from app.schemas.plan import QueryPlan
@@ -94,3 +96,17 @@ async def test_the_rest_of_a_total_pages_from_its_search() -> None:
     source = {"params": {}, "fields": ["NCTId"], "sort": "LastUpdatePostDate:desc"}
     cited, _ = await source_pages(client)(source | {"dimension": None}, "all", None)
     assert [c["nct_id"] for c in cited] == ["N1", "N2", "N3"]
+
+
+async def test_fast_mode_leaves_a_plain_total_to_the_count() -> None:
+    """Reading every record from our copy would be slower than the count already made."""
+    client, _ = recorded_client(handler(50_000))
+    prepared = await prepare(plan(), client, citations_per_datum=2)
+    with pytest.raises(FastUnavailable, match="count"):
+        await fetch_from_mirror(
+            prepared,
+            client,
+            None,
+            new_term_max_trials=20_000,
+            max_trials=300_000,  # type: ignore[arg-type]
+        )
