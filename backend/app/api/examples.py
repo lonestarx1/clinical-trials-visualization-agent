@@ -443,18 +443,21 @@ HEALTH_OK: dict[str, Any] = {
     "status": "ok",
     "checks": {"database": "ok", "ctgov": "ok"},
     "data_timestamp": "2026-10-23T09:00:04",
+    "fast_mode": {"status": "ready", "data_timestamp": "2026-10-23T09:00:04"},
 }
 
 HEALTH_CTGOV_DOWN: dict[str, Any] = {
     "status": "ok",
     "checks": {"database": "ok", "ctgov": "error"},
     "data_timestamp": None,
+    "fast_mode": {"status": "unknown", "data_timestamp": None},
 }
 
 HEALTH_UNAVAILABLE: dict[str, Any] = {
     "status": "unavailable",
     "checks": {"database": "error", "ctgov": "ok"},
     "data_timestamp": "2026-10-23T09:00:04",
+    "fast_mode": {"status": "unknown", "data_timestamp": None},
 }
 
 # Request bodies for the Swagger "Try it out" dropdown (from docs/examples).

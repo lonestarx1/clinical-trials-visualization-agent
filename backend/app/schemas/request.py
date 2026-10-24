@@ -153,6 +153,15 @@ class QueryRequest(BaseModel):
         default="lead",
         description="`lead`: the sponsor is the lead sponsor. `any`: lead sponsor or collaborator.",
     )
+    mode: Literal["live", "fast"] = Field(
+        default="live",
+        description="`live`: fetch the matching trials from ClinicalTrials.gov now. `fast`: "
+        "read them from our daily-synced copy of ClinicalTrials.gov, after ClinicalTrials.gov's "
+        "own search has picked which trials match and a live count has confirmed the number. "
+        "Both give the same answer; when any check fails, or the server has fast mode turned "
+        "off, the question is answered live and `meta.notes` says why. "
+        "`meta.data_source` says which mode answered.",
+    )
     citations: Literal["sample", "full"] = Field(
         default="sample",
         description="`sample`: up to `citations_per_datum` citations inline per data point. "

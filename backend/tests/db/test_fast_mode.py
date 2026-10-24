@@ -82,7 +82,7 @@ def client(
     with TestClient(app) as c:
         app.state.ctgov, _ = registry_client(fake)
         app.state.llm_factory = Models().factory
-        c.portal.call(sync, app.state.ctgov, sessions)  # the mirror is current at D1
+        c.portal.call(sync, app.state.ctgov, app.state.sessions)  # the mirror is current at D1
         yield c
 
 
@@ -94,7 +94,10 @@ def ask(c: TestClient, **body: Any) -> dict[str, Any]:
 
 
 def values(body: dict[str, Any]) -> dict[str, int]:
-    return {d["key"]: d["value"] for d in body["visualization"]["data"]}
+    return {d["key"]: d["trial_count"] for d in body["visualization"]["data"]}
+
+
+LIVE = {"PHASE1": 1, "PHASE2": 1, "PHASE2/PHASE3": 1, "PHASE3": 1}  # melanoma: NCT1-4
 
 
 def test_fast_answers_from_the_mirror_with_the_live_answer(client: TestClient) -> None:
@@ -103,7 +106,7 @@ def test_fast_answers_from_the_mirror_with_the_live_answer(client: TestClient) -
     # 2 sample citations per bar, not 1: a different stored answer, so live really runs again
     live = ask(client, mode="live", citations_per_datum=2)
     assert live["meta"]["data_source"] == "live"
-    assert values(fast) == values(live) == {"PHASE1": 1, "PHASE2": 2, "PHASE3": 2}
+    assert values(fast) == values(live) == LIVE
     # Every number stays checkable against ClinicalTrials.gov: the live search URL is kept.
     assert fast["meta"]["api_queries"] == [
         q | {"total_count": 4} for q in fast["meta"]["api_queries"]
@@ -123,7 +126,7 @@ def test_a_mirror_behind_the_api_answers_live(client: TestClient, fake: FakeRegi
     body = ask(client, mode="fast")
     assert body["meta"]["data_source"] == "live"
     assert any("syncing" in n for n in body["meta"]["notes"])
-    assert values(body) == {"PHASE1": 1, "PHASE2": 2, "PHASE3": 2}
+    assert values(body) == LIVE
 
 
 def test_fast_mode_turned_off_answers_live(client: TestClient) -> None:
@@ -133,7 +136,9 @@ def test_fast_mode_turned_off_answers_live(client: TestClient) -> None:
     assert any("turned off" in n for n in body["meta"]["notes"])
 
 
-def test_a_count_that_disagrees_answers_live(client: TestClient, sessions: Sessions) -> None:
+def test_a_count_that_disagrees_answers_live(client: TestClient) -> None:
+    sessions: Sessions = client.app.state.sessions  # type: ignore[attr-defined]
+
     async def drift() -> None:  # the mirror and its term set hold a trial the API doesn't
         now = datetime.now(UTC)
         async with sessions() as s:
@@ -155,7 +160,7 @@ def test_a_count_that_disagrees_answers_live(client: TestClient, sessions: Sessi
     body = ask(client, mode="fast")
     assert body["meta"]["data_source"] == "live"
     assert any("disagreed" in n for n in body["meta"]["notes"])
-    assert values(body) == {"PHASE1": 1, "PHASE2": 2, "PHASE3": 2}  # the live answer
+    assert values(body) == LIVE  # the live answer
 
 
 def test_a_large_new_term_answers_live(client: TestClient) -> None:
