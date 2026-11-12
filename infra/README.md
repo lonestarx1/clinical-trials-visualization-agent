@@ -2,8 +2,7 @@
 
 The web app and the API run on Kubernetes. To keep the cost down, the cluster is **k3s on a single EC2 instance**: a CNCF-certified Kubernetes distribution with the same `kubectl`, manifests and Helm charts as EKS, but no $0.10/hour control-plane fee. The reasons, the alternatives and a production design are in [design Q19](../docs/design/19-deployment-ui.md#revision-2026-10-25-what-was-actually-deployed).
 
-- Web app: https://trials.cheiron.engineeradriel.com
-- API: https://api.cheiron.engineeradriel.com
+> **Shut down on 2026-11-12.** Every resource below, the Terraform state bucket included, was destroyed. The steps under [Deploying from scratch](#deploying-from-scratch) recreate it. It was served at `trials.cheiron.engineeradriel.com` (web) and `api.cheiron.engineeradriel.com` (API).
 
 ## What's where
 
