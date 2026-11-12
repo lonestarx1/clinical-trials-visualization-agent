@@ -10,17 +10,17 @@ Ask a question about clinical trials in plain words and get back a chart you can
 - [Key design decisions](#key-design-decisions) · [Testing and validation](#testing-and-validation) · [Live vs fast](#live-vs-fast-a-benchmark) · [Limitations](#limitations) · [Future improvements](#future-improvements)
 - [Tools used and integrity](#tools-used-and-integrity) · [Web app](#web-app) · [Deployment](#deployment) · [Development](#development) · [Documentation](#documentation)
 
-## Live demo
+## Demo
 
-The whole system is deployed, so you can try it without installing anything:
+The system ran on AWS at `trials.cheiron.engineeradriel.com` (web) and `api.cheiron.engineeradriel.com` (API) from 2026-10-25 to 2026-11-12. That deployment is now shut down; run it locally with `make up` (see [Quick start](#quick-start-docker-compose)). The local URLs are below:
 
 | | |
 |---|---|
-| **Web app** | https://trials.cheiron.engineeradriel.com |
-| **API** | https://api.cheiron.engineeradriel.com |
-| **Examples** | [100 example questions](https://trials.cheiron.engineeradriel.com/examples), one card each with its chart; the same answers as Markdown in [`examples/`](examples/) |
-| **API docs** | [API guide](https://trials.cheiron.engineeradriel.com/docs) with recorded examples; OpenAPI reference in [Swagger UI](https://api.cheiron.engineeradriel.com/docs) and [ReDoc](https://api.cheiron.engineeradriel.com/redoc) |
-| **Infrastructure** | Kubernetes (k3s) on AWS EC2, with PostgreSQL in the cluster. Defined in Terraform and Kustomize; see [Deployment](#deployment). Fast mode is on. |
+| **Web app** | http://localhost:3000 |
+| **API** | http://localhost:8000 |
+| **Examples** | 100 example questions at http://localhost:3000/examples, one card each with its chart; the same answers as Markdown in [`examples/`](examples/) |
+| **API docs** | API guide at http://localhost:3000/docs with recorded examples; OpenAPI reference in Swagger UI (http://localhost:8000/docs) and ReDoc (http://localhost:8000/redoc) |
+| **Infrastructure** | Kubernetes (k3s) on AWS EC2, with PostgreSQL in the cluster. Defined in Terraform and Kustomize; see [Deployment](#deployment). Torn down on 2026-11-12; the code can recreate it. |
 | **Source code** | https://github.com/lonestarx1/clinical-trials-visualization-agent |
 
 ## Quick start (Docker Compose)
@@ -91,7 +91,7 @@ request ─► validate (422) ─┬─► guard (AI, fail closed) ────�
 
 ## API
 
-The [API guide](https://trials.cheiron.engineeradriel.com/docs) walks through requests, responses, jobs and citation paging. The full schema is in the [Swagger UI](https://api.cheiron.engineeradriel.com/docs), [ReDoc](https://api.cheiron.engineeradriel.com/redoc) and at `/openapi.json`; per chart type, see the [response schema design](docs/design/12-io-schema.md).
+The API guide (`/docs` on the web app) walks through requests, responses, jobs and citation paging. The full schema is in the Swagger UI (`/docs` on the API), ReDoc (`/redoc`) and at `/openapi.json`; per chart type, see the [response schema design](docs/design/12-io-schema.md).
 
 ### Endpoints
 
@@ -181,7 +181,7 @@ Errors share one body, routing errors included: `{"error": {"code", "message", "
 
 ## Examples (real outputs)
 
-**100 more:** on 2026-10-25 we asked [100 diverse questions](examples/) in live mode against production, as a final test: every chart type, most dimensions, and refusals (off-topic, prompt injection, gibberish, too vague). Each file has the question, the answer, its chart, the data, citations and the ClinicalTrials.gov queries; browse them on the [Examples page](https://trials.cheiron.engineeradriel.com/examples). [`scripts/make_example.py`](scripts/make_example.py) rebuilds one. The run found and fixed three bugs: [plain totals downloaded every trial](https://github.com/lonestarx1/clinical-trials-visualization-agent/pull/56) (12 minutes, now 4 s), [too-broad questions were answered](https://github.com/lonestarx1/clinical-trials-visualization-agent/pull/53), and the example script's own chart drawing. Known gaps it showed are in [Limitations](#limitations).
+**100 more:** on 2026-10-25 we asked [100 diverse questions](examples/) in live mode against production, as a final test: every chart type, most dimensions, and refusals (off-topic, prompt injection, gibberish, too vague). Each file has the question, the answer, its chart, the data, citations and the ClinicalTrials.gov queries; browse them on the Examples page (`/examples` on the web app). [`scripts/make_example.py`](scripts/make_example.py) rebuilds one. The run found and fixed three bugs: [plain totals downloaded every trial](https://github.com/lonestarx1/clinical-trials-visualization-agent/pull/56) (12 minutes, now 4 s), [too-broad questions were answered](https://github.com/lonestarx1/clinical-trials-visualization-agent/pull/53), and the example script's own chart drawing. Known gaps it showed are in [Limitations](#limitations).
 
 The six below came first:
 
@@ -325,7 +325,9 @@ The charts are drawn from the response's `encoding` ([`lib/adapter.ts`](frontend
 
 ## Deployment
 
-It runs on **Kubernetes (k3s) on one EC2 t3.medium**, defined in **Terraform** (network, node, IAM, ECR, Secrets Manager, DNS) and **Kustomize** (Postgres, API, web, Ingress with Let's Encrypt). The API pod keeps the mirror synced and serves fast mode. `make deploy` builds, pushes and rolls out through an SSM tunnel: there's no SSH and no public Kubernetes API.
+> **Shut down on 2026-11-12.** Everything below was torn down with `terraform destroy`; `make infra-bootstrap`, `make infra-apply` and `make deploy` recreate it.
+
+It ran on **Kubernetes (k3s) on one EC2 t3.medium**, defined in **Terraform** (network, node, IAM, ECR, Secrets Manager, DNS) and **Kustomize** (Postgres, API, web, Ingress with Let's Encrypt). The API pod keeps the mirror synced and serves fast mode. `make deploy` builds, pushes and rolls out through an SSM tunnel: there's no SSH and no public Kubernetes API.
 
 **Why this setup:** low cost (about $1.50/day) for a short build window. k3s is real Kubernetes with the same manifests as EKS, without EKS's $2.40/day control-plane fee; the Kustomize base also has an EKS overlay.
 
@@ -350,8 +352,8 @@ Layout: [`backend/`](backend/) (FastAPI, Python 3.12, `uv`), [`frontend/`](front
 
 | Document | What it covers |
 |---|---|
-| [API guide](https://trials.cheiron.engineeradriel.com/docs) | How to call the API: requests, responses, jobs, citation paging |
-| [Swagger UI](https://api.cheiron.engineeradriel.com/docs) and [ReDoc](https://api.cheiron.engineeradriel.com/redoc) | The full OpenAPI reference |
+| API guide (`/docs` on the web app) | How to call the API: requests, responses, jobs, citation paging |
+| Swagger UI (`/docs` on the API) and ReDoc (`/redoc`) | The full OpenAPI reference |
 | [Assignment](docs/assignment.md) and [requirement breakdown](docs/parts/README.md) | The original brief and every requirement it implies |
 | [Integrity note](docs/parts/08-integrity-note.md) | Tools used, how correctness was checked, what was designed vs generated |
 | [System design (Q1-Q22)](docs/design/README.md) | Each design decision, with reasons, alternatives and requirement links |
